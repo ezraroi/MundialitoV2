@@ -12,15 +12,17 @@ public class UsersRetriver : IUsersRetriver
     private readonly IUsersRepository usersRepository;
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly IDateTimeProvider dateTimeProvider;
+    private readonly TournamentTimesUtils tournamentTimesUtils;
 
-    public UsersRetriver(IBetsRepository betsRepository, IGeneralBetsRepository generalBetsRepository, IUsersRepository usersRepository, IDateTimeProvider dateTimeProvider)
+    public UsersRetriver(IBetsRepository betsRepository, IGeneralBetsRepository generalBetsRepository, IUsersRepository usersRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils)
     {
         this.betsRepository = betsRepository;
         this.usersRepository = usersRepository;
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
+        this.tournamentTimesUtils = tournamentTimesUtils;
     }
-
+    
     public UserModel GetUser(String username, bool isLogged)
     {
         var user = usersRepository.GetUser(username);
@@ -33,7 +35,7 @@ public class UsersRetriver : IUsersRetriver
         var generalBet = generalBetsRepository.GetUserGeneralBet(username);
         if (generalBet != null)
         {
-            userModel.SetGeneralBet(new GeneralBetViewModel(generalBet));
+            userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
         }
         return userModel;
     }
@@ -46,7 +48,7 @@ public class UsersRetriver : IUsersRetriver
         allBets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).Where(bet => bet.Game.Date < dateTimeProvider.UTCNow.Subtract(TimeSpan.FromDays(1))).ToList().ForEach(bet => users[bet.User.Id].YesterdayPoints += bet.Points.HasValue ? bet.Points.Value : 0);
         generalBetsRepository.GetGeneralBets().ToList().ForEach(generalBet =>
         {
-            users[generalBet.User.Id].SetGeneralBet(new GeneralBetViewModel(generalBet));
+            users[generalBet.User.Id].SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
         });
         return users.Values.ToList();
     }

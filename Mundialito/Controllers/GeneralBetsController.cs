@@ -22,9 +22,9 @@ public class GeneralBetsController : ControllerBase
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly TournamentTimesUtils tournamentTimesUtils;
 
-    public GeneralBetsController(IGeneralBetsRepository generalBetsRepository, ILoggedUserProvider userProivider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor)
-    {
+    public GeneralBetsController(IGeneralBetsRepository generalBetsRepository, ILoggedUserProvider userProivider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils)    {
         this.httpContextAccessor = httpContextAccessor;
         if (generalBetsRepository == null)
             throw new ArgumentNullException("generalBetsRepository");
@@ -39,18 +39,17 @@ public class GeneralBetsController : ControllerBase
         this.generalBetsRepository = generalBetsRepository;
         this.userProivider = userProivider;
         this.actionLogsRepository = actionLogsRepository;
+        this.tournamentTimesUtils = tournamentTimesUtils;
     }
-
-
     
     [HttpGet]
     public IEnumerable<GeneralBetViewModel> GetAllGeneralBets()
     {
-        if (!User.IsInRole("Admin") && dateTimeProvider.UTCNow < TournamentTimesUtils.GeneralBetsCloseTime)
+        if (!User.IsInRole("Admin") && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
             throw new ArgumentException("General bets are still open for betting, you can't see other users bets yet");
         }
-        return generalBetsRepository.GetGeneralBets().Select(bet => new GeneralBetViewModel(bet)).OrderBy(bet => bet.OwnerName);
+        return generalBetsRepository.GetGeneralBets().Select(bet => new GeneralBetViewModel(bet, tournamentTimesUtils.GetGeneralBetsCloseTime())).OrderBy(bet => bet.OwnerName);
     }
 
     [HttpGet("has-bet/{username}")]
@@ -62,13 +61,13 @@ public class GeneralBetsController : ControllerBase
     [HttpGet("CanSubmitBets")]
     public Boolean CanSubmitBets()
     {
-        return dateTimeProvider.UTCNow < TournamentTimesUtils.GeneralBetsCloseTime;
+        return dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime();
     }
 
     [HttpGet("user/{username}")]
     public GeneralBetViewModel GetUserGeneralBet(string username)
     {
-        if (userProivider.UserName != username && dateTimeProvider.UTCNow < TournamentTimesUtils.GeneralBetsCloseTime)
+        if (userProivider.UserName != username && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
             throw new ArgumentException("General bets are still open for betting, you can't see other users bets yet");
 
         var item = generalBetsRepository.GetUserGeneralBet(username);
@@ -76,7 +75,7 @@ public class GeneralBetsController : ControllerBase
         if (item == null)
             throw new ObjectNotFoundException(string.Format("User '{0}' dosen't have a general bet yet", username));
 
-        return new GeneralBetViewModel(item);
+        return new GeneralBetViewModel(item, tournamentTimesUtils.GetGeneralBetsCloseTime());
     }
 
     [HttpGet("{id}")]
@@ -87,7 +86,7 @@ public class GeneralBetsController : ControllerBase
         if (item == null)
             throw new ObjectNotFoundException(string.Format("General Bet with id '{0}' not found", id));
 
-        return new GeneralBetViewModel(item);
+        return new GeneralBetViewModel(item, tournamentTimesUtils.GetGeneralBetsCloseTime());
     }
 
     [HttpPost]
@@ -110,7 +109,7 @@ public class GeneralBetsController : ControllerBase
     [HttpPut]
     public UpdateGenralBetModel UpdateBet(int id, UpdateGenralBetModel bet)
     {
-        if (dateTimeProvider.UTCNow > TournamentTimesUtils.GeneralBetsCloseTime)
+        if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
             throw new ArgumentException("General bets are already closed for betting");
         var betToUpdate = new GeneralBet();
         betToUpdate.GeneralBetId = id;
@@ -130,7 +129,7 @@ public class GeneralBetsController : ControllerBase
     [Route("{id}/resolve")]
     public void ResolveGeneralBet(int id, ResolveGeneralBetModel resolvedBet)
     {
-        if (dateTimeProvider.UTCNow < TournamentTimesUtils.GeneralBetsResolveTime)
+        if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsResolveTime())
         {
             AddLog(ActionType.ERROR, "General bets are not closed for betting yet");
             throw new ArgumentException("General bets are not closed for betting yet");
@@ -157,7 +156,7 @@ public class GeneralBetsController : ControllerBase
             AddLog(ActionType.ERROR, "You have already submitted your general bet, only update is permitted");
             throw new ArgumentException("You have already submitted your general bet, only update is permitted");
         }
-        if (dateTimeProvider.UTCNow > TournamentTimesUtils.GeneralBetsCloseTime)
+        if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
             AddLog(ActionType.ERROR, "General bets are already closed for betting");
             throw new ArgumentException("General bets are already closed for betting");

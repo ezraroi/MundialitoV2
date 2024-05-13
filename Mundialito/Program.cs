@@ -116,6 +116,7 @@ builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IActionLogsRepository, ActionLogsRepository>();
 builder.Services.AddScoped<IAdminManagment, AdminManagment>();
 builder.Services.AddScoped<TokenService, TokenService>();
+builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

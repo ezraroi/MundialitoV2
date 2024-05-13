@@ -6,7 +6,7 @@ namespace Mundialito.Models;
 
 public class GeneralBetViewModel
 {
-    public GeneralBetViewModel(GeneralBet bet)
+    public GeneralBetViewModel(GeneralBet bet, DateTime closeTime)
     {
         GeneralBetId = bet.GeneralBetId;
         WinningTeamId = bet.WinningTeamId;
@@ -14,7 +14,7 @@ public class GeneralBetViewModel
         IsResolved = bet.IsResolved;
         if (IsResolved)
             Points = bet.PlayerPoints.Value + bet.TeamPoints.Value;
-        CloseTime = TournamentTimesUtils.GeneralBetsCloseTime;
+        CloseTime = closeTime;
         OwnerName = string.Format("{0} {1}", bet.User.FirstName, bet.User.LastName);
         IsClosed = DateTime.UtcNow > CloseTime;
     }

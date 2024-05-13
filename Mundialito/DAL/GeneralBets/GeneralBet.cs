@@ -35,14 +35,6 @@ public class GeneralBet
 
     public int? PlayerPoints { get; set; }
 
-    public Boolean IsOpen
-    {
-        get
-        {
-            return DateTime.Now.ToUniversalTime() < TournamentTimesUtils.GeneralBetsCloseTime;
-        }
-    }
-
     public override string ToString()
     {
         return string.Format("General Bet ID = {0}, Owner = {1}, WinningTeamId = {2}, GoldBootPlayerId = {3}, TeamPoints = {4}, PlayerPoints = {5}", GeneralBetId, User == null ? "Unkown" : User.UserName, WinningTeamId, GoldBootPlayerId, TeamPoints.HasValue ? TeamPoints.Value.ToString() : "NA", PlayerPoints.HasValue ? PlayerPoints.Value.ToString() : "NA");

@@ -19,14 +19,16 @@ public class AccountController : ControllerBase
     private readonly MundialitoDbContext _context;
     private readonly TokenService _tokenService;
     private readonly Config _config;
+    private readonly TournamentTimesUtils _tournamentTimesUtils;
 
     public AccountController(UserManager<MundialitoUser> userManager, MundialitoDbContext context,
-        TokenService tokenService, ILogger<AccountController> logger, IOptions<Config> config)
+        TokenService tokenService, ILogger<AccountController> logger, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils)
     {
         _userManager = userManager;
         _context = context;
         _tokenService = tokenService;
         _config = config.Value;
+        _tournamentTimesUtils = tournamentTimesUtils;
     }
     
     [AllowAnonymous]
@@ -37,7 +39,7 @@ public class AccountController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        if (TournamentTimesUtils.GeneralBetsCloseTime < DateTime.UtcNow)
+        if (_tournamentTimesUtils.GetGeneralBetsCloseTime() < DateTime.UtcNow)
         {
             return BadRequest("Tournament is not open for registration anymore");
         }
@@ -100,7 +102,7 @@ public class AccountController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var managedUser = await _userManager.FindByEmailAsync(request.Email!);
+        var managedUser = await _userManager.FindByNameAsync(request.Username!);
         
         if (managedUser == null)
         {
@@ -114,7 +116,7 @@ public class AccountController : ControllerBase
             return BadRequest("Bad credentials");
         }
 
-        var userInDb = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+        var userInDb = _context.Users.FirstOrDefault(u => u.UserName == request.Username);
         
         if (userInDb is null)
         {

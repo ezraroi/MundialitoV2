@@ -10,7 +10,7 @@ public class Config
     public string AdminUserName { get; set; } = "Roi";
     public string AdminLastName { get; set; } = "Ezra";
     public string AdminEmail { get; set; } = "ezraroi@gmail.com";
-    public string TournamentStartDate { get; set; } = "1/06/2024";
+    public string TournamentStartDate { get; set; } = "01/06/2024";
     public string TournamentEndDate { get; set; } = "10/07/2024";
     public string ApplicationName { get; set; } = "Mundialito";
     public string TournamentDBCreatorName { get; set; } = "Mundial2023TournamentCreator";

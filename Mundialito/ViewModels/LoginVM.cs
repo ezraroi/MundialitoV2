@@ -4,8 +4,8 @@ namespace Mundialito.ViewModels;
 
 public class LoginVM
 {
-    [Required(ErrorMessage ="email is required.")]
-    public string? Email { get; set; }
+    [Required(ErrorMessage ="username is required.")]
+    public string? Username { get; set; }
 
     [Required(ErrorMessage ="Password is required.")]
     [DataType(DataType.Password)]
