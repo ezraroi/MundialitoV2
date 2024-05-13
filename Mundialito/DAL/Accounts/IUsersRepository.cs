@@ -4,9 +4,9 @@ namespace Mundialito.DAL.Accounts;
 
 public interface IUsersRepository : IDisposable
 {
-    IEnumerable<IdentityUser> AllUsers();
+    IEnumerable<MundialitoUser> AllUsers();
 
-    IdentityUser GetUser(String username);
+    MundialitoUser GetUser(String username);
 
     void DeleteUser(String username);
 

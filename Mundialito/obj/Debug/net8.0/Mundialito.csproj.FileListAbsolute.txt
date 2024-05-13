@@ -172,3 +172,4 @@
 /Users/roiezra/Git/MundialitoV2/Mundialito/bin/Debug/net8.0/Microsoft.Extensions.Identity.Stores.dll
 /Users/roiezra/Git/MundialitoV2/Mundialito/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
 /Users/roiezra/Git/MundialitoV2/Mundialito/obj/Debug/net8.0/Mundialito.sourcelink.json
+/Users/roiezra/Git/MundialitoV2/Mundialito/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll

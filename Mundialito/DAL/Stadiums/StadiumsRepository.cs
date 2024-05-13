@@ -8,8 +8,8 @@ namespace Mundialito.DAL.Stadiums;
 public class StadiumsRepository : GenericRepository<Stadium>, IStadiumsRepository
 {
 
-    public StadiumsRepository()
-        : base(new MundialitoDbContext())
+    public StadiumsRepository(MundialitoDbContext context)
+        : base(context)
     {
     }
 

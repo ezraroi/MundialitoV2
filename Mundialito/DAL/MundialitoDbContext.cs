@@ -13,7 +13,7 @@ using Mundialito.DAL.Teams;
 namespace Mundialito.DAL;
 
 
-public class MundialitoDbContext : IdentityDbContext<IdentityUser>
+public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 {
 
 	public DbSet<Game> Games { get; set; }
@@ -24,12 +24,7 @@ public class MundialitoDbContext : IdentityDbContext<IdentityUser>
 	public DbSet<ActionLog> ActionLogs { get; set; }
 	public DbSet<Player> Players { get; set; }
 
-	public MundialitoDbContext() : base()
-	{
-
-	}
-
-	public MundialitoDbContext(DbContextOptions options) : base(options)
+	public MundialitoDbContext(DbContextOptions<MundialitoDbContext> options) : base(options)
 	{
 	}
 

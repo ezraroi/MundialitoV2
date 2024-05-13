@@ -5,8 +5,8 @@ namespace Mundialito.DAL.GeneralBets;
 
 public class GeneralBetsRepository : GenericRepository<GeneralBet>, IGeneralBetsRepository
 {
-    public GeneralBetsRepository()
-        : base(new MundialitoDbContext())
+    public GeneralBetsRepository(MundialitoDbContext context)
+        : base(context)
     {
 
     }

@@ -6,8 +6,8 @@ namespace Mundialito.DAL.Teams;
 public class TeamsRepository : GenericRepository<Team>, ITeamsRepository
 {
 
-    public TeamsRepository()
-        : base(new MundialitoDbContext())
+    public TeamsRepository(MundialitoDbContext context)
+        : base(context)
     {
     }
 

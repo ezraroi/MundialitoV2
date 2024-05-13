@@ -3,8 +3,8 @@
 public class PlayersRepository : GenericRepository<Player>, IPlayersRepository
 {
 
-    public PlayersRepository()
-        : base(new MundialitoDbContext())
+    public PlayersRepository(MundialitoDbContext context)
+        : base(context)
     {
 
     }

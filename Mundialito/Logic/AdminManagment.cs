@@ -7,9 +7,9 @@ namespace Mundialito.Logic;
 
 public class AdminManagment : IAdminManagment
 {
-    private readonly UserManager<IdentityUser> usersManager;
+    private readonly UserManager<MundialitoUser> usersManager;
 
-    public AdminManagment(UserManager<IdentityUser> usersManager)
+    public AdminManagment(UserManager<MundialitoUser> usersManager)
     {
         this.usersManager = usersManager;
     }

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace Mundialito.DAL.ActionLogs;
+﻿namespace Mundialito.DAL.ActionLogs;
 
 public class ActionLogsRepository : GenericRepository<ActionLog>, IActionLogsRepository
 {
-    public ActionLogsRepository()
-        : base(new MundialitoDbContext())
+    public ActionLogsRepository(MundialitoDbContext context)
+        : base(context)
     {
         
     }

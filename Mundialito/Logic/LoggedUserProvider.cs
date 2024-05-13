@@ -7,9 +7,9 @@ namespace Mundialito.Logic;
 public class LoggedUserProvider : ILoggedUserProvider
 {
     private IHttpContextAccessor httpContextAccessor;
-    private UserManager<IdentityUser> userManager;
+    private UserManager<MundialitoUser> userManager;
 
-    public LoggedUserProvider(IHttpContextAccessor httpContextAccessor, UserManager<IdentityUser> userManager)
+    public LoggedUserProvider(IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.userManager = userManager;

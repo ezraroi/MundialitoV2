@@ -14,14 +14,14 @@ public class TournamentTimesUtils
             if (generalBetsCloseTime == DateTime.MinValue)
             {
                 // if (String.IsNullOrEmpty(WebConfigurationManager.AppSettings["TournamentStartDate"]))
-                if (String.IsNullOrEmpty("1/06/2024"))
+                if (String.IsNullOrEmpty("01/06/2024"))
                 {
                     generalBetsCloseTime = new DateTime(2014, 6, 12).ToUniversalTime();
                 }
                 else
                 {
                     // generalBetsCloseTime = DateTime.ParseExact(WebConfigurationManager.AppSettings["TournamentStartDate"], "dd/MM/yyyy", null).Subtract(TimeSpan.FromDays(1)).ToUniversalTime();
-                    generalBetsCloseTime = DateTime.ParseExact("1/06/2024", "dd/MM/yyyy", null).Subtract(TimeSpan.FromDays(1)).ToUniversalTime();
+                    generalBetsCloseTime = DateTime.ParseExact("01/06/2024", "dd/MM/yyyy", null).Subtract(TimeSpan.FromDays(1)).ToUniversalTime();
                 }
                 
             }

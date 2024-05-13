@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Mundialito.Models;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 
 namespace Mundialito.DAL.Games;
@@ -11,7 +8,7 @@ public class GamesRepository : GenericRepository<Game>,IGamesRepository
 
     #region Implementation of IGamesRepository
 
-    public GamesRepository() : base(new MundialitoDbContext())
+    public GamesRepository(MundialitoDbContext context) : base(context)
     {
     }
 

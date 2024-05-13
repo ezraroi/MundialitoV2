@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Configuration;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
 
 namespace Mundialito.Controllers;
 
@@ -33,9 +34,9 @@ public class BetsController : ControllerBase
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
 
-    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, ILoggedUserProvider userProivider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, Config config)
+    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, ILoggedUserProvider userProivider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config)
     {
-        this.config = config;
+        this.config = config.Value;
         this.httpContextAccessor = httpContextAccessor;
         this.userManager = userManager;
         if (gamesRepository == null)
