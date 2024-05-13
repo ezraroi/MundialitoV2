@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mundialito")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8913e50a034b373cb639039d3b2a0e4211dea07")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+62798e99c1fbd460b49f1c1ac11b4df0d226d06c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mundialito")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mundialito")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
