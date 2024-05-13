@@ -66,3 +66,4 @@ _ReSharper*/
 *.tmp_proj
 *.userprefs
 *.DS_Store
+.fake
