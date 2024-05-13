@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Mundialito.Migrations
 {
     /// <inheritdoc />
@@ -313,6 +315,15 @@ namespace Mundialito.Migrations
                         principalTable: "Games",
                         principalColumn: "GameId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Teams",
+                columns: new[] { "TeamId", "Flag", "Logo", "Name", "ShortName" },
+                values: new object[,]
+                {
+                    { 1, "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg", "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg", "Bulgaria", "BUL" },
+                    { 2, "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg", "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg", "Germany", "GER" }
                 });
 
             migrationBuilder.CreateIndex(

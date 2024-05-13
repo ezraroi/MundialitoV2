@@ -21,7 +21,7 @@ public class GeneralBet
     public int GeneralBetId { get; set; }
 
     [Required]
-    public required MundialitoUser User { get; set; }
+    public MundialitoUser User { get; set; }
 
     [Required]
     public int WinningTeamId { get; set; }

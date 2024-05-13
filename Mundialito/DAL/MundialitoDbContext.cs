@@ -64,6 +64,13 @@ public class MundialitoDbContext : IdentityDbContext<IdentityUser>
 		// modelBuilder.Entity<MundialitoUser>()
 		// 	.Property(e => e.LastName).IsRequired(false)
 		// 	.HasMaxLength(250);
+
+		modelBuilder.Entity<Team>().HasData(new {
+			TeamId = 1, Name = "Bulgaria", Flag = "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg", Logo = "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg", ShortName = "BUL"
+		});
+		modelBuilder.Entity<Team>().HasData(new {
+			TeamId = 2, Name = "Germany", Flag = "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg", Logo = "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg", ShortName = "GER"
+		});
 	}
 
 	protected override void OnConfiguring(DbContextOptionsBuilder options) =>
