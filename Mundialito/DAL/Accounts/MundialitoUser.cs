@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Mundialito.DAL.Accounts;
 
+
+
 public class MundialitoUser : IdentityUser
 {
+
+    public Role Role { get; set; }
 
     [StringLength(100)]
     [MaxLength(100)]

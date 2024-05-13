@@ -55,7 +55,8 @@ public class AccountController : ControllerBase
             UserName = model.UserName,
             Email = model.Email,
             LastName = model.LastName,
-            FirstName = model.FirstName
+            FirstName = model.FirstName,
+            Role = Role.User,
         };
 
         IdentityResult result = await _userManager.CreateAsync(user, model.Password);

@@ -49,6 +49,7 @@ namespace Mundialito.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Role = table.Column<int>(type: "INTEGER", nullable: false),
                     FirstName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),

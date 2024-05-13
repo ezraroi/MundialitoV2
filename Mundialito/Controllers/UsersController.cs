@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
@@ -21,17 +22,17 @@ public class UsersController : ControllerBase
     private readonly ILoggedUserProvider loggedUserProvider;
     private readonly IUsersRepository usersRepository;
     private readonly IActionLogsRepository actionLogsRepository;
-    private readonly IAdminManagment adminManagment;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly UserManager<MundialitoUser> userManager;
 
-    public UsersController(IUsersRetriver usersRetriver, ILoggedUserProvider loggedUserProvider, IUsersRepository usersRepository, IAdminManagment adminManagment, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor)
+    public UsersController(IUsersRetriver usersRetriver, ILoggedUserProvider loggedUserProvider, IUsersRepository usersRepository, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
     {
         this.usersRetriver = usersRetriver;
         this.loggedUserProvider = loggedUserProvider;
         this.usersRepository = usersRepository;
         this.actionLogsRepository = actionLogsRepository;
-        this.adminManagment = adminManagment;
         this.httpContextAccessor = httpContextAccessor;
+        this.userManager = userManager;
     }
 
     [HttpGet]
@@ -49,15 +50,14 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{username}")]
-    public UserModel GetUserByUsername(String username)
+    public Task<ActionResult<UserModel>> GetUserByUsername(String username)
     {
         var res = usersRetriver.GetUser(username, loggedUserProvider.UserName == username);
-        IsAdmin(res);
-        return res;
+        return IsAdmin(res);
     }
 
     [HttpGet("me")]
-    public UserModel GetMe()
+    public Task<ActionResult<UserModel>> GetMe()
     {
         return GetUserByUsername(loggedUserProvider.UserName);
     }
@@ -68,7 +68,6 @@ public class UsersController : ControllerBase
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-
             Content = new StringContent(PrivateKeyValidator.GeneratePrivateKey(email), Encoding.UTF8, "text/plain")
         };
         return response;
@@ -76,10 +75,22 @@ public class UsersController : ControllerBase
 
     [HttpPost("MakeAdmin/{id}")]
     [Authorize(Roles = "Admin")]
-    public void MakeAdmin(String id)
+    public async Task<IActionResult> MakeAdmin(String id)
     {
-        adminManagment.MakeAdmin(id);
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+        user.Role = Role.Admin;
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            ModelState.AddModelError("", "Cannot remove user existing roles");
+            return BadRequest(ModelState);
+        }
         AddLog(ActionType.UPDATE, string.Format("Made  user {0} admin", id));
+        return Ok();
     }
 
     [HttpDelete("{id}")]
@@ -92,9 +103,15 @@ public class UsersController : ControllerBase
         AddLog(ActionType.DELETE, string.Format("Deleted user: {0}", id));
     }
 
-    private void IsAdmin(UserModel user)
+    private async Task<ActionResult<UserModel>> IsAdmin(UserModel param)
     {
-        user.IsAdmin = adminManagment.IsAdmin(user.Id);
+        var user = await userManager.FindByIdAsync(param.Id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+        param.IsAdmin = user.Role == Role.Admin;
+        return Ok(param);
     }
 
     private void AddLog(ActionType actionType, String message)

@@ -11,7 +11,7 @@ using Mundialito.DAL;
 namespace Mundialito.Migrations
 {
     [DbContext(typeof(MundialitoDbContext))]
-    [Migration("20240513203456_InitialCreate")]
+    [Migration("20240513234406_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -195,6 +195,9 @@ namespace Mundialito.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Role")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("SecurityStamp")

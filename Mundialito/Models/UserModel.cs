@@ -5,10 +5,10 @@ namespace Mundialito.Models;
 
 public class UserModel
 {
-    public UserModel(IdentityUser user)
+    public UserModel(MundialitoUser user)
     {
         Username = user.UserName;
-        Name = String.Format("{0} {1}", user.UserName, user.UserName); // TODO: Add first and last name
+        Name = String.Format("{0} {1}", user.FirstName, user.LastName);
         Points = 0;
         Place = String.Empty;
         Id = user.Id;
