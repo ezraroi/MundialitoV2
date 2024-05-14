@@ -137,6 +137,26 @@ public class AccountController : ControllerBase
         });
     }
 
+
+    [HttpGet("UserInfo")]
+    [Authorize]
+    public async Task<ActionResult<UserInfoViewModel>> GetUserInfo()
+    {
+        var user = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+        return new UserInfoViewModel
+        {
+            UserName = user.UserName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Roles = user.Role.ToString(),
+        };
+    }
+
     [HttpPost("ChangePassword")]
     [Authorize]
     public async Task<IActionResult> ChangePassword(ChangePasswordBindingModel model)
