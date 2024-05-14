@@ -129,6 +129,7 @@ if (app.Environment.IsDevelopment())
 	app.UseHsts();
 }
 
+app.MapFallbackToController("Index", "Home");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
