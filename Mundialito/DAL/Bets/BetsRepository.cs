@@ -1,10 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mundialito.DAL.Accounts;
-using Mundialito.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Mundialito.DAL.Bets;
 
@@ -39,7 +33,7 @@ public class BetsRepository : GenericRepository<Bet>, IBetsRepository
 
     public Bet GetBet(int betId)
     {
-        return GetByID(betId);
+        return Get().Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam).SingleOrDefault(bet => bet.GameId == betId);
     }
 
     public Bet InsertBet(Bet bet)

@@ -1,13 +1,4 @@
-﻿using Mundialito.DAL.Accounts;
-using Mundialito.DAL.Games;
-using Mundialito.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mundialito.DAL.Bets;
+﻿namespace Mundialito.DAL.Bets;
 
 public interface IBetsRepository
 {

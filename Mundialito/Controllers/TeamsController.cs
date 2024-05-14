@@ -34,13 +34,13 @@ public class TeamsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public Team GetTeamById(int id)
+    public ActionResult<Team> GetTeamById(int id)
     {
         var item = teamsRepository.GetTeam(id);
 
         if (item == null)
-            throw new ObjectNotFoundException(string.Format("Team with id '{0}' not found", id));
-        return item;
+            return NotFound(string.Format("Team with id '{0}' not found", id));
+        return Ok(item);
     }
 
     [HttpGet("{id}/Games")]
@@ -62,7 +62,11 @@ public class TeamsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public Team PutTeam(int id, Team team)
     {
-        teamsRepository.UpdateTeam(team);
+        var teamToUpdate = teamsRepository.GetTeam(id);
+        teamToUpdate.Name = team.Name;
+        teamToUpdate.Flag = team.Flag;
+        teamToUpdate.Logo = team.Logo;
+        teamToUpdate.ShortName = team.ShortName;
         teamsRepository.Save();
         return team;
     }

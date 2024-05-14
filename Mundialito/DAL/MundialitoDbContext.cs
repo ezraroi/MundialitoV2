@@ -51,14 +51,6 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 		modelBuilder.Entity<MundialitoUser>()
 						.HasIndex(u => u.Email)
 						.IsUnique();
-
-		// modelBuilder.Entity<MundialitoUser>()
-		// 		.Property(e => e.FirstName).IsRequired(false)
-		// 		.HasMaxLength(250);
-
-		// modelBuilder.Entity<MundialitoUser>()
-		// 	.Property(e => e.LastName).IsRequired(false)
-		// 	.HasMaxLength(250);
 	}
 
 	protected override void OnConfiguring(DbContextOptionsBuilder options) =>

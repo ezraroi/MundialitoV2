@@ -7,13 +7,11 @@ using System.Net.Mail;
 using System.Net;
 using System.Text;
 using Mundialito.DAL.Accounts;
-using Mundialito.DAL;
 using Mundialito.DAL.Games;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Configuration;
-using System.Security.Claims;
 using Microsoft.Extensions.Options;
 
 namespace Mundialito.Controllers;
@@ -27,40 +25,21 @@ public class BetsController : ControllerBase
     private readonly IBetsRepository betsRepository;
     private readonly IGamesRepository gamesRepository;
     private readonly IBetValidator betValidator;
-    private readonly ILoggedUserProvider userProivider;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IActionLogsRepository actionLogsRepository;
-    private UserManager<MundialitoUser> userManager;
+    private readonly UserManager<MundialitoUser> userManager;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
 
-    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, ILoggedUserProvider userProivider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config)
+    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config)
     {
         this.config = config.Value;
         this.httpContextAccessor = httpContextAccessor;
         this.userManager = userManager;
-        if (gamesRepository == null)
-            throw new ArgumentNullException("gamesRepository");
         this.gamesRepository = gamesRepository;
-
-        if (betsRepository == null)
-            throw new ArgumentNullException("betsRepository");
         this.betsRepository = betsRepository;
-
-        if (betValidator == null)
-            throw new ArgumentNullException("betValidator");
         this.betValidator = betValidator;
-
-        if (userProivider == null)
-            throw new ArgumentNullException("userProivider");
-        this.userProivider = userProivider;
-
-        if (dateTimeProvider == null)
-            throw new ArgumentNullException("dateTimeProvider");
         this.dateTimeProvider = dateTimeProvider;
-
-        if (actionLogsRepository == null)
-            throw new ArgumentNullException("actionLogsRepository");
         this.actionLogsRepository = actionLogsRepository;
     }
 
@@ -71,34 +50,47 @@ public class BetsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public BetViewModel GetBetById(int id)
+    public ActionResult<BetViewModel> GetBetById(int id)
     {
         var item = betsRepository.GetBet(id);
 
         if (item == null)
-            throw new ObjectNotFoundException(string.Format("Bet with id '{0}' not found", id));
+            return NotFound(string.Format("Bet with id '{0}' not found", id));
 
-        return new BetViewModel(item, dateTimeProvider.UTCNow);
+        return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
     }
 
     [HttpGet("user/{username}")]
     public IEnumerable<BetViewModel> GetUserBets(string username)
     {
         var bets = betsRepository.GetUserBets(username).ToList();
-        return bets.Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow) || userProivider.UserName == username).Select(bet => new BetViewModel(bet, dateTimeProvider.UTCNow));
+        return bets.Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow) || httpContextAccessor.HttpContext?.User.Identity.Name == username).Select(bet => new BetViewModel(bet, dateTimeProvider.UTCNow));
     }
 
     [HttpPost]
-    public NewBetModel PostBet(NewBetModel bet)
+    [Authorize]
+    public async Task<ActionResult<NewBetModel>> PostBet(NewBetModel bet)
     {
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
         var newBet = new Bet();
-        newBet.UserId = userProivider.UserId;
+        newBet.UserId = user.Id;
         newBet.GameId = bet.GameId;
         newBet.HomeScore = bet.HomeScore;
         newBet.AwayScore = bet.AwayScore;
         newBet.CardsMark = bet.CardsMark;
         newBet.CornersMark = bet.CornersMark;
-        betValidator.ValidateNewBet(newBet);
+        try
+        {
+            betValidator.ValidateNewBet(newBet);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
         var res = betsRepository.InsertBet(newBet);
         Trace.TraceInformation("Posting new Bet: {0}", newBet);
         betsRepository.Save();
@@ -106,49 +98,74 @@ public class BetsController : ControllerBase
         AddLog(ActionType.CREATE, string.Format("Posting new Bet: {0}", res));
         if (ShouldSendMail())
         {
-            SendBetMail(newBet);
+            SendBetMail(newBet, user);
         }
         return bet;
     }
 
     [HttpPut("{id}")]
-    public NewBetModel UpdateBet(int id, UpdateBetModel bet)
+    [Authorize]
+    public async Task<ActionResult<NewBetModel>> UpdateBet(int id, UpdateBetModel bet)
     {
-        var betToUpdate = new Bet();
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+        var betToUpdate = betsRepository.GetBet(id);
         betToUpdate.BetId = id;
         betToUpdate.HomeScore = bet.HomeScore;
         betToUpdate.AwayScore = bet.AwayScore;
         betToUpdate.CornersMark = bet.CornersMark;
         betToUpdate.CardsMark = bet.CardsMark;
         betToUpdate.GameId = bet.GameId;
-        betToUpdate.UserId = userProivider.UserId;
-        betValidator.ValidateUpdateBet(betToUpdate);
-        betsRepository.UpdateBet(betToUpdate);
+        betToUpdate.UserId = user.Id;
+        try {
+            betValidator.ValidateUpdateBet(betToUpdate);
+        } catch (UnauthorizedAccessException e) {
+            return Unauthorized(e.Message);
+        
+        } catch (Exception e) {
+            return BadRequest(e.Message);
+        }
         betsRepository.Save();
         Trace.TraceInformation("Updating Bet: {0}", betToUpdate);
         AddLog(ActionType.UPDATE, string.Format("Updating Bet: {0}", betToUpdate));
         if (ShouldSendMail())
         {
-            SendBetMail(betToUpdate);
+            SendBetMail(betToUpdate, user);
         }
-        return new NewBetModel(id, bet);
+        return Ok(new NewBetModel(id, bet));
     }
 
     [HttpDelete("{id}")]
-    public void DeleteBet(int id)
+    [Authorize]
+    public async Task<IActionResult> DeleteBet(int id)
     {
-        betValidator.ValidateDeleteBet(id, userProivider.UserId);
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+        try {
+            betValidator.ValidateDeleteBet(id, user.Id);
+        } catch (UnauthorizedAccessException e) {
+            return Unauthorized(e.Message);
+        } catch (Exception e) {
+            return BadRequest(e.Message);
+        }
         betsRepository.DeleteBet(id);
         betsRepository.Save();
         Trace.TraceInformation("Deleting Bet {0}", id);
         AddLog(ActionType.DELETE, string.Format("Deleting Bet: {0}", id));
+        return Ok();
     }
 
     private void AddLog(ActionType actionType, String message)
     {
         try
         {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
             actionLogsRepository.Save();
         }
         catch (Exception e)
@@ -162,12 +179,10 @@ public class BetsController : ControllerBase
         return config.SendBetMail;
     }
 
-    private void SendBetMail(Bet bet)
+    private void SendBetMail(Bet bet, MundialitoUser user)
     {
         try
         {
-            // MundialitoUser user = userManager.FindById(userProivider.UserId);
-            MundialitoUser user = new MundialitoUser();
             Game game = gamesRepository.GetGame(bet.GameId);
             string sendGridUsername = config.SendGridUserName;
             string sendGridPassword = config.SendGridPassword;

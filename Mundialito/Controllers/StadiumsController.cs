@@ -3,7 +3,6 @@ using System.Diagnostics;
 using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Mundialito.DAL;
 
 namespace Mundialito.Controllers;
 
@@ -33,13 +32,13 @@ public class StadiumsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public Stadium GetStadium(int id)
+    public ActionResult<Stadium> GetStadium(int id)
     {
         var item = stadiumsRepository.GetStadium(id);
 
         if (item == null)
-            throw new ObjectNotFoundException(string.Format("Stadium with id '{0}' not found", id));
-        return item;
+            return NotFound(string.Format("Stadium with id '{0}' not found", id));
+        return Ok(item);
     }
 
 
@@ -57,12 +56,15 @@ public class StadiumsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public Stadium PutStadium(int id, Stadium stadium)
     {
-        stadiumsRepository.UpdateStadium(stadium);
+        var stadiumToUpdate = stadiumsRepository.GetStadium(id);
+        stadiumToUpdate.Name = stadium.Name;
+        stadiumToUpdate.City = stadium.City;
+        stadiumToUpdate.Capacity = stadium.Capacity;
         stadiumsRepository.Save();
         return stadium;
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public void DeleteStadium(int id)
     {

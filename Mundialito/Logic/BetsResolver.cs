@@ -73,7 +73,7 @@ public class BetsResolver : IBetsResolver
         try
         {
             
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
             actionLogsRepository.Save();
         }
         catch (Exception e)

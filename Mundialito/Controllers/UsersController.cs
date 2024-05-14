@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
@@ -9,9 +8,6 @@ using Mundialito.DAL.GeneralBets;
 using Mundialito.Logic;
 using Mundialito.Models;
 using System.Diagnostics;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
 
 namespace Mundialito.Controllers;
 
@@ -21,8 +17,7 @@ namespace Mundialito.Controllers;
 public class UsersController : ControllerBase
 {
     private const String ObjectType = "User";
-    private readonly IBetsRepository betsRepository;
-    private readonly ILoggedUserProvider loggedUserProvider;
+    private readonly IBetsRepository betsRepository;   
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
@@ -30,9 +25,8 @@ public class UsersController : ControllerBase
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly IGeneralBetsRepository generalBetsRepository;
 
-    public UsersController(ILoggedUserProvider loggedUserProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository)
+    public UsersController(IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository)
     {
-        this.loggedUserProvider = loggedUserProvider;
         this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
         this.userManager = userManager;
@@ -65,7 +59,7 @@ public class UsersController : ControllerBase
             return NotFound(string.Format("No such user '{0}'", username));
         }
         var userModel = new UserModel(user);
-        betsRepository.GetUserBets(user.UserName).Where(bet => loggedUserProvider.UserName == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
+        betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
         var generalBet = generalBetsRepository.GetUserGeneralBet(username);
         if (generalBet != null)
         {
@@ -77,7 +71,7 @@ public class UsersController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UserModel>> GetMe()
     {
-        return await GetUserByUsername(loggedUserProvider.UserName);
+        return await GetUserByUsername(httpContextAccessor.HttpContext?.User.Identity.Name);
     }
 
     [HttpGet("GeneratePrivateKey/{email}")]
@@ -111,7 +105,7 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(String id)
     {
-        Trace.TraceInformation("Deleting user {0} by {1}", id, loggedUserProvider.UserName);
+        Trace.TraceInformation("Deleting user {0} by {1}", id, httpContextAccessor.HttpContext?.User.Identity.Name);
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
@@ -142,7 +136,7 @@ public class UsersController : ControllerBase
     {
         try
         {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
             actionLogsRepository.Save();
         }
         catch (Exception e)

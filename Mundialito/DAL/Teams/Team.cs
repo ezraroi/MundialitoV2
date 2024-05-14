@@ -23,7 +23,7 @@ public class Team
     [MaxLength(3)]
     public required string ShortName { get; set; }
 
-    public ICollection<Game> HomeMatches { get; set; }
+    public ICollection<Game>? HomeMatches { get; set; }
 
-    public ICollection<Game> AwayMatches { get; set; }
+    public ICollection<Game>? AwayMatches { get; set; }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Mundialito.Models;
-
-namespace Mundialito.DAL.Games;
+﻿namespace Mundialito.DAL.Games;
 
 public interface IGamesRepository : IDisposable
 {

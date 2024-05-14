@@ -70,7 +70,6 @@ builder.Services.AddIdentity<MundialitoUser, IdentityRole>(
 		options.Password.RequireUppercase = false;
 		options.Password.RequiredLength = 6;
 	})
-	.AddRoles<IdentityRole>()
 	.AddEntityFrameworkStores<MundialitoDbContext>();
 
 var validIssuer = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidIssuer");
@@ -100,9 +99,6 @@ builder.Services.AddAuthentication(options =>
 		};
 	});
 
-
-
-builder.Services.AddScoped<ILoggedUserProvider, LoggedUserProvider>();
 builder.Services.AddScoped<ITeamsRepository, TeamsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IStadiumsRepository, StadiumsRepository>();

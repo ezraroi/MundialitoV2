@@ -1,11 +1,7 @@
 using Mundialito.DAL.Games;
 using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 namespace Mundialito.Models;
 
@@ -103,13 +99,13 @@ public class NewGameModel
     public DateTime Date { get; set; }
 
     [Required]
-    public Stadium Stadium { get; set; }
+    public Stadium? Stadium { get; set; }
 
     [Required]
-    public GameTeamModel HomeTeam { get; set; }
+    public GameTeamModel? HomeTeam { get; set; }
 
     [Required]
-    public GameTeamModel AwayTeam { get; set; }
+    public GameTeamModel? AwayTeam { get; set; }
 
     public Boolean IsOpen { get; set; }
 
@@ -138,9 +134,9 @@ public class PutGameModel
 
     public int? AwayScore { get; set; }
 
-    public String CornersMark { get; set; }
+    public String? CornersMark { get; set; }
 
-    public String CardsMark { get; set; }
+    public String? CardsMark { get; set; }
 
 }
 

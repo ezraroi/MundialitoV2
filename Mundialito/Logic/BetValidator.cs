@@ -2,7 +2,6 @@
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.Games;
 using System.Diagnostics;
-using System.Security.Claims;
 
 namespace Mundialito.Logic;
 
@@ -30,22 +29,22 @@ public class BetValidator : IBetValidator
         if (game == null)
         {
             AddLog(ActionType.ERROR, string.Format("Game {0} dosen't exist", bet.Game.GameId));
-            throw new ArgumentException(string.Format("Game {0} dosen't exist", bet.Game.GameId));
+            throw new Exception(string.Format("Game {0} dosen't exist", bet.Game.GameId));
         }
         if (!game.IsOpen(dateTimeProvider.UTCNow))
         {
             AddLog(ActionType.ERROR, string.Format("Game {0} is closed for betting", game.GameId));
-            throw new ArgumentException(string.Format("Game {0} is closed for betting", game.GameId));
+            throw new Exception(string.Format("Game {0} is closed for betting", game.GameId));
         }
         if (String.IsNullOrEmpty(bet.UserId))
         {
             AddLog(ActionType.ERROR, "New bet must have an owner");
-            throw new ArgumentException("New bet must have an owner");
+            throw new Exception("New bet must have an owner");
         }
         if (betsRepository.GetGameBets(game.GameId).Any(b => b.UserId == bet.UserId))
         {
             AddLog(ActionType.ERROR, string.Format("You already have an existing bet on game {0}", game.GameId));
-            throw new ArgumentException(string.Format("You already have an existing bet on game {0}", game.GameId));
+            throw new Exception(string.Format("You already have an existing bet on game {0}", game.GameId));
         }
     }
 
@@ -55,12 +54,12 @@ public class BetValidator : IBetValidator
         if (betToUpdate == null)
         {
             AddLog(ActionType.ERROR, string.Format("Bet {0} dosen't exist", bet.BetId));
-            throw new ArgumentException(string.Format("Bet {0} dosen't exist", bet.BetId));
+            throw new Exception(string.Format("Bet {0} dosen't exist", bet.BetId));
         }
         if (String.IsNullOrEmpty(bet.UserId))
         {
             AddLog(ActionType.ERROR, string.Format("Updated bet {0} must have user", bet.BetId));
-            throw new ArgumentException(string.Format("Updated bet {0} must have user", bet.BetId));
+            throw new Exception(string.Format("Updated bet {0} must have user", bet.BetId));
         }
         if (betToUpdate.UserId != bet.UserId)
         {
@@ -71,7 +70,7 @@ public class BetValidator : IBetValidator
         if (!game.IsOpen(dateTimeProvider.UTCNow))
         {
             AddLog(ActionType.ERROR, string.Format("Game {0} is closed for betting", game.GameId));
-            throw new ArgumentException(string.Format("Game {0} is closed for betting", game.GameId));
+            throw new Exception(string.Format("Game {0} is closed for betting", game.GameId));
         }
 
     }
@@ -82,7 +81,7 @@ public class BetValidator : IBetValidator
         if (betToDelete == null)
         {
             AddLog(ActionType.ERROR, string.Format("Bet {0} dosen't exist", betId));
-            throw new ArgumentException(string.Format("Bet {0} dosen't exist", betId));
+            throw new Exception(string.Format("Bet {0} dosen't exist", betId));
         }
         if (betToDelete.User.Id != userId)
         {
@@ -93,7 +92,7 @@ public class BetValidator : IBetValidator
         if (dateTimeProvider.UTCNow > game.CloseTime)
         {
             AddLog(ActionType.ERROR, string.Format("Game {0} is closed for betting", game.GameId));
-            throw new ArgumentException(string.Format("Game {0} is closed for betting", game.GameId));
+            throw new Exception(string.Format("Game {0} is closed for betting", game.GameId));
         }
     }
 
@@ -101,7 +100,7 @@ public class BetValidator : IBetValidator
     {
         try
         {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
             actionLogsRepository.Save();
         }
         catch (Exception e)

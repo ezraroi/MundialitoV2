@@ -8,7 +8,6 @@ using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Mundialito.Configuration;
-using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Mundialito.DAL.Accounts;
@@ -25,23 +24,22 @@ public class GamesController : ControllerBase
     private readonly IBetsRepository betsRepository;
     private readonly IBetsResolver betsResolver;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly ILoggedUserProvider loggedUserProvider;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
 
-    public GamesController(IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, ILoggedUserProvider loggedUserProvider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor)
+    public GamesController(IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.config = config.Value;
         this.gamesRepository = gamesRepository;
         this.betsRepository = betsRepository;
         this.betsResolver = betsResolver;
-        this.loggedUserProvider = loggedUserProvider;
         this.dateTimeProvider = dateTimeProvider;
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
+        this.userManager = userManager;
     }
 
     [HttpGet]
@@ -61,42 +59,47 @@ public class GamesController : ControllerBase
     }
 
     [HttpGet(("{id}"))]
-    public GameViewModel GetGameByID(int id)
+    public ActionResult<GameViewModel> GetGameByID(int id)
     {
         var item = gamesRepository.GetGame(id);
         if (item == null)
-            throw new ObjectNotFoundException(string.Format("Game with id '{0}' not found", id));
+            return NotFound(string.Format("Game with id '{0}' not found", id));
 
         var res = new GameViewModel(item);
-        res.UserHasBet = betsRepository.GetUserBetOnGame(loggedUserProvider.UserName, id) != null;
-        return res;
+        res.UserHasBet = betsRepository.GetUserBetOnGame(httpContextAccessor.HttpContext?.User.Identity.Name, id) != null;
+        return Ok(res);
     }
 
     [HttpGet("{id}/Bets")]
-    public IEnumerable<BetViewModel> GetGameBets(int id)
+    public ActionResult<IEnumerable<BetViewModel>> GetGameBets(int id)
     {
         var game = gamesRepository.GetGame(id);
         if (game == null)
-            throw new ObjectNotFoundException(string.Format("Game with id '{0}' not found", id));
+            return NotFound(string.Format("Game with id '{0}' not found", id));
 
         if (game.IsOpen(dateTimeProvider.UTCNow))
-            throw new ArgumentException(String.Format("Game '{0}' is stil open for betting", id));
+            return BadRequest(String.Format("Game '{0}' is stil open for betting", id));
 
-        return betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points);
+        return Ok(betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points));
     }
 
     [HttpGet("{id}/MyBet/")]
-    public BetViewModel GetGameUserBet(int id)
+    public async Task<ActionResult<BetViewModel>> GetGameUserBet(int id)
     {
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
         var game = GetGameByID(id);
-        var uid = loggedUserProvider.UserId;
+        var uid = user.Id;
         var item = betsRepository.GetGameBets(id).SingleOrDefault(bet => bet.User.Id == uid);
         if (item == null)
         {
-            Trace.TraceInformation("No bet found for game {0} and user {1}, creating empty Bet", game.GameId, uid);
-            return new BetViewModel() { BetId = -1, HomeScore = null, AwayScore = null, IsOpenForBetting = true, IsResolved = false, Game = new BetGame() { GameId = id } };
+            Trace.TraceInformation("No bet found for game {0} and user {1}, creating empty Bet", game.Result, uid);
+            return Ok(new BetViewModel() { BetId = -1, HomeScore = null, AwayScore = null, IsOpenForBetting = true, IsResolved = false, Game = new BetGame() { GameId = id } });
         }
-        return new BetViewModel(item, dateTimeProvider.UTCNow);
+        return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
     }
 
     [HttpGet("Open")]
@@ -133,23 +136,20 @@ public class GamesController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public PutGameModelResult PutGame(int id, PutGameModel game)
+    public ActionResult<PutGameModelResult> PutGame(int id, PutGameModel game)
     {
         var item = gamesRepository.GetGame(id);
-
         if (item == null)
-            throw new ObjectNotFoundException(string.Format("No such game with id '{0}'", id));
+            return NotFound(string.Format("No such game with id '{0}'", id));
 
         if (item.IsOpen(dateTimeProvider.UTCNow) && (game.HomeScore != null || game.AwayScore != null || game.CornersMark != null || game.CardsMark != null))
-            throw new ArgumentException("Open game can not be updated with results");
+            return BadRequest("Open game can not be updated with results");
 
         item.AwayScore = game.AwayScore;
         item.HomeScore = game.HomeScore;
         item.CardsMark = game.CardsMark;
         item.CornersMark = game.CornersMark;
         item.Date = game.Date;
-
-        gamesRepository.UpdateGame(item);
         gamesRepository.Save();
         if (item.IsBetResolved(dateTimeProvider.UTCNow))
         {
@@ -158,22 +158,26 @@ public class GamesController : ControllerBase
             betsResolver.ResolveBets(item);
         }
         AddLog(ActionType.UPDATE, String.Format("Updating Game {0}", item));
-        return new PutGameModelResult(item, dateTimeProvider.UTCNow);
+        return Ok(new PutGameModelResult(item, dateTimeProvider.UTCNow));
     }
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public void DeleteGame(int id)
+    public IActionResult DeleteGame(int id)
     {
+        var game = gamesRepository.GetGame(id);
+        if (game == null)
+            return NotFound(string.Format("No such game with id '{0}'", id));
         Trace.TraceInformation("Deleting Game {0}", id);
         gamesRepository.DeleteGame(id);
         gamesRepository.Save();
         AddLog(ActionType.DELETE, String.Format("Deleting Game {0}", id));
+        return Ok();
     }
 
     private void AddUserBetsData(IEnumerable<GameViewModel> res)
     {
-        var allBets = betsRepository.GetUserBets(loggedUserProvider.UserName).ToDictionary(bet => bet.GameId, bet => bet);
+        var allBets = betsRepository.GetUserBets(httpContextAccessor.HttpContext?.User.Identity.Name).ToDictionary(bet => bet.GameId, bet => bet);
         foreach (var game in res)
         {
             game.UserHasBet = allBets.ContainsKey(game.GameId);
@@ -184,7 +188,7 @@ public class GamesController : ControllerBase
     {
         try
         {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
             actionLogsRepository.Save();
         }
         catch (Exception e)

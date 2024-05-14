@@ -53,7 +53,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["QATAR"].TeamId,
             AwayTeamId = teams["ECUADOR"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 20, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 20, 18, 0, 0)),
             StadiumId = stadiums["Al Bayt Stadium"].StadiumId
         });
 
@@ -63,7 +63,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["ENGLAND"].TeamId,
             AwayTeamId = teams["IRAN"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 21, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 21, 15, 0, 0)),
             StadiumId = stadiums["Khalifa International Stadium"].StadiumId
         });
 
@@ -71,7 +71,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["SENEGAL"].TeamId,
             AwayTeamId = teams["NETHERLANDS"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 21, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 21, 18, 0, 0)),
             StadiumId = stadiums["Al Thumama Stadium"].StadiumId
         });
 
@@ -79,7 +79,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["USA"].TeamId,
             AwayTeamId = teams["WALES"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 21, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 21, 21, 0, 0)),
             StadiumId = stadiums["Ahmad Bin Ali Stadium"].StadiumId
         });
 
@@ -89,7 +89,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["ARGENTINA"].TeamId,
             AwayTeamId = teams["SAUDI ARABIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 22, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 22, 12, 0, 0)),
             StadiumId = stadiums["Lusail Stadium"].StadiumId
         });
 
@@ -97,7 +97,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["DENMARK"].TeamId,
             AwayTeamId = teams["TUNISIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 22, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 22, 15, 0, 0)),
             StadiumId = stadiums["Education City Stadium"].StadiumId
         });
 
@@ -105,7 +105,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["MEXICO"].TeamId,
             AwayTeamId = teams["POLAND"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 22, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 22, 18, 0, 0)),
             StadiumId = stadiums["Stadium 974"].StadiumId
         });
 
@@ -113,7 +113,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["FRANCE"].TeamId,
             AwayTeamId = teams["AUSTRALIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 22, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 22, 21, 0, 0)),
             StadiumId = stadiums["Al Janoub Stadium"].StadiumId
         });
 
@@ -123,7 +123,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["MOROCCO"].TeamId,
             AwayTeamId = teams["CROATIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 23, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 23, 12, 0, 0)),
             StadiumId = stadiums["Al Bayt Stadium"].StadiumId
         });
 
@@ -131,7 +131,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["GERMANY"].TeamId,
             AwayTeamId = teams["JAPAN"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 23, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 23, 15, 0, 0)),
             StadiumId = stadiums["Khalifa International Stadium"].StadiumId
         });
 
@@ -139,7 +139,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["SPAIN"].TeamId,
             AwayTeamId = teams["COSTA RICA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 23, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 23, 18, 0, 0)),
             StadiumId = stadiums["Al Thumama Stadium"].StadiumId
         });
 
@@ -147,7 +147,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["BELGIUM"].TeamId,
             AwayTeamId = teams["CANADA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 23, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 23, 21, 0, 0)),
             StadiumId = stadiums["Ahmad Bin Ali Stadium"].StadiumId
         });
 
@@ -158,7 +158,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["SWITZERLAND"].TeamId,
             AwayTeamId = teams["CAMERON"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 24, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 24, 12, 0, 0)),
             StadiumId = stadiums["Al Janoub Stadium"].StadiumId
         });
 
@@ -166,7 +166,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["URUGUAY"].TeamId,
             AwayTeamId = teams["KOREA REPUBLIC"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 24, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 24, 15, 0, 0)),
             StadiumId = stadiums["Education City Stadium"].StadiumId
         });
 
@@ -174,7 +174,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["PORTUGAL"].TeamId,
             AwayTeamId = teams["GHANA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 24, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 24, 18, 0, 0)),
             StadiumId = stadiums["Stadium 974"].StadiumId
         });
 
@@ -182,7 +182,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["BRAZIL"].TeamId,
             AwayTeamId = teams["SERBIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 24, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 24, 21, 0, 0)),
             StadiumId = stadiums["Lusail Stadium"].StadiumId
         });
 
@@ -192,7 +192,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["WALES"].TeamId,
             AwayTeamId = teams["IRAN"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 25, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 25, 12, 0, 0)),
             StadiumId = stadiums["Ahmad Bin Ali Stadium"].StadiumId
         });
 
@@ -200,7 +200,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["QATAR"].TeamId,
             AwayTeamId = teams["SENEGAL"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 25, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 25, 15, 0, 0)),
             StadiumId = stadiums["Al Thumama Stadium"].StadiumId
         });
 
@@ -208,7 +208,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["NETHERLANDS"].TeamId,
             AwayTeamId = teams["ECUADOR"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 25, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 25, 18, 0, 0)),
             StadiumId = stadiums["Khalifa International Stadium"].StadiumId
         });
 
@@ -216,7 +216,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["ENGLAND"].TeamId,
             AwayTeamId = teams["USA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 25, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 25, 21, 0, 0)),
             StadiumId = stadiums["Al Bayt Stadium"].StadiumId
         });
 
@@ -226,7 +226,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["TUNISIA"].TeamId,
             AwayTeamId = teams["AUSTRALIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 26, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 26, 12, 0, 0)),
             StadiumId = stadiums["Al Janoub Stadium"].StadiumId
         });
 
@@ -234,7 +234,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["POLAND"].TeamId,
             AwayTeamId = teams["SAUDI ARABIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 26, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 26, 15, 0, 0)),
             StadiumId = stadiums["Education City Stadium"].StadiumId
         });
 
@@ -242,7 +242,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["FRANCE"].TeamId,
             AwayTeamId = teams["DENMARK"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 26, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 26, 18, 0, 0)),
             StadiumId = stadiums["Stadium 974"].StadiumId
         });
 
@@ -250,7 +250,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["ARGENTINA"].TeamId,
             AwayTeamId = teams["MEXICO"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 26, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 26, 21, 0, 0)),
             StadiumId = stadiums["Lusail Stadium"].StadiumId
         });
 
@@ -260,7 +260,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["JAPAN"].TeamId,
             AwayTeamId = teams["COSTA RICA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 27, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 27, 12, 0, 0)),
             StadiumId = stadiums["Ahmad Bin Ali Stadium"].StadiumId
         });
 
@@ -268,7 +268,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["BELGIUM"].TeamId,
             AwayTeamId = teams["MOROCCO"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 27, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 27, 15, 0, 0)),
             StadiumId = stadiums["Al Thumama Stadium"].StadiumId
         });
 
@@ -276,7 +276,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["CROATIA"].TeamId,
             AwayTeamId = teams["CANADA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 27, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 27, 18, 0, 0)),
             StadiumId = stadiums["Khalifa International Stadium"].StadiumId
         });
 
@@ -284,7 +284,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["SPAIN"].TeamId,
             AwayTeamId = teams["GERMANY"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 27, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 27, 21, 0, 0)),
             StadiumId = stadiums["Al Bayt Stadium"].StadiumId
         });
 
@@ -294,7 +294,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["CAMERON"].TeamId,
             AwayTeamId = teams["SERBIA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 28, 12, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 28, 12, 0, 0)),
             StadiumId = stadiums["Al Janoub Stadium"].StadiumId
         });
 
@@ -302,7 +302,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["KOREA REPUBLIC"].TeamId,
             AwayTeamId = teams["GHANA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 28, 15, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 28, 15, 0, 0)),
             StadiumId = stadiums["Education City Stadium"].StadiumId
         });
 
@@ -310,7 +310,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["BRAZIL"].TeamId,
             AwayTeamId = teams["SWITZERLAND"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 28, 18, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 28, 18, 0, 0)),
             StadiumId = stadiums["Stadium 974"].StadiumId
         });
 
@@ -318,7 +318,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["PORTUGAL"].TeamId,
             AwayTeamId = teams["URUGUAY"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 28, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 28, 21, 0, 0)),
             StadiumId = stadiums["Lusail Stadium"].StadiumId
         });
 
@@ -328,7 +328,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["ECUADOR"].TeamId,
             AwayTeamId = teams["SENEGAL"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 29, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 29, 17, 0, 0)),
             StadiumId = stadiums["Khalifa International Stadium"].StadiumId
         });
 
@@ -336,7 +336,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["NETHERLANDS"].TeamId,
             AwayTeamId = teams["QATAR"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 29, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 29, 17, 0, 0)),
             StadiumId = stadiums["Al Bayt Stadium"].StadiumId
         });
 
@@ -344,7 +344,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["IRAN"].TeamId,
             AwayTeamId = teams["USA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 29, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 29, 21, 0, 0)),
             StadiumId = stadiums["Al Thumama Stadium"].StadiumId
         });
 
@@ -352,7 +352,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["WALES"].TeamId,
             AwayTeamId = teams["ENGLAND"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 29, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 29, 21, 0, 0)),
             StadiumId = stadiums["Ahmad Bin Ali Stadium"].StadiumId
         });
 
@@ -362,7 +362,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["TUNISIA"].TeamId,
             AwayTeamId = teams["FRANCE"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 30, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 30, 17, 0, 0)),
             StadiumId = stadiums["Education City Stadium"].StadiumId
         });
 
@@ -370,7 +370,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["AUSTRALIA"].TeamId,
             AwayTeamId = teams["DENMARK"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 30, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 30, 17, 0, 0)),
             StadiumId = stadiums["Al Janoub Stadium"].StadiumId
         });
 
@@ -378,7 +378,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["POLAND"].TeamId,
             AwayTeamId = teams["ARGENTINA"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 30, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 30, 21, 0, 0)),
             StadiumId = stadiums["Stadium 974"].StadiumId
         });
 
@@ -386,7 +386,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["SAUDI ARABIA"].TeamId,
             AwayTeamId = teams["MEXICO"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 11, 30, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 11, 30, 21, 0, 0)),
             StadiumId = stadiums["Lusail Stadium"].StadiumId
         });
 
@@ -396,7 +396,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["CROATIA"].TeamId,
             AwayTeamId = teams["BELGIUM"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 1, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 1, 17, 0, 0)),
             StadiumId = stadiums["Ahmad Bin Ali Stadium"].StadiumId
         });
 
@@ -404,7 +404,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["CANADA"].TeamId,
             AwayTeamId = teams["MOROCCO"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 1, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 1, 17, 0, 0)),
             StadiumId = stadiums["Al Thumama Stadium"].StadiumId
         });
 
@@ -412,7 +412,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["JAPAN"].TeamId,
             AwayTeamId = teams["SPAIN"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 1, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 1, 21, 0, 0)),
             StadiumId = stadiums["Khalifa International Stadium"].StadiumId
         });
 
@@ -420,7 +420,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["COSTA RICA"].TeamId,
             AwayTeamId = teams["GERMANY"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 1, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 1, 21, 0, 0)),
             StadiumId = stadiums["Al Bayt Stadium"].StadiumId
         });
 
@@ -430,7 +430,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["KOREA REPUBLIC"].TeamId,
             AwayTeamId = teams["PORTUGAL"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 2, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 2, 17, 0, 0)),
             StadiumId = stadiums["Education City Stadium"].StadiumId
         });
 
@@ -438,7 +438,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["GHANA"].TeamId,
             AwayTeamId = teams["URUGUAY"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 2, 17, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 2, 17, 0, 0)),
             StadiumId = stadiums["Al Janoub Stadium"].StadiumId
         });
 
@@ -446,7 +446,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["SERBIA"].TeamId,
             AwayTeamId = teams["SWITZERLAND"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 2, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 2, 21, 0, 0)),
             StadiumId = stadiums["Stadium 974"].StadiumId
         });
 
@@ -454,7 +454,7 @@ public class Mundial2023TournamentCreator : ITournamentCreator
         {
             HomeTeamId = teams["CAMERON"].TeamId,
             AwayTeamId = teams["BRAZIL"].TeamId,
-            Date = GetFixedDate(new DateTime(2022, 12, 2, 21, 0, 0)),
+            Date = GetFixedDate(new DateTime(2024, 12, 2, 21, 0, 0)),
             StadiumId = stadiums["Lusail Stadium"].StadiumId
         });
 
