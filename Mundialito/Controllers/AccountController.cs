@@ -1,4 +1,5 @@
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,17 +21,21 @@ public class AccountController : ControllerBase
     private readonly TokenService _tokenService;
     private readonly Config _config;
     private readonly TournamentTimesUtils _tournamentTimesUtils;
+    private readonly SignInManager<MundialitoUser> _signInManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AccountController(UserManager<MundialitoUser> userManager, MundialitoDbContext context,
-        TokenService tokenService, ILogger<AccountController> logger, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils)
+        TokenService tokenService, ILogger<AccountController> logger, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils, SignInManager<MundialitoUser> signInManager, IHttpContextAccessor httpContextAccessor)
     {
         _userManager = userManager;
         _context = context;
         _tokenService = tokenService;
         _config = config.Value;
         _tournamentTimesUtils = tournamentTimesUtils;
+        _signInManager = signInManager;
+        _httpContextAccessor = httpContextAccessor;
     }
-    
+
     [AllowAnonymous]
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterBindingModel model)
@@ -104,21 +109,21 @@ public class AccountController : ControllerBase
         }
 
         var managedUser = await _userManager.FindByNameAsync(request.Username!);
-        
+
         if (managedUser == null)
         {
             return BadRequest("Bad credentials");
         }
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(managedUser, request.Password!);
-        
+
         if (!isPasswordValid)
         {
             return BadRequest("Bad credentials");
         }
 
         var userInDb = _context.Users.FirstOrDefault(u => u.UserName == request.Username);
-        
+
         if (userInDb is null)
         {
             return Unauthorized();
@@ -133,5 +138,32 @@ public class AccountController : ControllerBase
             Email = userInDb.Email,
             Token = accessToken,
         });
+    }
+
+    [HttpPost("ChangePassword")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword(ChangePasswordBindingModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        var user = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized(ModelState);
+        }
+        IdentityResult result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return BadRequest(ModelState);
+        }
+        // Upon successfully changing the password refresh sign-in cookie
+        await _signInManager.RefreshSignInAsync(user);
+        return Ok();
     }
 }
