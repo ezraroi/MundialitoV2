@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace Mundialito.Migrations
 {
     /// <inheritdoc />
@@ -257,8 +255,8 @@ namespace Mundialito.Migrations
                     Date = table.Column<DateTime>(type: "TEXT", nullable: false),
                     HomeScore = table.Column<int>(type: "INTEGER", nullable: true),
                     AwayScore = table.Column<int>(type: "INTEGER", nullable: true),
-                    CornersMark = table.Column<string>(type: "TEXT", maxLength: 1, nullable: false),
-                    CardsMark = table.Column<string>(type: "TEXT", maxLength: 1, nullable: false),
+                    CornersMark = table.Column<string>(type: "TEXT", maxLength: 1, nullable: true),
+                    CardsMark = table.Column<string>(type: "TEXT", maxLength: 1, nullable: true),
                     StadiumId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -315,15 +313,6 @@ namespace Mundialito.Migrations
                         principalTable: "Games",
                         principalColumn: "GameId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "Teams",
-                columns: new[] { "TeamId", "Flag", "Logo", "Name", "ShortName" },
-                values: new object[,]
-                {
-                    { 1, "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg", "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg", "Bulgaria", "BUL" },
-                    { 2, "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg", "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg", "Germany", "GER" }
                 });
 
             migrationBuilder.CreateIndex(

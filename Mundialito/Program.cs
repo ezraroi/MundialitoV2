@@ -24,7 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<Config>(builder.Configuration.GetSection(Config.Key));
 builder.Services.AddControllers().AddJsonOptions(opt =>
 {
-    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+	opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
@@ -76,27 +76,29 @@ builder.Services.AddIdentity<MundialitoUser, IdentityRole>(
 var validIssuer = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidIssuer");
 var validAudience = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidAudience");
 var symmetricSecurityKey = builder.Configuration.GetValue<string>("JwtTokenSettings:SymmetricSecurityKey");
-builder.Services.AddAuthentication(options => {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;})
-    .AddJwtBearer(options =>
-    {
-        options.IncludeErrorDetails = true;
-        options.TokenValidationParameters = new TokenValidationParameters()
-        {
-            ClockSkew = TimeSpan.Zero,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = validIssuer,
-            ValidAudience = validAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(symmetricSecurityKey)
-            ),
-        };
-    });
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+	.AddJwtBearer(options =>
+	{
+		options.IncludeErrorDetails = true;
+		options.TokenValidationParameters = new TokenValidationParameters()
+		{
+			ClockSkew = TimeSpan.Zero,
+			ValidateIssuer = true,
+			ValidateAudience = true,
+			ValidateLifetime = true,
+			ValidateIssuerSigningKey = true,
+			ValidIssuer = validIssuer,
+			ValidAudience = validAudience,
+			IssuerSigningKey = new SymmetricSecurityKey(
+				Encoding.UTF8.GetBytes(symmetricSecurityKey)
+			),
+		};
+	});
 
 
 
@@ -107,22 +109,19 @@ builder.Services.AddScoped<IStadiumsRepository, StadiumsRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<IBetsRepository, BetsRepository>();
 builder.Services.AddScoped<IGeneralBetsRepository, GeneralBetsRepository>();
-builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<IBetValidator, BetValidator>();
 builder.Services.AddScoped<IBetsResolver, BetsResolver>();
 builder.Services.AddScoped<ILoggedUserProvider, LoggedUserProvider>();
-builder.Services.AddScoped<IUsersRetriver, UsersRetriver>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IActionLogsRepository, ActionLogsRepository>();
 builder.Services.AddScoped<TokenService, TokenService>();
 builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
+builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 var app = builder.Build();
-
-DatabaseInitilaizer.Seed(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -139,10 +138,11 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.MapControllerRoute(
 	 name: "default",
 	 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+DatabaseInitilaizer.Seed(app);
 
 app.Run();
 

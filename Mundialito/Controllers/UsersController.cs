@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
+using Mundialito.DAL.Bets;
+using Mundialito.DAL.GeneralBets;
 using Mundialito.Logic;
 using Mundialito.Models;
 using System.Diagnostics;
@@ -18,21 +21,25 @@ namespace Mundialito.Controllers;
 public class UsersController : ControllerBase
 {
     private const String ObjectType = "User";
-    private readonly IUsersRetriver usersRetriver;
+    private readonly IBetsRepository betsRepository;
     private readonly ILoggedUserProvider loggedUserProvider;
-    private readonly IUsersRepository usersRepository;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
+    private readonly IDateTimeProvider dateTimeProvider;
+    private readonly TournamentTimesUtils tournamentTimesUtils;
+    private readonly IGeneralBetsRepository generalBetsRepository;
 
-    public UsersController(IUsersRetriver usersRetriver, ILoggedUserProvider loggedUserProvider, IUsersRepository usersRepository, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
+    public UsersController(ILoggedUserProvider loggedUserProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository)
     {
-        this.usersRetriver = usersRetriver;
         this.loggedUserProvider = loggedUserProvider;
-        this.usersRepository = usersRepository;
         this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
         this.userManager = userManager;
+        this.betsRepository = betsRepository;
+        this.dateTimeProvider = dateTimeProvider;
+        this.tournamentTimesUtils = tournamentTimesUtils;
+        this.generalBetsRepository = generalBetsRepository;
     }
 
     [HttpGet]
@@ -50,27 +57,34 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{username}")]
-    public Task<ActionResult<UserModel>> GetUserByUsername(String username)
+    public async Task<ActionResult<UserModel>> GetUserByUsername(String username)
     {
-        var res = usersRetriver.GetUser(username, loggedUserProvider.UserName == username);
-        return IsAdmin(res);
+        var user = await userManager.FindByNameAsync(username);
+        if (user == null)
+        {
+            return NotFound(string.Format("No such user '{0}'", username));
+        }
+        var userModel = new UserModel(user);
+        betsRepository.GetUserBets(user.UserName).Where(bet => loggedUserProvider.UserName == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
+        var generalBet = generalBetsRepository.GetUserGeneralBet(username);
+        if (generalBet != null)
+        {
+            userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
+        }
+        return await IsAdmin(userModel);
     }
 
     [HttpGet("me")]
-    public Task<ActionResult<UserModel>> GetMe()
+    public async Task<ActionResult<UserModel>> GetMe()
     {
-        return GetUserByUsername(loggedUserProvider.UserName);
+        return await GetUserByUsername(loggedUserProvider.UserName);
     }
 
     [HttpGet("GeneratePrivateKey/{email}")]
     [Authorize(Roles = "Admin")]
-    public HttpResponseMessage GeneratePrivateKey(string email)
+    public IActionResult GeneratePrivateKey(string email)
     {
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(PrivateKeyValidator.GeneratePrivateKey(email), Encoding.UTF8, "text/plain")
-        };
-        return response;
+        return Ok(PrivateKeyValidator.GeneratePrivateKey(email));
     }
 
     [HttpPost("MakeAdmin/{id}")]
@@ -95,12 +109,22 @@ public class UsersController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public void DeleteUser(String id)
+    public async Task<IActionResult> DeleteUser(String id)
     {
         Trace.TraceInformation("Deleting user {0} by {1}", id, loggedUserProvider.UserName);
-        usersRepository.DeleteUser(id);
-        usersRepository.Save();
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+        var result = await userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            ModelState.AddModelError("", "Cannot delete user");
+            return BadRequest(ModelState);
+        }
         AddLog(ActionType.DELETE, string.Format("Deleted user: {0}", id));
+        return Ok();
     }
 
     private async Task<ActionResult<UserModel>> IsAdmin(UserModel param)
@@ -129,7 +153,7 @@ public class UsersController : ControllerBase
 
     private IEnumerable<UserModel> GetTableDetails()
     {
-        var res = usersRetriver.GetAllUsers();
+        var res = userManager.Users.Select(user => new UserModel(user)).ToList();
         var yesterdayPlaces = new Dictionary<string, int>(res.Count);
         res = res.OrderByDescending(user => user.YesterdayPoints).ToList();
         for (int i = 0; i < res.Count; i++)

@@ -7,15 +7,16 @@ public class Config
 
     public const string Key = "App";
 
-    public string AdminUserName { get; set; } = "Roi";
-    public string AdminLastName { get; set; } = "Ezra";
-    public string AdminEmail { get; set; } = "ezraroi@gmail.com";
+    public string AdminUserName { get; set; } = "admin";
+    public string AdminFirstName { get; set; } = "admin";
+    public string AdminLastName { get; set; } = "admin";
+    public string AdminEmail { get; set; } = "adminmundialito.com";
     public string TournamentStartDate { get; set; } = "01/06/2024";
     public string TournamentEndDate { get; set; } = "10/07/2024";
-    public string ApplicationName { get; set; } = "Mundialito";
+    public string ApplicationName { get; set; } = "EuroChamp";
     public string TournamentDBCreatorName { get; set; } = "Mundial2023TournamentCreator";
-    public string MonkeyUserName { get; set; } = "Monkey";
-    public string FromAddress { get; set; } = "Monkey";
+    public string MonkeyUserName { get; set; } = "monkey";
+    public string FromAddress { get; set; } = "http://hello.com";
     public bool SendBetMail { get; set; } = true;
     public bool PrivateKeyProtection { get; set; } = true;
 

@@ -317,12 +317,10 @@ namespace Mundialito.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("CardsMark")
-                        .IsRequired()
                         .HasMaxLength(1)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CornersMark")
-                        .IsRequired()
                         .HasMaxLength(1)
                         .HasColumnType("TEXT");
 
@@ -444,24 +442,6 @@ namespace Mundialito.Migrations
                     b.HasKey("TeamId");
 
                     b.ToTable("Teams");
-
-                    b.HasData(
-                        new
-                        {
-                            TeamId = 1,
-                            Flag = "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg",
-                            Logo = "https://upload.wikimedia.org/wikipedia/commons/9/9a/Flag_of_Bulgaria.svg",
-                            Name = "Bulgaria",
-                            ShortName = "BUL"
-                        },
-                        new
-                        {
-                            TeamId = 2,
-                            Flag = "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg",
-                            Logo = "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg",
-                            Name = "Germany",
-                            ShortName = "GER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

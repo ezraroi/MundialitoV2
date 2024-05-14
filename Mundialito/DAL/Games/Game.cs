@@ -13,12 +13,12 @@ public class Game
     [Required]
     public int HomeTeamId { get; set; }
     
-    public virtual Team HomeTeam { get; set; }
+    public virtual Team? HomeTeam { get; set; }
 
     [Required]
     public int AwayTeamId { get; set; }
 
-    public virtual Team AwayTeam { get; set; }
+    public virtual Team? AwayTeam { get; set; }
 
     [Required]
     [DataType(DataType.DateTime)]
@@ -32,16 +32,16 @@ public class Game
 
     [StringLength(1)]
     [RegularExpression("[1X2-]")]
-    public String CornersMark { get; set; }
+    public String? CornersMark { get; set; }
 
     [StringLength(1)]
     [RegularExpression("[1X2-]")]
-    public String CardsMark { get; set; }
+    public String? CardsMark { get; set; }
 
     [Required]
     public int StadiumId { get; set; }
     
-    public virtual Stadium Stadium { get; set; }
+    public virtual Stadium? Stadium { get; set; }
 
     public DateTime CloseTime
     {

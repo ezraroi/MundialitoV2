@@ -3,7 +3,6 @@ using Mundialito.DAL.Games;
 using Mundialito.Models;
 using Mundialito.DAL.Bets;
 using System.Diagnostics;
-using Mundialito.DAL.Accounts;
 using Mundialito.Logic;
 using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using Mundialito.Configuration;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
+using Mundialito.DAL.Accounts;
 
 namespace Mundialito.Controllers;
 
@@ -25,45 +26,21 @@ public class GamesController : ControllerBase
     private readonly IBetsResolver betsResolver;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly ILoggedUserProvider loggedUserProvider;
-    private readonly IUsersRepository usersRepository;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly UserManager<MundialitoUser> userManager;
 
-    public GamesController(IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, ILoggedUserProvider loggedUserProvider, IDateTimeProvider dateTimeProvider, IUsersRepository usersRepository, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor)
+    public GamesController(IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, ILoggedUserProvider loggedUserProvider, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.config = config.Value;
-        if (gamesRepository == null)
-            throw new ArgumentNullException("gamesRepository");
         this.gamesRepository = gamesRepository;
-
-        if (betsRepository == null)
-            throw new ArgumentNullException("betsRepository");
         this.betsRepository = betsRepository;
-
-        if (betsResolver == null)
-            throw new ArgumentNullException("betsResolver");
         this.betsResolver = betsResolver;
-
-        if (loggedUserProvider == null)
-            throw new ArgumentNullException("loggedUserProvider");
         this.loggedUserProvider = loggedUserProvider;
-
-        if (dateTimeProvider == null)
-            throw new ArgumentNullException("dateTimeProvider");
         this.dateTimeProvider = dateTimeProvider;
-
-        if (dateTimeProvider == null)
-            throw new ArgumentNullException("dateTimeProvider");
         this.dateTimeProvider = dateTimeProvider;
-
-        if (usersRepository == null)
-            throw new ArgumentNullException("usersRepository");
-        this.usersRepository = usersRepository;
-
-        if (actionLogsRepository == null)
-            throw new ArgumentNullException("actionLogsRepository");
         this.actionLogsRepository = actionLogsRepository;
     }
 
@@ -132,11 +109,12 @@ public class GamesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public NewGameModel PostGame(NewGameModel game)
+    public ActionResult<NewGameModel> PostGame(NewGameModel game)
     {
         if (game.AwayTeam.TeamId == game.HomeTeam.TeamId)
-            throw new ArgumentException("Home team and Away team can not be the same team");
-
+        {
+            return BadRequest("Home team and Away team can not be the same team");
+        }
         var newGame = new Game();
         newGame.HomeTeamId = game.HomeTeam.TeamId;
         newGame.AwayTeamId = game.AwayTeam.TeamId;
@@ -150,7 +128,6 @@ public class GamesController : ControllerBase
         game.IsPendingUpdate = false;
         AddLog(ActionType.CREATE, String.Format("Posting new game: {0}", newGame));
         AddMonkeyBet(res);
-
         return game;
     }
 
@@ -221,24 +198,29 @@ public class GamesController : ControllerBase
         var monkeyUserName = config.MonkeyUserName;
         if (!String.IsNullOrEmpty(monkeyUserName))
         {
-            var monkeyUser = usersRepository.GetUser(monkeyUserName);
-            if (monkeyUser == null)
-            {
-                Trace.TraceError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
-            }
-            var randomResults = new RandomResults();
-            var result = randomResults.GetRandomResult();
-            betsRepository.InsertBet(new Bet()
-            {
+            var monkeyUser = userManager.FindByNameAsync(monkeyUserName).ContinueWith(task =>
+                {
+                    if (task.Result == null)
+                    {
+                        Trace.TraceError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
+                        return;
+                    }
+                    var randomResults = new RandomResults();
+                    var result = randomResults.GetRandomResult();
+                    betsRepository.InsertBet(new Bet()
+                    {
+                        GameId = res.GameId,
+                        UserId = task.Result.Id,
+                        HomeScore = result.Key,
+                        AwayScore = result.Value,
+                        CardsMark = randomResults.GetRandomMark(),
+                        CornersMark = randomResults.GetRandomMark()
+                    });
+                    betsRepository.Save();
+                }
+            );
 
-                GameId = res.GameId,
-                UserId = monkeyUser.Id,
-                HomeScore = result.Key,
-                AwayScore = result.Value,
-                CardsMark = randomResults.GetRandomMark(),
-                CornersMark = randomResults.GetRandomMark()
-            });
-            betsRepository.Save();
+
         }
     }
 }

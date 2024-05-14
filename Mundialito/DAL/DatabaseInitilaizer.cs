@@ -1,38 +1,142 @@
-
-
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Mundialito.Configuration;
 using Mundialito.DAL.Accounts;
+using Mundialito.DAL.Bets;
+using Mundialito.DAL.DBCreators;
+using Mundialito.DAL.GeneralBets;
 using Mundialito.DAL.Players;
 using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
+using Mundialito.Logic;
 
 namespace Mundialito.DAL;
 
 public class DatabaseInitilaizer
 {
 
-    private Dictionary<String, Stadium> stadiumsDic = new Dictionary<string, Stadium>();
-    private Dictionary<String, Team> teamsDic = new Dictionary<string, Team>();
-    private Dictionary<String, Player> playersDic = new Dictionary<string, Player>();
-    private readonly UserManager<MundialitoUser> userManager;
-    private bool monkeyEnabled = false;
-    private readonly Config config;
+    private static Dictionary<String, Stadium> stadiumsDic = new Dictionary<string, Stadium>();
+    private static Dictionary<String, Team> teamsDic = new Dictionary<string, Team>();
+    private static Dictionary<String, Player> playersDic = new Dictionary<string, Player>();
 
-    public DatabaseInitilaizer(UserManager<MundialitoUser> userManager, IOptions<Config> config)
-    {
-        this.userManager = userManager;
-        this.config = config.Value;
-    }
-    
     public static void Seed(IApplicationBuilder applicationBuilder)
     {
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetService<MundialitoDbContext>();
-            
+            var userManager = serviceScope.ServiceProvider.GetService<UserManager<MundialitoUser>>();
+            var config = serviceScope.ServiceProvider.GetService<IOptions<Config>>().Value;
+            if (context.Users.Count() == 0)
+            {
+                CreateFirstUsers(config, userManager);
+                if (!String.IsNullOrEmpty(config.TournamentDBCreatorName))
+                {
+                    Type t = Type.GetType("Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName);
+                    ITournamentCreator tournamentCreator = Activator.CreateInstance(t) as ITournamentCreator;
+                    SetupTeams(context, tournamentCreator);
+                    SetupStadiums(context, tournamentCreator);
+                    SetupPlayers(context, tournamentCreator);
+                    SetupGames(context, tournamentCreator, config, userManager);
+                }
+            }
+        }
+    }
+
+    private static void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager)
+    {
+        var user = new MundialitoUser
+        {
+            UserName = config.AdminUserName,
+            Email = config.AdminEmail,
+            LastName = config.AdminLastName,
+            FirstName = config.AdminFirstName,
+            Role = Role.Admin,
+        };
+        userManager.CreateAsync(user, "123456").Wait();
+        if (!String.IsNullOrEmpty(config.MonkeyUserName))
+        {
+            var monkey = new MundialitoUser
+            {
+                UserName = config.MonkeyUserName,
+                FirstName = "Monkey",
+                LastName = "Monk",
+                Email = "monkey@zoo.com",
+                Role = Role.User,
+            };
+            userManager.CreateAsync(monkey, "monkey").Wait();
+        }
+
+    }
+
+    private static void SetupPlayers(MundialitoDbContext context, ITournamentCreator tournamentCreator)
+    {
+        var players = tournamentCreator.GetPlayers();
+
+        players.ForEach(player => context.Players.Add(player));
+
+        context.SaveChanges();
+        playersDic = context.Players.ToDictionary(player => player.Name, player => player);
+    }
+
+    private static void SetupTeams(MundialitoDbContext context, ITournamentCreator tournamentCreator)
+    {
+        var teams = tournamentCreator.GetTeams();
+
+        teams.ForEach(team => context.Teams.Add(team));
+
+        context.SaveChanges();
+        teamsDic = context.Teams.ToDictionary(team => team.Name, team => team);
+    }
+
+    private static void SetupStadiums(MundialitoDbContext context, ITournamentCreator tournamentCreator)
+    {
+        var stadiums = tournamentCreator.GetStadiums();
+
+        stadiums.ForEach(stadium => context.Stadiums.Add(stadium));
+
+        context.SaveChanges();
+        stadiumsDic = context.Stadiums.ToDictionary(stadium => stadium.Name, stadium => stadium);
+    }
+
+    private async static void SetupGames(MundialitoDbContext context, ITournamentCreator tournamentCreator, Config config, UserManager<MundialitoUser> userManager)
+    {
+        var games = tournamentCreator.GetGames(stadiumsDic, teamsDic);
+
+        games.ForEach(game => context.Games.Add(game));
+
+        context.SaveChanges();
+
+        if (!String.IsNullOrEmpty(config.MonkeyUserName))
+        {
+            var monkey = await userManager.FindByNameAsync(config.MonkeyUserName);
+            var randomResults = new RandomResults();
+            context.Games.ToList().ForEach(game =>
+            {
+                var result = randomResults.GetRandomResult();
+                var newBet = new Bet();
+                newBet.UserId = monkey.Id;
+                newBet.GameId = game.GameId;
+                newBet.HomeScore = result.Key;
+                newBet.AwayScore = result.Value;
+                newBet.CardsMark = randomResults.GetRandomMark();
+                newBet.CornersMark = randomResults.GetRandomMark();
+                context.Bets.Add(newBet);
+            });
+
+            Random rnd = new Random();
+            var index = rnd.Next(0, teamsDic.Count);
+            int teamId = teamsDic.Values.ElementAt(index).TeamId;
+            index = rnd.Next(0, playersDic.Count);
+            int playerId = playersDic.Values.ElementAt(index).PlayerId;
+
+            context.GeneralBets.Add(new GeneralBet
+            {
+                GoldBootPlayerId = playerId,
+                WinningTeamId = teamId,
+                User = monkey
+            });
+
+            context.SaveChanges();
         }
     }
 }

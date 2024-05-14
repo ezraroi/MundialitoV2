@@ -8,7 +8,7 @@ namespace Mundialito.Logic;
 
 public class TokenService
 {
-    private const int ExpirationMinutes = 60;
+    private const int ExpirationMinutes = 60 * 24 * 60;
     private readonly ILogger<TokenService> _logger;
 
     public TokenService(ILogger<TokenService> logger)
