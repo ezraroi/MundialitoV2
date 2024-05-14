@@ -99,6 +99,7 @@ builder.Services.AddAuthentication(options =>
 		};
 	});
 
+
 builder.Services.AddScoped<ITeamsRepository, TeamsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IStadiumsRepository, StadiumsRepository>();
@@ -137,9 +138,7 @@ app.MapControllers();
 app.MapControllerRoute(
 	 name: "default",
 	 pattern: "{controller=Home}/{action=Index}/{id?}");
-
 DatabaseInitilaizer.Seed(app);
-
 app.Run();
 
 

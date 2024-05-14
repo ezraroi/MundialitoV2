@@ -1,10 +1,7 @@
-
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Mundialito;
 using Mundialito.Configuration;
 using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
@@ -136,7 +133,7 @@ public class AccountController : ControllerBase
         {
             Username = userInDb.UserName,
             Email = userInDb.Email,
-            Token = accessToken,
+            AccessToken = accessToken,
         });
     }
 

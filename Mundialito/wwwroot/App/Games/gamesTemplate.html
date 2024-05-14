@@ -1,0 +1,44 @@
+<div class="row">
+    <!-- Normal Panel -->
+    <div class="col-md-11 col-xs-10">
+        <div class="list-group">
+            <a href="{{game.getUrl()}}" class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}" ng-repeat="game in games | filter:matchGameType(gamesType)" title="At {{game.Stadium.Name}} Stadium">
+                <div class="row">
+                    <div class="col-md-3 col-xs-3">
+                        <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']" tooltip="{{game.HomeTeam.Name}}"></i> <span class="hidden-xs">{{game.HomeTeam.Name}}</span>
+                    </div>
+                    <div class="col-md-3 col-xs-6">
+                        <div ng-if="game.IsPendingUpdate" class="text-center">
+                            <span class="label label-info"><i class="fa fa-clock-o"></i> Pending Update</span>
+                        </div>
+                        <div ng-if="!game.IsOpen && !game.IsPendingUpdate" class="text-center">
+                            {{::game.HomeScore}} - {{::game.AwayScore}} (<span tooltip="Cards Mark">{{::game.CardsMark}}</span>,<span tooltip="Corners Mark">{{::game.CornersMark}}</span>)
+                        </div>
+                        <div ng-if="game.IsOpen" class="text-center">-</div>
+                    </div>
+                    <div class="col-md-3 col-xs-3">
+                        <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']" tooltip="{{::game.AwayTeam.Name}}"></i> <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
+                    </div>
+                    <div class="col-md-3 hidden-xs">
+                        <span class="pull-right">
+                            {{::game.Date | date:'dd/MM/yy @ H:mm' }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            <a href="" class="list-group-item" data-access-level="Admin" ng-click="onAdd()" ng-if="!showOnly">
+                <i class="fa fa-plus-circle"></i> Add New Game
+            </a>
+        </div>
+    </div>
+    <!-- End of Normal Panel -->
+    <!-- Admin Panel-->
+    <div class="col-md-1 col-xs-2" data-access-level="Admin" ng-if="!showOnly">
+        <div class="list-group">
+            <a href="" title="Delete Game" ng-click="deleteGame(game)" class="list-group-item text-center" ng-repeat="game in games | filter:matchGameType(gamesType)">
+                <i class="fa fa-times-circle admin-remove"></i>
+            </a>
+        </div>
+    </div>
+    <!-- End of Admin Panel-->
+</div>
