@@ -28,7 +28,7 @@ public class ManageInfoViewModel
 
 public class UserInfoViewModel
 {
-    [JsonPropertyName("usreName")]
+    [JsonPropertyName("userName")]
     public string? UserName { get; set; }
 
     [JsonPropertyName("firstName")]

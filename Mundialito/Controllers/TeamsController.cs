@@ -46,7 +46,8 @@ public class TeamsController : ControllerBase
     [HttpGet("{id}/Games")]
     public IEnumerable<Game> GetTeamGames(int id)
     {
-        return teamsRepository.GetTeamGames(id);
+        var res = teamsRepository.GetTeamGames(id);
+        return res;
     }
 
     [HttpPost]

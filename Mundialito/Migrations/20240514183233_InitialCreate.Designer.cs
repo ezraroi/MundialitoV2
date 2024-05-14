@@ -11,7 +11,7 @@ using Mundialito.DAL;
 namespace Mundialito.Migrations
 {
     [DbContext(typeof(MundialitoDbContext))]
-    [Migration("20240514074636_InitialCreate")]
+    [Migration("20240514183233_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

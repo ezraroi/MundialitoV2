@@ -10,7 +10,7 @@ public class Config
     public string AdminUserName { get; set; } = "admin";
     public string AdminFirstName { get; set; } = "admin";
     public string AdminLastName { get; set; } = "admin";
-    public string AdminEmail { get; set; } = "adminmundialito.com";
+    public string AdminEmail { get; set; } = "admin@mundialito.com";
     public string TournamentStartDate { get; set; } = "01/06/2024";
     public string TournamentEndDate { get; set; } = "10/07/2024";
     public string ApplicationName { get; set; } = "EuroChamp";

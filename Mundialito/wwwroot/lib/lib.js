@@ -43765,66 +43765,9 @@ angular.module('security', [])
 			if (newTarget) localStorage.redirectTarget = newTarget;
 			return localStorage.redirectTarget;
 		};
-		var handleExternalData = function (external_data, provider, rememberMe) {
-			var deferred = $q.defer();
-
-		    //Return if there was an error
-			if (external_data.error) {
-				deferred.reject({ message: external_data.error });
-			} else {
-
-			    if (accessToken() && associating()) {
-			        associating('clear');
-			        redirectTarget('clear');
-			        Api.addExternalLogin(accessToken(), external_data.access_token).success(function () {
-			            deferred.resolve();
-			        });
-			        
-			    } else {
-			        //Get user info and login or show external register screen
-			        Api.getUserInfo(external_data.access_token).success(function(user) {
-			            if (user.hasRegistered) {
-			                accessToken(external_data.access_token, rememberMe);
-			                Security.user = user;
-			                Security.redirectAuthenticated(redirectTarget() || securityProvider.urls.home);
-			                if (securityProvider.events.login) securityProvider.events.login(Security, user); // Your Login events
-			                deferred.resolve(Security.user);
-			            } else {
-			                Security.externalUser = user;
-			                Security.externalUser.access_token = external_data.access_token;
-			                Security.externalUser.provider = provider;
-			                if (rememberMe != null) localStorage.rememberMe = rememberMe;
-			                $location.path(securityProvider.urls.registerExternal);
-			                deferred.reject();
-			            }
-			        });
-			    }
-			}
-
-			return deferred.promise;
-		}
+		
 		var initialize = function () {
-			//Check for external access token from 3rd party auth
-			if ($location.path().indexOf('access_token') != -1) {
-				var external_data = parseQueryString($location.path().substring(1));
-				
-				if (window.opener) {
-					window.opener.external_data = external_data;
-					window.close();
-				} else {
-				    var url = redirectTarget();
-				    $location.path(url || securityProvider.urls.home);
-
-					var login = JSON.parse(localStorage.loginProvider);
-					var rememberMe = false;
-					if (localStorage.rememberMe) {
-						rememberMe = JSON.parse(localStorage.rememberMe);
-						delete localStorage.rememberMe;
-					}
-					delete localStorage.loginProvider;
-					handleExternalData(external_data, login, rememberMe);
-				}
-			}
+			
 			
 			//Check for access token and get user info
 			if (accessToken()) {
@@ -43859,42 +43802,6 @@ angular.module('security', [])
 			}).error(function (errorData) {
 				deferred.reject(errorData);
 			});
-
-			return deferred.promise;
-		};
-
-		Security.loginWithExternal = function (login, data) {
-			var deferred = $q.defer();
-			if (securityProvider.usePopups) {
-				var loginWindow = window.open(login.url, 'frame', 'resizeable,height=510,width=380');
-
-				//Watch for close
-				$timeout.cancel(externalLoginWindowTimer);
-				externalLoginWindowTimer = $timeout(function closeWatcher() {
-					if (!loginWindow.closed) {
-						externalLoginWindowTimer = $timeout(closeWatcher, 500);
-						return;
-					}
-					//closeOAuthWindow handler - passes external_data if there is any
-					if (securityProvider.events.closeOAuthWindow) securityProvider.events.closeOAuthWindow(Security, window.external_data);
-
-					//Return if the window was closed and external data wasn't added
-					if (typeof (window.external_data) === 'undefined') {
-						deferred.reject();
-						return;
-					}
-
-					//Move external_data from global to local
-					var external_data = window.external_data;
-					delete window.external_data;
-
-					deferred.resolve(handleExternalData(external_data, login, data.rememberMe));
-				}, 500);
-			} else {
-				if(data != null && data.rememberMe != null) localStorage.rememberMe = JSON.stringify(data.rememberMe);
-				localStorage.loginProvider = JSON.stringify(login);
-				window.location.href = login.url;
-			}
 
 			return deferred.promise;
 		};
@@ -44053,7 +43960,7 @@ angular.module('security', [])
 		            var external_data = window.external_data;
 		            delete window.external_data;
 
-		            deferred.resolve(handleExternalData(external_data, login, data.rememberMe));
+		            deferred.resolve();
 		        }, 500);
 		    } else {
 		        localStorage.loginProvider = JSON.stringify(login);

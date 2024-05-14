@@ -1,48 +1,60 @@
 ﻿using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Mundialito.DAL.Games;
 
 public class Game 
 {
+    [JsonPropertyName("GameId")]
     public int GameId { get; set; }
 
     [Required]
+    [JsonPropertyName("HomeTeamId")]
     public int HomeTeamId { get; set; }
     
+    [JsonPropertyName("HomeTeam")]
     public virtual Team? HomeTeam { get; set; }
 
     [Required]
+    [JsonPropertyName("AwayTeamId")]
     public int AwayTeamId { get; set; }
 
+    [JsonPropertyName("Team")]
     public virtual Team? AwayTeam { get; set; }
 
     [Required]
     [DataType(DataType.DateTime)]
+    [JsonPropertyName("Date")]
     public DateTime Date { get; set; }
 
     [Range(0,10)]
+    [JsonPropertyName("HomeScore")]
     public int? HomeScore { get; set; }
 
     [Range(0, 10)]
+    [JsonPropertyName("AwayScore")]
     public int? AwayScore { get; set; }
 
     [StringLength(1)]
     [RegularExpression("[1X2-]")]
+    [JsonPropertyName("CornersMark")]
     public String? CornersMark { get; set; }
 
     [StringLength(1)]
     [RegularExpression("[1X2-]")]
+    [JsonPropertyName("CardsMark")]
     public String? CardsMark { get; set; }
 
     [Required]
+    [JsonPropertyName("StadiumId")]
     public int StadiumId { get; set; }
     
+    [JsonPropertyName("Stadium")]
     public virtual Stadium? Stadium { get; set; }
 
+    [JsonPropertyName("CloseTime")]
     public DateTime CloseTime
     {
         get

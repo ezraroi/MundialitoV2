@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -25,6 +26,7 @@ builder.Services.Configure<Config>(builder.Configuration.GetSection(Config.Key))
 builder.Services.AddControllers().AddJsonOptions(opt =>
 {
 	opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+	opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
@@ -98,8 +100,6 @@ builder.Services.AddAuthentication(options =>
 			),
 		};
 	});
-
-
 builder.Services.AddScoped<ITeamsRepository, TeamsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IStadiumsRepository, StadiumsRepository>();
@@ -117,7 +117,7 @@ builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
