@@ -1,5 +1,5 @@
 using Mundialito.DAL.GeneralBets;
-using System;
+using System.Text.Json.Serialization;
 
 namespace Mundialito.Models;
 
@@ -19,42 +19,57 @@ public class GeneralBetViewModel
         IsClosed = DateTime.UtcNow > CloseTime;
     }
 
+    [JsonPropertyName("GeneralBetId")]
     public int GeneralBetId { get; set; }
 
+    [JsonPropertyName("WinningTeamId")]
     public int WinningTeamId { get; set; }
 
+    [JsonPropertyName("OwnerName")]
     public String OwnerName { get; private set; }
 
+    [JsonPropertyName("GoldenBootPlayerId")]
     public int GoldenBootPlayerId { get; set; }
 
+    [JsonPropertyName("IsResolved")]
     public Boolean IsResolved { get; set; }
 
+    [JsonPropertyName("IsClosed")]
     public Boolean IsClosed { get; private set; }
     
+    [JsonPropertyName("OldPPointsassword")]
     public int Points { get; set; }
 
+    [JsonPropertyName("CloseTime")]
     public DateTime CloseTime { get; set; }
 }
 
 public class NewGeneralBetModel
 {
+    [JsonPropertyName("WinningTeamId")]
     public int WinningTeamId { get; set; }
 
+    [JsonPropertyName("GoldenBootPlayerId")]
     public int GoldenBootPlayerId { get; set; }
 
+    [JsonPropertyName("GeneralBetId")]
     public int GeneralBetId { get; set; }
 }
 
 public class UpdateGenralBetModel
 {
+    [JsonPropertyName("WinningTeamId")]
     public int WinningTeamId { get; set; }
 
+    [JsonPropertyName("GoldenBootPlayerId")]
     public int GoldenBootPlayerId { get; set; }
 }
 
 public class ResolveGeneralBetModel
 {
+    [JsonPropertyName("PlayerIsRight")]
     public Boolean PlayerIsRight { get; set; }
 
+    [JsonPropertyName("TeamIsRight")]
     public Boolean TeamIsRight { get; set; }
 }

@@ -33,7 +33,7 @@ public class BetsRepository : GenericRepository<Bet>, IBetsRepository
 
     public Bet GetBet(int betId)
     {
-        return Get().Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam).SingleOrDefault(bet => bet.GameId == betId);
+        return Get().Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam).SingleOrDefault(bet => bet.BetId == betId);
     }
 
     public Bet InsertBet(Bet bet)
