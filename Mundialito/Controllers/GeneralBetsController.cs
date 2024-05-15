@@ -34,13 +34,13 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpGet]
-    public IEnumerable<GeneralBetViewModel> GetAllGeneralBets()
+    public ActionResult<IEnumerable<GeneralBetViewModel>> GetAllGeneralBets()
     {
         if (!User.IsInRole("Admin") && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
-            throw new ArgumentException("General bets are still open for betting, you can't see other users bets yet");
+            return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet"});
         }
-        return generalBetsRepository.GetGeneralBets().Select(bet => new GeneralBetViewModel(bet, tournamentTimesUtils.GetGeneralBetsCloseTime())).OrderBy(bet => bet.OwnerName);
+        return Ok(generalBetsRepository.GetGeneralBets().Select(bet => new GeneralBetViewModel(bet, tournamentTimesUtils.GetGeneralBetsCloseTime())).OrderBy(bet => bet.OwnerName));
     }
 
     [HttpGet("has-bet/{username}")]
@@ -60,7 +60,7 @@ public class GeneralBetsController : ControllerBase
     {
         if (httpContextAccessor.HttpContext?.User.Identity.Name != username && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
-            return BadRequest("General bets are still open for betting, you can't see other users bets yet");
+            return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet"});
         }
         var item = generalBetsRepository.GetUserGeneralBet(username);
         if (item == null)
@@ -75,7 +75,7 @@ public class GeneralBetsController : ControllerBase
         var item = generalBetsRepository.GetGeneralBet(id);
         if (item == null)
         {
-            return NotFound(string.Format("General Bet with id '{0}' not found", id));
+            return NotFound(new ErrorMessage { Message = string.Format("General Bet with id '{0}' not found", id)});
         }
         return Ok(new GeneralBetViewModel(item, tournamentTimesUtils.GetGeneralBetsCloseTime()));
     }
@@ -88,7 +88,7 @@ public class GeneralBetsController : ControllerBase
         if (!String.IsNullOrEmpty(validate))
         {
             AddLog(ActionType.ERROR, validate);
-            return BadRequest(validate);
+            return BadRequest(new ErrorMessage { Message = validate});
         }
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
@@ -121,7 +121,7 @@ public class GeneralBetsController : ControllerBase
         if (betToUpdate.User.Id != user.Id)
         {
             AddLog(ActionType.UNAUTHORIZED_ACCESS, "You can't update a bet that is not yours");
-            return Unauthorized("You can't update a bet that is not yours");
+            return Unauthorized(new ErrorMessage { Message = "You can't update a bet that is not yours"});
         }
         betToUpdate.WinningTeamId = bet.WinningTeamId;
         betToUpdate.GoldBootPlayerId = bet.GoldenBootPlayerId;
@@ -139,13 +139,13 @@ public class GeneralBetsController : ControllerBase
         if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsResolveTime())
         {
             AddLog(ActionType.ERROR, "General bets are not closed for betting yet");
-            return BadRequest("General bets are not closed for betting yet");
+            return BadRequest(new ErrorMessage { Message = "General bets are not closed for betting yet"});
         }
         var item = generalBetsRepository.GetGeneralBet(id);
         if (item == null)
         {
             AddLog(ActionType.ERROR, string.Format("General Bet '{0}' dosen't exits", id));
-            return NotFound(string.Format("General Bet '{0}' dosen't exits", id));
+            return NotFound(new ErrorMessage { Message = string.Format("General Bet '{0}' dosen't exits", id)});
         }
         Trace.TraceInformation("Resolved General Bet '{0}' with data: {1}", id, resolvedBet);
         item.Resolve(resolvedBet.PlayerIsRight, resolvedBet.TeamIsRight);

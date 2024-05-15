@@ -1160,7 +1160,7 @@ angular.module('mundialitoApp').factory('Alert', ['toaster', '$log', '$rootScope
     }
 }]);
 'use strict';
-angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log' , 'Alert', '$location','Constants', function ($rootScope, $log, Alert, $location, Constants) {
+angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', 'Alert', '$location', 'Constants', function ($rootScope, $log, Alert, $location, Constants) {
     var ErrorHandler = this;
 
     ErrorHandler.handle = function (data, status) {
@@ -1175,6 +1175,13 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log' , 
         var title = undefined;
         if (data.Message) {
             title = data.Message;
+        }
+        if (data.errors) {
+            angular.forEach(data.errors, function (errors) {
+                angular.forEach(errors, function (errors) {
+                    message.push(errors);
+                });
+            });
         }
         if (data.ModelState) {
             angular.forEach(data.ModelState, function (errors) {
@@ -1196,19 +1203,19 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log' , 
 
     return ErrorHandler;
 }])
-.factory('myHttpInterceptor', ['ErrorHandler', '$q', function (ErrorHandler, $q) {
-    return {
-        response: function (response) {
-            return response;
-        },
-        responseError: function (response) {
-            ErrorHandler.handle(response.data, response.status, response.headers, response.config);
+    .factory('myHttpInterceptor', ['ErrorHandler', '$q', function (ErrorHandler, $q) {
+        return {
+            response: function (response) {
+                return response;
+            },
+            responseError: function (response) {
+                ErrorHandler.handle(response.data, response.status, response.headers, response.config);
 
-            // do something on error
-            return $q.reject(response);
-        }
-    };
-}]);
+                // do something on error
+                return $q.reject(response);
+            }
+        };
+    }]);
 angular.module('mundialitoApp').factory('MundialitoUtils', [ 'Constants', function (Constants) {
 
     var Utils = {

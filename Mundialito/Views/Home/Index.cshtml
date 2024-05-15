@@ -1,8 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@model Mundialito.Configuration.Config
+<!DOCTYPE html>
 <html lang="en" ng-app="mundialitoApp">
 <head>
     <meta charset="utf-8" />
-    <title>EuroChamp</title>
+    <title>@Model.ApplicationName</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta http-equiv="cache-control" content="max-age=0" />
@@ -11,7 +12,14 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
     <base href="/" />
-    <link href="css/app-space-lab.css" rel="stylesheet" />
+    @if (Model.Theme == "cerulean")
+    {
+    <link href="css/app-cerulean.css" rel="stylesheet" /> 
+    }
+    else
+    {
+    <link href="css/app-space-lab.css" rel="stylesheet" />    
+    }
     <style>
         body {
             padding-top: 50px;
@@ -24,12 +32,12 @@
     <toaster-container toaster-options="{'time-out': 2500, 'close-button': true}"></toaster-container>
     <div class="loading" ng-show="mundialitoApp.loading || mundialitoApp.authenticating">
         <div class="text-center">
-            <h3><i class="fa fa-spin fa-spinner fa-lg"></i> Loading EuroChamp</h3>
+            <h3><i class="fa fa-spin fa-spinner fa-lg"></i> Loading @Model.ApplicationName</h3>
         </div>
     </div>
     <!-- End of App Loading message -->
     <!-- Main Content -->
-    <div class="body-content ng-cloak" ng-hide="mundialitoApp.loading || mundialitoApp.authenticating" ng-init='mundialitoApp.appName = "EuroChamp"; mundialitoApp.protect = "true"'>
+    <div class="body-content ng-cloak" ng-hide="mundialitoApp.loading || mundialitoApp.authenticating" ng-init='mundialitoApp.appName = "@Model.ApplicationName"; mundialitoApp.protect = "@Model.PrivateKeyProtection"'>
         <!-- Fixed navbar -->
         <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container">
@@ -40,7 +48,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a href="/" class="navbar-brand"><i class="fa fa-trophy" style="color: gold;"></i> EuroChamp</a>
+                    <a href="/" class="navbar-brand"><i class="fa fa-trophy" style="color: gold;"></i> @Model.ApplicationName</a>
                 </div>
                 <div ng-if="security.user" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
@@ -71,7 +79,7 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-4 col-xs-6">
-                            <span>&copy; @DateTime.Now.Year - Mundialito</span>
+                            <span>&copy; @DateTime.Now.Year - @Model.ApplicationName</span>
                         </div>
                         <div class="col-md-4 text-center hidden-xs">
                             <a href="https://github.com/ezraroi/Mundialito" target="_self">Mundilaito at <i class="fa fa-github"></i> GitHub</a>

@@ -10,3 +10,8 @@ public class ErrorViewModel
     [JsonPropertyName("ShowRequestId")]
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }
+
+public class ErrorMessage {
+    [JsonPropertyName("Message")]
+    public string? Message { get; set; }
+}

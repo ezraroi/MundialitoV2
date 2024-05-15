@@ -23,4 +23,5 @@ public class Config
     public string SendGridUserName { get; set; } = "Monkey";
     public string SendGridPassword { get; set; } = "Monkey";
     public string LinkAddress { get; internal set; } = "http://localhost:5000";
+    public string Theme { get; internal set; } = "spaceLab";
 }

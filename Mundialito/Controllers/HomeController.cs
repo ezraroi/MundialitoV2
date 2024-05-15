@@ -1,21 +1,23 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Mundialito.Configuration;
 using Mundialito.Models;
 
 namespace Mundialito.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    private readonly Config _config;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(IOptions<Config> config)
     {
-        _logger = logger;
+        _config = config.Value;
     }
-
+    
     public IActionResult Index()
     {
-        return View();
+        return View(_config);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
