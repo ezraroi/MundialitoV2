@@ -70,34 +70,8 @@ public class AccountController : ControllerBase
         return Ok();
     }
 
-    private IActionResult GetErrorResult(IdentityResult result)
-    {
-        if (result == null)
-        {
-            throw new Exception("IdentityResult is null");
-        }
-
-        if (!result.Succeeded)
-        {
-            if (result.Errors != null)
-            {
-                foreach (IdentityError error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                // No ModelState errors are available to send, so just return an empty BadRequest.
-                return BadRequest();
-            }
-            return BadRequest(ModelState);
-        }
-        return null;
-    }
-
-    [HttpPost("login")]
+    [AllowAnonymous]
+    [HttpPost("Login")]
     public async Task<ActionResult<AuthResponse>> Authenticate(LoginVM request)
     {
         if (!ModelState.IsValid)
@@ -106,21 +80,17 @@ public class AccountController : ControllerBase
         }
 
         var managedUser = await _userManager.FindByNameAsync(request.Username!);
-
         if (managedUser == null)
         {
-            return BadRequest("Bad credentials");
+            return BadRequest(new ErrorMessage { Message = "Bad credentials" });
         }
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(managedUser, request.Password!);
-
         if (!isPasswordValid)
         {
-            return BadRequest("Bad credentials");
+            return BadRequest(new ErrorMessage { Message = "Bad credentials" });
         }
-
         var userInDb = _context.Users.FirstOrDefault(u => u.UserName == request.Username);
-
         if (userInDb is null)
         {
             return Unauthorized();
@@ -128,7 +98,6 @@ public class AccountController : ControllerBase
 
         var accessToken = _tokenService.CreateToken(userInDb);
         await _context.SaveChangesAsync();
-
         return Ok(new AuthResponse
         {
             Username = userInDb.UserName,
@@ -147,14 +116,14 @@ public class AccountController : ControllerBase
         {
             return Unauthorized();
         }
-        return new UserInfoViewModel
+        return Ok(new UserInfoViewModel
         {
             UserName = user.UserName,
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
             Roles = user.Role.ToString(),
-        };
+        });
     }
 
     [HttpPost("ChangePassword")]
@@ -182,5 +151,71 @@ public class AccountController : ControllerBase
         // Upon successfully changing the password refresh sign-in cookie
         await _signInManager.RefreshSignInAsync(user);
         return Ok();
+    }
+
+    [HttpPost("forget")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(forgotPasswordModel);
+        var user = await _userManager.FindByEmailAsync(forgotPasswordModel.Email);
+        if (user == null)
+            return NotFound(new ErrorMessage { Message = "No user with the provided email is registered" });
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
+        // var message = new Message(new string[] { user.Email }, "Reset password token", callback, null);
+        // await _emailSender.SendEmailAsync(message);
+        return Ok();
+    }
+
+    [HttpPost("reset")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(resetPasswordModel);
+        var user = await _userManager.FindByEmailAsync(resetPasswordModel.Email);
+        if (user == null)
+            NotFound(new ErrorMessage{ Message = "No user with provided mail"});
+        var resetPassResult = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+        if (!resetPassResult.Succeeded)
+        {
+            foreach (var error in resetPassResult.Errors)
+            {
+                ModelState.TryAddModelError(error.Code, error.Description);
+            }
+            return BadRequest(ModelState);
+        }
+        return Ok();
+    }
+
+    private IActionResult GetErrorResult(IdentityResult result)
+    {
+        if (result == null)
+        {
+            throw new Exception("IdentityResult is null");
+        }
+
+        if (!result.Succeeded)
+        {
+            if (result.Errors != null)
+            {
+                foreach (IdentityError error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                // No ModelState errors are available to send, so just return an empty BadRequest.
+                return BadRequest();
+            }
+            return BadRequest(ModelState);
+        }
+        return null;
     }
 }

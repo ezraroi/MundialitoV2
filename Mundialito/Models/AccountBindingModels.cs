@@ -66,3 +66,31 @@ public class RegisterBindingModel
     [JsonPropertyName("PrivateKey")]
     public string? PrivateKey { get; set; }
 }
+
+public class ForgotPasswordModel
+{
+    [Required]
+    [EmailAddress]
+    [JsonPropertyName("Email")]
+    public string Email { get; set; }
+}
+
+public class ResetPasswordModel
+{
+    [Required]
+    [DataType(DataType.Password)]
+    [JsonPropertyName("Password")]
+    public string Password { get; set; }
+    
+    [DataType(DataType.Password)]
+    [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+    [JsonPropertyName("ConfirmPassword")]
+    public string ConfirmPassword { get; set; }
+    
+    [JsonPropertyName("Email")]
+    public string Email { get; set; }
+    
+    [JsonPropertyName("Token")]
+    public string Token { get; set; }
+
+}

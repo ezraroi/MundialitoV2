@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Mundialito.Models;
 
 namespace Mundialito.Controllers;
 
@@ -16,12 +17,7 @@ public class StadiumsController : ControllerBase
 
     public StadiumsController(IStadiumsRepository stadiumsRepository, IActionLogsRepository actionLogsRepository)
     {
-        if (stadiumsRepository == null)
-            throw new ArgumentNullException("stadiumsRepository");
         this.stadiumsRepository = stadiumsRepository;
-
-        if (actionLogsRepository == null)
-            throw new ArgumentNullException("actionLogsRepository");
         this.actionLogsRepository = actionLogsRepository;
     }
 
@@ -35,9 +31,8 @@ public class StadiumsController : ControllerBase
     public ActionResult<Stadium> GetStadium(int id)
     {
         var item = stadiumsRepository.GetStadium(id);
-
         if (item == null)
-            return NotFound(string.Format("Stadium with id '{0}' not found", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("Stadium with id '{0}' not found", id)});
         return Ok(item);
     }
 

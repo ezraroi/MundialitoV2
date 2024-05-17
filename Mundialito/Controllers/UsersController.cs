@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
         {
-            return NotFound(string.Format("No such user '{0}'", username));
+            return NotFound(new ErrorMessage{ Message = string.Format("No such user '{0}'", username)});
         }
         var userModel = new UserModel(user);
         betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
@@ -88,7 +88,7 @@ public class UsersController : ControllerBase
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
-            return NotFound("User not found");
+            return NotFound(new ErrorMessage{ Message = "User not found"});
         }
         user.Role = Role.Admin;
         var result = await userManager.UpdateAsync(user);
@@ -109,7 +109,7 @@ public class UsersController : ControllerBase
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
-            return NotFound("User not found");
+            return NotFound(new ErrorMessage{ Message = "User not found"});
         }
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)

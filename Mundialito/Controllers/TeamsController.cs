@@ -4,7 +4,7 @@ using Mundialito.DAL.Games;
 using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Mundialito.DAL;
+using Mundialito.Models;
 
 namespace Mundialito.Controllers;
 
@@ -18,12 +18,7 @@ public class TeamsController : ControllerBase
 
     public TeamsController(ITeamsRepository teamsRepository, IActionLogsRepository actionLogsRepository)
     {
-        if (teamsRepository == null)
-            throw new ArgumentNullException("teamsRepository");
         this.teamsRepository = teamsRepository;
-
-        if (actionLogsRepository == null)
-            throw new ArgumentNullException("actionLogsRepository");
         this.actionLogsRepository = actionLogsRepository;
     }
 
@@ -39,7 +34,7 @@ public class TeamsController : ControllerBase
         var item = teamsRepository.GetTeam(id);
 
         if (item == null)
-            return NotFound(string.Format("Team with id '{0}' not found", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("Team with id '{0}' not found", id)});
         return Ok(item);
     }
 

@@ -53,9 +53,8 @@ public class BetsController : ControllerBase
     public ActionResult<BetViewModel> GetBetById(int id)
     {
         var item = betsRepository.GetBet(id);
-
         if (item == null)
-            return NotFound(string.Format("Bet with id '{0}' not found", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("Bet with id '{0}' not found", id)});
 
         return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
     }
@@ -89,7 +88,7 @@ public class BetsController : ControllerBase
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         var res = betsRepository.InsertBet(newBet);
         Trace.TraceInformation("Posting new Bet: {0}", newBet);
@@ -100,7 +99,7 @@ public class BetsController : ControllerBase
         {
             SendBetMail(newBet, user);
         }
-        return bet;
+        return Ok(bet);
     }
 
     [HttpPut("{id}")]
@@ -123,10 +122,10 @@ public class BetsController : ControllerBase
         try {
             betValidator.ValidateUpdateBet(betToUpdate);
         } catch (UnauthorizedAccessException e) {
-            return Unauthorized(e.Message);
+            return Unauthorized(new ErrorMessage{ Message = e.Message});
         
         } catch (Exception e) {
-            return BadRequest(e.Message);
+            return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         betsRepository.Save();
         Trace.TraceInformation("Updating Bet: {0}", betToUpdate);
@@ -152,7 +151,7 @@ public class BetsController : ControllerBase
         } catch (UnauthorizedAccessException e) {
             return Unauthorized(e.Message);
         } catch (Exception e) {
-            return BadRequest(e.Message);
+            return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         betsRepository.DeleteBet(id);
         betsRepository.Save();

@@ -13,8 +13,6 @@ public class PlayersController : ControllerBase
 
     public PlayersController(IPlayersRepository playersRepository)
     {
-        if (playersRepository == null)
-            throw new ArgumentNullException("playersRepository");
         this.playersRepository = playersRepository;
     }
 

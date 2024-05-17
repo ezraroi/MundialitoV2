@@ -1,5 +1,4 @@
-﻿using Mundialito.DAL;
-using Mundialito.DAL.Games;
+﻿using Mundialito.DAL.Games;
 using Mundialito.Models;
 using Mundialito.DAL.Bets;
 using System.Diagnostics;
@@ -63,7 +62,7 @@ public class GamesController : ControllerBase
     {
         var item = gamesRepository.GetGame(id);
         if (item == null)
-            return NotFound(string.Format("Game with id '{0}' not found", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", id)});
 
         var res = new GameViewModel(item);
         res.UserHasBet = betsRepository.GetUserBetOnGame(httpContextAccessor.HttpContext?.User.Identity.Name, id) != null;
@@ -75,10 +74,10 @@ public class GamesController : ControllerBase
     {
         var game = gamesRepository.GetGame(id);
         if (game == null)
-            return NotFound(string.Format("Game with id '{0}' not found", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", id)});
 
         if (game.IsOpen(dateTimeProvider.UTCNow))
-            return BadRequest(String.Format("Game '{0}' is stil open for betting", id));
+            return BadRequest(new ErrorMessage{ Message = String.Format("Game '{0}' is stil open for betting", id)});
 
         return Ok(betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points));
     }
@@ -116,7 +115,7 @@ public class GamesController : ControllerBase
     {
         if (game.AwayTeam.TeamId == game.HomeTeam.TeamId)
         {
-            return BadRequest("Home team and Away team can not be the same team");
+            return BadRequest(new ErrorMessage{ Message = "Home team and Away team can not be the same team"});
         }
         var newGame = new Game();
         newGame.HomeTeamId = game.HomeTeam.TeamId;
@@ -140,10 +139,10 @@ public class GamesController : ControllerBase
     {
         var item = gamesRepository.GetGame(id);
         if (item == null)
-            return NotFound(string.Format("No such game with id '{0}'", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("No such game with id '{0}'", id)});
 
         if (item.IsOpen(dateTimeProvider.UTCNow) && (game.HomeScore != null || game.AwayScore != null || game.CornersMark != null || game.CardsMark != null))
-            return BadRequest("Open game can not be updated with results");
+            return BadRequest(new ErrorMessage{ Message = "Open game can not be updated with results"});
 
         item.AwayScore = game.AwayScore;
         item.HomeScore = game.HomeScore;
@@ -167,7 +166,7 @@ public class GamesController : ControllerBase
     {
         var game = gamesRepository.GetGame(id);
         if (game == null)
-            return NotFound(string.Format("No such game with id '{0}'", id));
+            return NotFound(new ErrorMessage{ Message = string.Format("No such game with id '{0}'", id)});
         Trace.TraceInformation("Deleting Game {0}", id);
         gamesRepository.DeleteGame(id);
         gamesRepository.Save();
