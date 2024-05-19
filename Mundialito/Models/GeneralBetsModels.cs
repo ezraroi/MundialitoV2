@@ -37,7 +37,7 @@ public class GeneralBetViewModel
     [JsonPropertyName("IsClosed")]
     public Boolean IsClosed { get; private set; }
     
-    [JsonPropertyName("OldPPointsassword")]
+    [JsonPropertyName("Points")]
     public int Points { get; set; }
 
     [JsonPropertyName("CloseTime")]
