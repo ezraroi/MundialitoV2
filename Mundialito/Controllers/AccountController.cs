@@ -1,11 +1,15 @@
+using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
 using Mundialito.Configuration;
 using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
 using Mundialito.Logic;
+using Mundialito.Mail;
 using Mundialito.Models;
 using Mundialito.ViewModels;
 
@@ -20,9 +24,10 @@ public class AccountController : ControllerBase
     private readonly TournamentTimesUtils _tournamentTimesUtils;
     private readonly SignInManager<MundialitoUser> _signInManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IEmailSender _emailSender;
 
     public AccountController(UserManager<MundialitoUser> userManager, MundialitoDbContext context,
-        TokenService tokenService, ILogger<AccountController> logger, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils, SignInManager<MundialitoUser> signInManager, IHttpContextAccessor httpContextAccessor)
+        TokenService tokenService, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils, SignInManager<MundialitoUser> signInManager, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender)
     {
         _userManager = userManager;
         _context = context;
@@ -31,6 +36,7 @@ public class AccountController : ControllerBase
         _tournamentTimesUtils = tournamentTimesUtils;
         _signInManager = signInManager;
         _httpContextAccessor = httpContextAccessor;
+        _emailSender = emailSender;
     }
 
     [AllowAnonymous]
@@ -153,9 +159,8 @@ public class AccountController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("forget")]
+    [HttpPost("Forgot")]
     [AllowAnonymous]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
     {
         if (!ModelState.IsValid)
@@ -164,30 +169,26 @@ public class AccountController : ControllerBase
         if (user == null)
             return NotFound(new ErrorMessage { Message = "No user with the provided email is registered" });
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
-        // var message = new Message(new string[] { user.Email }, "Reset password token", callback, null);
-        // await _emailSender.SendEmailAsync(message);
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.AppendFormat("Please follow the attached link to reset your {0} password: {1}/reset?token={2}&email={3}", _config.ApplicationName, _config.LinkAddress, token, user.Email);
+        _emailSender.SendEmail(user.Email, string.Format("{0} Reset Password", _config.ApplicationName), messageBuilder.ToString());
         return Ok();
     }
 
-    [HttpPost("reset")]
+    [HttpPost("Reset")]
     [AllowAnonymous]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
     {
         if (!ModelState.IsValid)
             return BadRequest(resetPasswordModel);
         var user = await _userManager.FindByEmailAsync(resetPasswordModel.Email);
         if (user == null)
-            NotFound(new ErrorMessage{ Message = "No user with provided mail"});
-        var resetPassResult = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+            NotFound(new ErrorMessage { Message = "No user with provided mail" });
+        var token = Strings.Replace(resetPasswordModel.Token, " ", "+");
+        var resetPassResult = await _userManager.ResetPasswordAsync(user, token, resetPasswordModel.Password);
         if (!resetPassResult.Succeeded)
         {
-            foreach (var error in resetPassResult.Errors)
-            {
-                ModelState.TryAddModelError(error.Code, error.Description);
-            }
-            return BadRequest(ModelState);
+            return BadRequest(new ErrorMessage { Message = "Invalid Token" });
         }
         return Ok();
     }

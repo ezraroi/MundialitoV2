@@ -1,7 +1,5 @@
 ﻿'use strict';
 angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope' , 'security', function ($scope, $rootScope, Security) {
-    Security.redirectAuthenticated('/');
-
     $rootScope.mundialitoApp.authenticating = false;
 
     var LoginModel = function () {

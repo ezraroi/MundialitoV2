@@ -70,9 +70,9 @@ public class RegisterBindingModel
 public class ForgotPasswordModel
 {
     [Required]
-    [EmailAddress]
+    [DataType(DataType.EmailAddress)]
     [JsonPropertyName("Email")]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 }
 
 public class ResetPasswordModel

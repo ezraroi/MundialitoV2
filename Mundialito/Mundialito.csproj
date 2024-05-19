@@ -20,5 +20,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4"/>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4"/>
+    <PackageReference Include="MimeKit" Version="4.5.0"/>
+    <PackageReference Include="Azure.Communication.Email" Version="1.0.1"/>
+    <PackageReference Include="Azure.ResourceManager.Communication" Version="1.2.0"/>
   </ItemGroup>
 </Project>

@@ -15,7 +15,9 @@ using Mundialito.DAL.Players;
 using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
 using Mundialito.Logic;
+using Mundialito.Mail;
 
+// https://medium.com/medialesson/how-to-send-emails-at-scale-in-net-with-the-azure-communication-service-14565d84147f
 // https://www.telerik.com/blogs/new-net-8-aspnet-core-identity-how-implement
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,6 +116,7 @@ builder.Services.AddScoped<IActionLogsRepository, ActionLogsRepository>();
 builder.Services.AddScoped<TokenService, TokenService>();
 builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

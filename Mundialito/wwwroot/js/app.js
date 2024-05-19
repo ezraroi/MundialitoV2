@@ -142,6 +142,14 @@ angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate
             when('/login', {
                 templateUrl: 'App/Accounts/Login.html'
             }).
+            when('/forgot', {
+                templateUrl: 'App/Accounts/ForgetPassword.html',
+                controller: 'ForgetPasswordCtrl',
+            }).
+            when('/reset', {
+                templateUrl: 'App/Accounts/ResetPassword.html',
+                controller: 'ResetPasswordCtrl',
+            }).
             when('/join', {
                 templateUrl: 'App/Accounts/Register.html'
             }).
@@ -171,7 +179,10 @@ angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate
             authenticating: true,
             message: null
         };
-        security.authenticate();
+        if (!['/reset', '/forgot', '/join', '/login'].includes($location.$$path)) {
+            $log.log('Starting authentication')
+            security.authenticate();
+        }
         $rootScope.security = security;
 
         $rootScope.$on('$locationChangeStart', function () {
@@ -201,9 +212,33 @@ angular.module('mundialitoApp').constant('Constants',
     }
 );
 'use strict';
-angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope' , 'security', function ($scope, $rootScope, Security) {
-    Security.redirectAuthenticated('/');
+angular.module('mundialitoApp').controller('ForgetPasswordCtrl', ['$scope', '$rootScope', 'security', 'Alert', function ($scope, $rootScope, Security, Alert) {
+    $rootScope.mundialitoApp.authenticating = false;
 
+    var ForgetModel = function () {
+        return {
+            Email: ''
+        }
+    };
+
+    $scope.user = new ForgetModel();
+    $scope.forget = function () {
+        if (!$scope.emailForm.$valid) return;
+        $rootScope.mundialitoApp.message = "Processing...";
+        Security.forgotPassword(angular.copy($scope.user)).then(() => {
+            Alert.success('Reset password token was sent to your email, please follow the link from there');
+        }).catch((e) => {
+            Alert.error('Failed to generate reset password token: ' + e);
+        }).finally(function () {
+            $rootScope.mundialitoApp.message = null;
+        });
+    }
+    $scope.schema = [
+        { property: 'Email', label: 'Email Address', type: 'email', attr: { required: true } },
+    ];
+}]);
+'use strict';
+angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope' , 'security', function ($scope, $rootScope, Security) {
     $rootScope.mundialitoApp.authenticating = false;
 
     var LoginModel = function () {
@@ -265,7 +300,6 @@ angular.module('mundialitoApp').controller('ManageCtrl', ['$scope','Alert', func
 }]);
 'use strict';
 angular.module('mundialitoApp').controller('RegisterCtrl', ['$scope', 'security', function ($scope, Security) {
-    Security.redirectAuthenticated('/');
     $scope.mundialitoApp.authenticating = false;
 
     var User = function () {
@@ -299,11 +333,40 @@ angular.module('mundialitoApp').controller('RegisterCtrl', ['$scope', 'security'
             { property: 'confirmPassword', label: 'Confirm Password', type: 'password', attr: { confirmPassword: 'user.password', required: true } }
     ];
 
-    if ($scope.mundialitoApp.protect === "true") {
+    if ($scope.mundialitoApp.protect === true) {
         $scope.user.privateKey = '';
         $scope.schema.push({ property: 'privateKey', help: 'The Private Key was given in the e-mail of the payment confirmation', label: 'Private Key', type: 'text', attr: { required: true } });
     }
 
+}]);
+'use strict';
+angular.module('mundialitoApp').controller('ResetPasswordCtrl', ['$scope', '$rootScope', 'security', '$location', 'Alert', function ($scope, $rootScope, Security, $location, Alert) {
+    $rootScope.mundialitoApp.authenticating = false;
+
+    var ResetPasswordModel = function () {
+        return {
+            confirmPassword: '',
+            password: '',
+            email: $location.search()['email'],
+            token: $location.search()['token']
+        }
+    };
+
+    $scope.user = new ResetPasswordModel();
+    $scope.reset = function () {
+        if (!$scope.resetForm.$valid) return;
+        $rootScope.mundialitoApp.message = "Processing Reset Password...";
+        Security.resetPassword(angular.copy($scope.user)).then(() => {
+            Alert.success('Your was was reset successfully');
+        }).finally(function () {
+            $rootScope.mundialitoApp.message = null;
+        });
+
+    }
+    $scope.schema = [
+        { property: 'password', type: 'password', attr: { required: true } },
+        { property: 'confirmPassword', label: 'Confirm Password', type: 'password', attr: { confirmPassword: 'user.password', required: true } }
+    ];
 }]);
 'use strict';
 angular.module('mundialitoApp').factory('Bet', ['$http','$log', function($http,$log) {

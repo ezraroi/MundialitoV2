@@ -142,6 +142,14 @@
             when('/login', {
                 templateUrl: 'App/Accounts/Login.html'
             }).
+            when('/forgot', {
+                templateUrl: 'App/Accounts/ForgetPassword.html',
+                controller: 'ForgetPasswordCtrl',
+            }).
+            when('/reset', {
+                templateUrl: 'App/Accounts/ResetPassword.html',
+                controller: 'ResetPasswordCtrl',
+            }).
             when('/join', {
                 templateUrl: 'App/Accounts/Register.html'
             }).
@@ -171,7 +179,10 @@
             authenticating: true,
             message: null
         };
-        security.authenticate();
+        if (!['/reset', '/forgot', '/join', '/login'].includes($location.$$path)) {
+            $log.log('Starting authentication')
+            security.authenticate();
+        }
         $rootScope.security = security;
 
         $rootScope.$on('$locationChangeStart', function () {

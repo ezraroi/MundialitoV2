@@ -16,12 +16,12 @@ public class Config
     public string ApplicationName { get; set; } = "EuroChamp";
     public string TournamentDBCreatorName { get; set; } = "Mundial2023TournamentCreator";
     public string MonkeyUserName { get; set; } = "monkey";
-    public string FromAddress { get; set; } = "http://hello.com";
     public bool SendBetMail { get; set; } = true;
     public bool PrivateKeyProtection { get; set; } = true;
 
     public string SendGridUserName { get; set; } = "Monkey";
     public string SendGridPassword { get; set; } = "Monkey";
-    public string LinkAddress { get; internal set; } = "http://localhost:5000";
+    public string LinkAddress { get; internal set; } = "http://localhost:5150";
     public string Theme { get; internal set; } = "spaceLab";
+    public string FromAddress { get; set; } = "admin@admin";
 }
