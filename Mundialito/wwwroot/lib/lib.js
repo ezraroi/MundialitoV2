@@ -43794,7 +43794,7 @@ angular.module('security', [])
 
 			data.grant_type = 'password';
 			Api.login(data).success(function (user) {
-				accessToken(user.access_token, data.rememberMe);
+				accessToken(user.AccessToken, data.rememberMe);
 				Security.user = user;
 				Security.redirectAuthenticated(redirectTarget() || securityProvider.urls.home);
 				if (securityProvider.events.login) securityProvider.events.login(Security, user); // Your Login events

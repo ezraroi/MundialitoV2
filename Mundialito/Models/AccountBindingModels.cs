@@ -30,7 +30,7 @@ public class RegisterBindingModel
 {
     [Required]
     [Display(Name = "User name")]
-    [JsonPropertyName("UserName")]
+    [JsonPropertyName("Username")]
     public string? UserName { get; set; }
 
     [Required]

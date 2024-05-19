@@ -109,6 +109,8 @@ public class AccountController : ControllerBase
             Username = userInDb.UserName,
             Email = userInDb.Email,
             AccessToken = accessToken,
+            FirstName = userInDb.FirstName,
+            LastName = userInDb.LastName,
         });
     }
 

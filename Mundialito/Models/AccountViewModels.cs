@@ -6,24 +6,18 @@ namespace Mundialito.Models;
 
 public class UserInfoViewModel
 {
-    [JsonPropertyName("userName")]
+    [JsonPropertyName("Username")]
     public string? UserName { get; set; }
 
-    [JsonPropertyName("firstName")]
+    [JsonPropertyName("FirstName")]
     public string? FirstName { get; set; }
 
-    [JsonPropertyName("lastName")]
+    [JsonPropertyName("LastName")]
     public string? LastName { get; set; }
 
-    [JsonPropertyName("email")]
+    [JsonPropertyName("Email")]
     public string? Email { get; set; }
 
-    [JsonPropertyName("roles")]
+    [JsonPropertyName("Roles")]
     public string? Roles { get; set; }
 }
-
-internal class JsonPropertyAttribute : Attribute
-{
-}
-
-
