@@ -9,9 +9,9 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     $log.debug('UserProfileCtrl: generalBetsAreOpen = ' + generalBetsAreOpen);
 
     $scope.isLoggedUserProfile = function() {
-        var res = ($scope.security.user != null) && ($scope.security.user.userName === $scope.profileUser.Username);
+        var res = ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
         $log.debug('UserProfileCtrl: isLoggedUserProfile = ' + res);
-        return ($scope.security.user != null) && ($scope.security.user.userName === $scope.profileUser.Username);
+        return ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
     };
 
     $scope.isGeneralBetClosed = function() {

@@ -11,7 +11,7 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
             $timeout(loadUserBets,1000);
         }
         else {
-            BetsManager.getUserBets($scope.security.user.userName).then(function (bets) {
+            BetsManager.getUserBets($scope.security.user.Username).then(function (bets) {
                 for(var i=0; i < bets.length; i++) {
                     $scope.bets[bets[i].Game.GameId] = bets[i];
                     $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId

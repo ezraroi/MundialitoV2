@@ -27,7 +27,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $timeout(userHasGeneralBet, 1000);
         }
         else {
-            GeneralBetsManager.hasGeneralBet($scope.security.user.userName).then(function (data) {
+            GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then(function (data) {
                 $scope.submittedGeneralBet = data === true;
             });
         }
@@ -112,7 +112,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
     };
 
     function getRowTemplate() {
-        var rowtpl = '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.userName }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>';
+        var rowtpl = '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.Username }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>';
         return rowtpl;
     }
 

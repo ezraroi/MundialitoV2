@@ -16,12 +16,12 @@ angular.module('mundialitoApp').directive('accessLevel', ['$log','security', fun
               function (newValue) {
                   $scope.user = newValue;
                   if (($scope.user === undefined) || ($scope.user === null)) {
-                      userRole = "Public"
-                  } else if ($scope.user.roles) {
-                      //$log.debug('Security.user has been changed:' + $scope.user.userName);
-                      userRole = $scope.user.roles;
+                      userRole = "User"
+                  } else if ($scope.user.Roles) {
+                      //$log.debug('Security.user has been changed:' + $scope.user.Username);
+                      userRole = $scope.user.Roles;
                   } else {
-                      userRole = "Public"
+                      userRole = "User"
                   }
                   updateCSS();
               },

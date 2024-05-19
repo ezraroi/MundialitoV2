@@ -220,6 +220,8 @@ namespace Mundialito.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "MundialitoUser");
                 });
 
             modelBuilder.Entity("Mundialito.DAL.ActionLogs.ActionLog", b =>
@@ -255,45 +257,57 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("BetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "BetId");
 
                     b.Property<int>("AwayScore")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "AwayScore");
 
                     b.Property<string>("CardsMark")
                         .IsRequired()
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "CardsMark");
 
                     b.Property<bool>("CardsWin")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "CardsWin");
 
                     b.Property<string>("CornersMark")
                         .IsRequired()
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "CornersMark");
 
                     b.Property<bool>("CornersWin")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "CornersWin");
 
                     b.Property<int>("GameId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "GameId");
 
                     b.Property<bool>("GameMarkWin")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "GameMarkWin");
 
                     b.Property<int>("HomeScore")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "HomeScore");
 
                     b.Property<int?>("Points")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "Points");
 
                     b.Property<bool>("ResultWin")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "ResultWin");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "UserId");
 
                     b.HasKey("BetId");
 
@@ -308,33 +322,42 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("GameId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "GameId");
 
                     b.Property<int?>("AwayScore")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "AwayScore");
 
                     b.Property<int>("AwayTeamId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "AwayTeamId");
 
                     b.Property<string>("CardsMark")
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "CardsMark");
 
                     b.Property<string>("CornersMark")
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "CornersMark");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "Date");
 
                     b.Property<int?>("HomeScore")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "HomeScore");
 
                     b.Property<int>("HomeTeamId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "HomeTeamId");
 
                     b.Property<int>("StadiumId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "StadiumId");
 
                     b.HasKey("GameId");
 
@@ -345,32 +368,40 @@ namespace Mundialito.Migrations
                     b.HasIndex("StadiumId");
 
                     b.ToTable("Games");
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "AwayMatches");
                 });
 
             modelBuilder.Entity("Mundialito.DAL.GeneralBets.GeneralBet", b =>
                 {
                     b.Property<int>("GeneralBetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "GeneralBetId");
 
                     b.Property<int>("GoldBootPlayerId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "GoldBootPlayerId");
 
                     b.Property<bool>("IsResolved")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "IsResolved");
 
                     b.Property<int?>("PlayerPoints")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "PlayerPoints");
 
                     b.Property<int?>("TeamPoints")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "TeamPoints");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("WinningTeamId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "WinningTeamId");
 
                     b.HasKey("GeneralBetId");
 
@@ -383,11 +414,13 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("PlayerId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "PlayerId");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "Name");
 
                     b.HasKey("PlayerId");
 
@@ -398,50 +431,63 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("StadiumId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "StadiumId");
 
                     b.Property<int>("Capacity")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "Capacity");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "City");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "Name");
 
                     b.HasKey("StadiumId");
 
                     b.ToTable("Stadiums");
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "Stadium");
                 });
 
             modelBuilder.Entity("Mundialito.DAL.Teams.Team", b =>
                 {
                     b.Property<int>("TeamId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasAnnotation("Relational:JsonPropertyName", "TeamId");
 
                     b.Property<string>("Flag")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "Flag");
 
                     b.Property<string>("Logo")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "Logo");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "Name");
 
                     b.Property<string>("ShortName")
                         .IsRequired()
                         .HasMaxLength(3)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasAnnotation("Relational:JsonPropertyName", "ShortName");
 
                     b.HasKey("TeamId");
 
                     b.ToTable("Teams");
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "Team");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

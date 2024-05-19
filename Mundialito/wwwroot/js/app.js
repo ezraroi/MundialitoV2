@@ -420,7 +420,7 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
             $timeout(loadUserBets,1000);
         }
         else {
-            BetsManager.getUserBets($scope.security.user.userName).then(function (bets) {
+            BetsManager.getUserBets($scope.security.user.Username).then(function (bets) {
                 for(var i=0; i < bets.length; i++) {
                     $scope.bets[bets[i].Game.GameId] = bets[i];
                     $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId
@@ -662,7 +662,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $timeout(userHasGeneralBet, 1000);
         }
         else {
-            GeneralBetsManager.hasGeneralBet($scope.security.user.userName).then(function (data) {
+            GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then(function (data) {
                 $scope.submittedGeneralBet = data === true;
             });
         }
@@ -747,7 +747,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
     };
 
     function getRowTemplate() {
-        var rowtpl = '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.userName }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>';
+        var rowtpl = '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.Username }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>';
         return rowtpl;
     }
 
@@ -1311,12 +1311,12 @@ angular.module('mundialitoApp').directive('accessLevel', ['$log','security', fun
               function (newValue) {
                   $scope.user = newValue;
                   if (($scope.user === undefined) || ($scope.user === null)) {
-                      userRole = "Public"
-                  } else if ($scope.user.roles) {
-                      //$log.debug('Security.user has been changed:' + $scope.user.userName);
-                      userRole = $scope.user.roles;
+                      userRole = "User"
+                  } else if ($scope.user.Roles) {
+                      //$log.debug('Security.user has been changed:' + $scope.user.Username);
+                      userRole = $scope.user.Roles;
                   } else {
-                      userRole = "Public"
+                      userRole = "User"
                   }
                   updateCSS();
               },
@@ -2144,9 +2144,9 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     $log.debug('UserProfileCtrl: generalBetsAreOpen = ' + generalBetsAreOpen);
 
     $scope.isLoggedUserProfile = function() {
-        var res = ($scope.security.user != null) && ($scope.security.user.userName === $scope.profileUser.Username);
+        var res = ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
         $log.debug('UserProfileCtrl: isLoggedUserProfile = ' + res);
-        return ($scope.security.user != null) && ($scope.security.user.userName === $scope.profileUser.Username);
+        return ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
     };
 
     $scope.isGeneralBetClosed = function() {
