@@ -22,9 +22,7 @@ bld/
 # Visual Studio files
 .vs/
 *.vscode/
-*.sln
 *.suo
-*.csproj
 *.user
 *.vspscc
 *.vssscc
