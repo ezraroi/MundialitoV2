@@ -1,13 +1,14 @@
-using System.Data.Common;
-using System.Net.Mail;
+using System.Text;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Mundialito.Configuration;
 using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.Games;
+using Mundialito.Mail;
 
 namespace Mundialito.Function
 {
@@ -16,6 +17,8 @@ namespace Mundialito.Function
         private readonly ILogger _logger;
         private List<Game> openGames;
         private readonly IConfigurationRoot configuration;
+        private readonly Config config;
+        private readonly IEmailSender emailSender;
 
         public Notify(ILoggerFactory loggerFactory)
         {
@@ -23,6 +26,8 @@ namespace Mundialito.Function
             configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .Build();
+            this.config = configuration.GetSection("App").Get<Config>();
+            emailSender = new EmailSender(Options.Create(this.config));
         }
 
         [Function("Notify")]
@@ -63,19 +68,16 @@ namespace Mundialito.Function
             log.LogInformation("***** End of Notification sending *****");
         }
 
-        private static void SendNotification(MundialitoUser user, Game game, ILogger log)
+        private void SendNotification(MundialitoUser user, Game game, ILogger log)
         {
             try
             {
-                string linkAddress = System.Environment.GetEnvironmentVariable("LinkAddress", EnvironmentVariableTarget.Process);
-                string fromAddress = System.Environment.GetEnvironmentVariable("FromAddress", EnvironmentVariableTarget.Process);
-                MailMessage message = new MailMessage();
-                message.To.Add(new MailAddress(user.Email, user.FirstName + " " + user.LastName));
-                message.From = new MailAddress(fromAddress, System.Environment.GetEnvironmentVariable("ApplicationName", EnvironmentVariableTarget.Process));
+                string fromAddress = this.config.FromAddress;
                 TimeSpan timeSpan = game.CloseTime - DateTime.UtcNow;
-                message.Subject = string.Format("WARNING: The game between {0} and {1}, will be closed in {2} minutes and you havn't placed a bet yet", (object)game.HomeTeam.Name, (object)game.AwayTeam.Name, (object)(int)timeSpan.TotalMinutes);
-                string content1 = string.Format("Please submit your bet as soon as possible");
-                string content2 = "<p>Please submit your bet as soon as possible. <a href='" + linkAddress  + "'>Click here for the Bets Center</a></p>";
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append(string.Format("WARNING: The game between {0} and {1}, will be closed in {2} minutes and you havn't placed a bet yet", (object)game.HomeTeam.Name, (object)game.AwayTeam.Name, (object)(int)timeSpan.TotalMinutes));
+                stringBuilder.Append(string.Format("Please submit your bet as soon as possible"));
+                emailSender.SendEmail(user.Email, string.Format("WARNING: The game between {0} and {1}, will be closed in {2} minutes and you havn't placed a bet yet", (object)game.HomeTeam.Name, (object)game.AwayTeam.Name, (object)(int)timeSpan.TotalMinutes), stringBuilder.ToString());
             }
             catch (Exception ex)
             {
