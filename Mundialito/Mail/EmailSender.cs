@@ -21,7 +21,7 @@ public class EmailSender : IEmailSender
         {
             // This code demonstrates how to fetch your connection string
             // from an environment variable.
-            string connectionString = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_CONNECTION_STRING");
+            string connectionString = _config.EmailConnectionString;
             EmailClient emailClient = new EmailClient(connectionString);
             EmailSendOperation emailSendOperation = await emailClient.SendAsync(
                 Azure.WaitUntil.Completed,

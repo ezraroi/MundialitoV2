@@ -3,8 +3,6 @@ namespace Mundialito.Configuration;
 
 public class Config
 {
-
-
     public const string Key = "App";
 
     public string AdminUserName { get; set; } = "admin";
@@ -22,4 +20,5 @@ public class Config
     public string Theme { get; internal set; } = "spaceLab";
     public string FromAddress { get; set; } = "admin@admin";
     public bool UseSqlLite {get; set;} 
+    public string EmailConnectionString {get; set;}
 }
