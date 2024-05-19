@@ -1,25 +1,37 @@
 <div class="row">
     <div class="col-md-12">
         <uib-alert type="warning" ng-show="!submittedGeneralBet && generalBetsAreOpen">
-            <i class="fa fa-exclamation-triangle"></i> You haven't placed a bet on the <b>Winning Team</b> and the <b>Golden Boot Player</b>, <a ng-href="users/{{security.user.Username}}">click here</a> now
+            <i class="fa fa-exclamation-triangle"></i> You haven't placed a bet on the <b>Winning Team</b> and the
+            <b>Golden Boot Player</b>, <a ng-href="users/{{security.user.Username}}">click here</a> now
         </uib-alert>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-12 text-center" >
+        <img ng-src="https://img.uefa.com/imgml/flags/50x50/isr.png">   עם ישראל חי   <img ng-src="https://img.uefa.com/imgml/flags/50x50/isr.png">
+    </div>
+</div>
+<br><br>
 <div class="row" ng-show="pendingUpdateGames">
     <div class="col-md-12 col-xs-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-clock-o"></i> Pending Update Games</div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
-                    <a class="list-group-item" ng-repeat="game in games track by game.GameId | filter:isPendingUpdate()" href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
+                    <a class="list-group-item" ng-repeat="game in games track by game.GameId | filter:isPendingUpdate()"
+                        href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">
-                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']" tooltip="{{::game.HomeTeam.Name}}"></i>  <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
+                                    tooltip="{{::game.HomeTeam.Name}}"></i> <span
+                                    class="hidden-xs">{{::game.HomeTeam.Name}}</span>
                             </div>
                             <div class="col-md-2 col-xs-6 text-center"> - </div>
                             <div class="col-md-5 col-xs-3">
                                 <span class="pull-right">
-                                     <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']" tooltip="{{::game.AwayTeam.Name}}"></i>
+                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i
+                                        ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
+                                        tooltip="{{::game.AwayTeam.Name}}"></i>
                                 </span>
                             </div>
                         </div>
@@ -32,18 +44,25 @@
 <div class="row">
     <div class="col-md-6 col-xs-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-folder-open"></i> Open Games for Betting <span class="pull-right badge">{{(games | filter:isOpenForBetting()).length }}</span></div>
+            <div class="panel-heading"><i class="fa fa-folder-open"></i> Open Games for Betting <span
+                    class="pull-right badge">{{(games | filter:isOpenForBetting()).length }}</span></div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
-                    <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"  ng-repeat="game in games track by game.GameId | filter:isOpenForBetting() | limitTo:10" href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
+                    <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
+                        ng-repeat="game in games track by game.GameId | filter:isOpenForBetting() | limitTo:10"
+                        href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">
-                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']" tooltip="{{::game.HomeTeam.Name}}"></i>  <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
+                                    tooltip="{{::game.HomeTeam.Name}}"></i> <span
+                                    class="hidden-xs">{{::game.HomeTeam.Name}}</span>
                             </div>
                             <div class="col-md-2 col-xs-6 text-center"> - </div>
                             <div class="col-md-5 col-xs-3">
                                 <span class="pull-right">
-                                     <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']" tooltip="{{::game.AwayTeam.Name}}"></i>
+                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i
+                                        ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
+                                        tooltip="{{::game.AwayTeam.Name}}"></i>
                                 </span>
                             </div>
                         </div>
@@ -54,18 +73,27 @@
     </div>
     <div class="col-md-6 col-xs-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-futbol-o" aria-hidden="true"></i> Last scores <span class="pull-right badge" uib-tooltip="Total Finished Games">{{(games | filter:isDecided()).length }}</span></div>
+            <div class="panel-heading"><i class="fa fa-futbol-o" aria-hidden="true"></i> Last scores <span
+                    class="pull-right badge" uib-tooltip="Total Finished Games">{{(games | filter:isDecided()).length
+                    }}</span></div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
-                    <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}" ng-repeat="game in games track by game.GameId| filter:isDecided() | orderBy:'Date':true | limitTo:10" href="{{game.getUrl()}}">
+                    <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
+                        ng-repeat="game in games track by game.GameId| filter:isDecided() | orderBy:'Date':true | limitTo:10"
+                        href="{{game.getUrl()}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">
-                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']" tooltip="{{::game.HomeTeam.Name}}"></i> <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
+                                    tooltip="{{::game.HomeTeam.Name}}"></i> <span
+                                    class="hidden-xs">{{::game.HomeTeam.Name}}</span>
                             </div>
-                            <div class="col-md-2 col-xs-6 text-center"> {{::game.HomeScore}} - {{::game.AwayScore}} </div>
+                            <div class="col-md-2 col-xs-6 text-center"> {{::game.HomeScore}} - {{::game.AwayScore}}
+                            </div>
                             <div class="col-md-5 col-xs-3">
                                 <span class="pull-right">
-                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']" tooltip="{{::game.AwayTeam.Name}}"></i>
+                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i
+                                        ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
+                                        tooltip="{{::game.AwayTeam.Name}}"></i>
                                 </span>
                             </div>
                         </div>
@@ -82,8 +110,9 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize ng-style="getTableHeight()" ui-grid-save-state
-                              cg-busy="{tracker:'getUsers'}" ui-if="gridOptions.data.length > 0"></div>
+                        <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
+                            ng-style="getTableHeight()" ui-grid-save-state cg-busy="{tracker:'getUsers'}"
+                            ui-if="gridOptions.data.length > 0"></div>
                     </div>
                 </div>
             </div>
@@ -106,22 +135,22 @@
                         </div>
                         <div class="row">
                             <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                <th>Name</th>
-                                <th>Winning Team</th>
-                                <th>Golden Boot Player</th>
-                                </thead>
-                                <tbody>
-                                <tr ng-repeat="bet in generalBets">
-                                    <td>{{bet.OwnerName}}</td>
-                                    </td>
-                                    <td>{{teamsDic[bet.WinningTeamId].Name}}</td>
-                                    <td>{{playersDic[bet.GoldenBootPlayerId].Name}}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <th>Name</th>
+                                        <th>Winning Team</th>
+                                        <th>Golden Boot Player</th>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="bet in generalBets">
+                                            <td>{{bet.OwnerName}}</td>
+                                            </td>
+                                            <td>{{teamsDic[bet.WinningTeamId].Name}}</td>
+                                            <td>{{playersDic[bet.GoldenBootPlayerId].Name}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -146,9 +175,9 @@
                             <div class="table-responsive">
                                 <table class="table table-striped">
                                     <thead>
-                                    <th>Name</th>
-                                    <th>Winning Team</th>
-                                    <th>Golden Boot Player</th>
+                                        <th>Name</th>
+                                        <th>Winning Team</th>
+                                        <th>Golden Boot Player</th>
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="bet in generalBets">
