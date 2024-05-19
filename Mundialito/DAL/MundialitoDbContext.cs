@@ -58,7 +58,7 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	protected override void OnConfiguring(DbContextOptionsBuilder options) {
 		// options.UseSqlite("DataSource = identityDb.db; Cache=Shared");
 		bool sqlLite = appConfig.GetSection("App").GetValue("UseSqlLite", false);
-		if (sqlLite){
+		if (appConfig.GetSection("App").GetValue("UseSqlLite", false)){
 			options.UseSqlite(appConfig.GetConnectionString("App"));
 		} else {
 			options.UseSqlServer(appConfig.GetConnectionString("App"));
