@@ -23,9 +23,11 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	public DbSet<GeneralBet> GeneralBets { get; set; }
 	public DbSet<ActionLog> ActionLogs { get; set; }
 	public DbSet<Player> Players { get; set; }
+	private readonly IConfiguration appConfig;
 
-	public MundialitoDbContext(DbContextOptions<MundialitoDbContext> options) : base(options)
+	public MundialitoDbContext(IConfiguration config)
 	{
+		appConfig = config;
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -53,6 +55,15 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 						.IsUnique();
 	}
 
-	protected override void OnConfiguring(DbContextOptionsBuilder options) =>
-	options.UseSqlite("DataSource = identityDb.db; Cache=Shared");
+	protected override void OnConfiguring(DbContextOptionsBuilder options) {
+		// options.UseSqlite("DataSource = identityDb.db; Cache=Shared");
+		bool sqlLite = appConfig.GetSection("App").GetValue("UseSqlLite", false);
+		if (sqlLite){
+			options.UseSqlite(appConfig.GetConnectionString("App"));
+		} else {
+			options.UseSqlServer(appConfig.GetConnectionString("App"));
+		}
+		
+	}
+	
 }

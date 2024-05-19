@@ -28,7 +28,7 @@ public class EmailSender : IEmailSender
                 Azure.WaitUntil.Completed,
                 _config.FromAddress,
                 toEmail,
-                subject,
+                subject, null,
                 messsage);
             EmailSendResult statusMonitor = emailSendOperation.Value;
             /// Get the OperationId so that it can be used for tracking the message for troubleshooting

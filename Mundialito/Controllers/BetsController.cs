@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Configuration;
 using Microsoft.Extensions.Options;
+using Mundialito.Mail;
 
 namespace Mundialito.Controllers;
 
@@ -30,8 +31,9 @@ public class BetsController : ControllerBase
     private readonly UserManager<MundialitoUser> userManager;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly IEmailSender emailSender;
 
-    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config)
+    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
     {
         this.config = config.Value;
         this.httpContextAccessor = httpContextAccessor;
@@ -41,6 +43,7 @@ public class BetsController : ControllerBase
         this.betValidator = betValidator;
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
+        this.emailSender = emailSender;
     }
 
     [HttpGet]
@@ -183,23 +186,14 @@ public class BetsController : ControllerBase
         try
         {
             Game game = gamesRepository.GetGame(bet.GameId);
-            string sendGridUsername = config.SendGridUserName;
-            string sendGridPassword = config.SendGridPassword;
             string linkAddress = config.LinkAddress;
             string fromAddress = config.FromAddress;
-            MailMessage message = new MailMessage();
-            message.To.Add(new MailAddress(user.Email, user.FirstName + " " + user.LastName));
-            message.Subject = string.Format("{0} Bet Update: You placed a bet on {1} - {2}", config.ApplicationName, game.HomeTeam.Name,
-                game.AwayTeam.Name);
             StringBuilder builder = new StringBuilder();
             builder.AppendLine(string.Format("Result: {0} {1} - {2} {3}", game.HomeTeam.Name, bet.HomeScore, game.AwayTeam.Name, bet.AwayScore));
             builder.AppendLine(string.Format("Corners: {0}", bet.CornersMark));
             builder.AppendLine(string.Format("Yellow Cards: {0}", bet.CardsMark));
-            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(builder.ToString(), null, "text/plain"));
-            SmtpClient smtpClient = new SmtpClient("smtp.sendgrid.net", Convert.ToInt32(587));
-            NetworkCredential networkCredential = new NetworkCredential(sendGridUsername, sendGridPassword);
-            smtpClient.Credentials = (ICredentialsByHost)networkCredential;
-            smtpClient.Send(message);
+            emailSender.SendEmail(user.Email, string.Format("{0} Bet Update: You placed a bet on {1} - {2}", config.ApplicationName, game.HomeTeam.Name,
+                game.AwayTeam.Name), builder.ToString());
         }
         catch (Exception ex)
         {

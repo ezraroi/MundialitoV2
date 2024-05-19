@@ -121,7 +121,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
-   opt.TokenLifespan = TimeSpan.FromHours(2));
+   opt.TokenLifespan = TimeSpan.FromHours(5));
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 var app = builder.Build();
 
@@ -129,11 +129,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
 	app.UseExceptionHandler("/Home/Error");
-	app.UseSwagger();
-	app.UseSwaggerUI();
 	app.UseHsts();
 }
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapFallbackToController("Index", "Home");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
