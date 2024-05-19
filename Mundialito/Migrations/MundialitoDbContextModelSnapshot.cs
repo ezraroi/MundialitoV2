@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mundialito.DAL;
 
@@ -15,30 +16,35 @@ namespace Mundialito.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -47,17 +53,19 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -70,17 +78,19 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -92,16 +102,16 @@ namespace Mundialito.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
 
@@ -111,10 +121,10 @@ namespace Mundialito.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("RoleId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("RoleId", "UserId");
 
@@ -126,16 +136,16 @@ namespace Mundialito.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -145,79 +155,81 @@ namespace Mundialito.Migrations
             modelBuilder.Entity("Mundialito.DAL.Accounts.MundialitoUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
 
@@ -228,25 +240,27 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("ActionLogId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ActionLogId"));
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ObjectType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ActionLogId");
 
@@ -257,56 +271,58 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("BetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "BetId");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BetId"));
+
                     b.Property<int>("AwayScore")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "AwayScore");
 
                     b.Property<string>("CardsMark")
                         .IsRequired()
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(1)")
                         .HasAnnotation("Relational:JsonPropertyName", "CardsMark");
 
                     b.Property<bool>("CardsWin")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bit")
                         .HasAnnotation("Relational:JsonPropertyName", "CardsWin");
 
                     b.Property<string>("CornersMark")
                         .IsRequired()
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(1)")
                         .HasAnnotation("Relational:JsonPropertyName", "CornersMark");
 
                     b.Property<bool>("CornersWin")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bit")
                         .HasAnnotation("Relational:JsonPropertyName", "CornersWin");
 
                     b.Property<int>("GameId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "GameId");
 
                     b.Property<bool>("GameMarkWin")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bit")
                         .HasAnnotation("Relational:JsonPropertyName", "GameMarkWin");
 
                     b.Property<int>("HomeScore")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "HomeScore");
 
                     b.Property<int?>("Points")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "Points");
 
                     b.Property<bool>("ResultWin")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bit")
                         .HasAnnotation("Relational:JsonPropertyName", "ResultWin");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(450)")
                         .HasAnnotation("Relational:JsonPropertyName", "UserId");
 
                     b.HasKey("BetId");
@@ -322,41 +338,43 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("GameId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "GameId");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GameId"));
+
                     b.Property<int?>("AwayScore")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "AwayScore");
 
                     b.Property<int>("AwayTeamId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "AwayTeamId");
 
                     b.Property<string>("CardsMark")
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(1)")
                         .HasAnnotation("Relational:JsonPropertyName", "CardsMark");
 
                     b.Property<string>("CornersMark")
                         .HasMaxLength(1)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(1)")
                         .HasAnnotation("Relational:JsonPropertyName", "CornersMark");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("datetime2")
                         .HasAnnotation("Relational:JsonPropertyName", "Date");
 
                     b.Property<int?>("HomeScore")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "HomeScore");
 
                     b.Property<int>("HomeTeamId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "HomeTeamId");
 
                     b.Property<int>("StadiumId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "StadiumId");
 
                     b.HasKey("GameId");
@@ -376,31 +394,33 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("GeneralBetId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "GeneralBetId");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GeneralBetId"));
+
                     b.Property<int>("GoldBootPlayerId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "GoldBootPlayerId");
 
                     b.Property<bool>("IsResolved")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("bit")
                         .HasAnnotation("Relational:JsonPropertyName", "IsResolved");
 
                     b.Property<int?>("PlayerPoints")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "PlayerPoints");
 
                     b.Property<int?>("TeamPoints")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "TeamPoints");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("WinningTeamId")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "WinningTeamId");
 
                     b.HasKey("GeneralBetId");
@@ -414,12 +434,14 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("PlayerId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "PlayerId");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PlayerId"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "Name");
 
                     b.HasKey("PlayerId");
@@ -431,21 +453,23 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("StadiumId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "StadiumId");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StadiumId"));
+
                     b.Property<int>("Capacity")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "Capacity");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "City");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "Name");
 
                     b.HasKey("StadiumId");
@@ -459,28 +483,30 @@ namespace Mundialito.Migrations
                 {
                     b.Property<int>("TeamId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "TeamId");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TeamId"));
 
                     b.Property<string>("Flag")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "Flag");
 
                     b.Property<string>("Logo")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "Logo");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "Name");
 
                     b.Property<string>("ShortName")
                         .IsRequired()
                         .HasMaxLength(3)
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(3)")
                         .HasAnnotation("Relational:JsonPropertyName", "ShortName");
 
                     b.HasKey("TeamId");
