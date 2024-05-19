@@ -60,7 +60,6 @@ public class BetsResolver : IBetsResolver
             else
                 bet.CornersWin = false;
             bet.Points = points;
-            betsRepository.UpdateBet(bet);
             Trace.TraceInformation("{0} of {1} got {2} points", bet, game, points);
             AddLog(ActionType.UPDATE, String.Format("Resolved bet {0} with points {1}", bet, points));
         }

@@ -17,7 +17,7 @@ namespace Mundialito.Controllers;
 public class UsersController : ControllerBase
 {
     private const String ObjectType = "User";
-    private readonly IBetsRepository betsRepository;   
+    private readonly IBetsRepository betsRepository;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
         {
-            return NotFound(new ErrorMessage{ Message = string.Format("No such user '{0}'", username)});
+            return NotFound(new ErrorMessage { Message = string.Format("No such user '{0}'", username) });
         }
         var userModel = new UserModel(user);
         betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
@@ -88,7 +88,7 @@ public class UsersController : ControllerBase
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
-            return NotFound(new ErrorMessage{ Message = "User not found"});
+            return NotFound(new ErrorMessage { Message = "User not found" });
         }
         user.Role = Role.Admin;
         var result = await userManager.UpdateAsync(user);
@@ -109,7 +109,7 @@ public class UsersController : ControllerBase
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
-            return NotFound(new ErrorMessage{ Message = "User not found"});
+            return NotFound(new ErrorMessage { Message = "User not found" });
         }
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
@@ -147,9 +147,16 @@ public class UsersController : ControllerBase
 
     private IEnumerable<UserModel> GetTableDetails()
     {
-        var res = userManager.Users.Select(user => new UserModel(user)).ToList();
-        var yesterdayPlaces = new Dictionary<string, int>(res.Count);
-        res = res.OrderByDescending(user => user.YesterdayPoints).ToList();
+        var users = userManager.Users.ToDictionary(user => user.Id, user => new UserModel(user));
+        var yesterdayPlaces = new Dictionary<string, int>(users.Count);
+        var allBets = betsRepository.GetBets();
+        allBets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => users[bet.User.Id].AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
+        allBets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).Where(bet => bet.Game.Date < dateTimeProvider.UTCNow.Subtract(TimeSpan.FromDays(1))).ToList().ForEach(bet => users[bet.User.Id].YesterdayPoints += bet.Points.HasValue ? bet.Points.Value : 0);
+        generalBetsRepository.GetGeneralBets().ToList().ForEach(generalBet =>
+            {
+                users[generalBet.User.Id].SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
+            });
+        var res = users.Values.ToList().OrderByDescending(user => user.YesterdayPoints).ToList();
         for (int i = 0; i < res.Count; i++)
         {
             yesterdayPlaces.Add(res[i].Id, i + 1);

@@ -89,7 +89,7 @@ public class BetUser
         LastName = mundialitoUser.LastName;
     }
     
-    [JsonPropertyName("UserName")]
+    [JsonPropertyName("Username")]
     public string UserName { get; set; }
 
     [JsonPropertyName("FirstName")]

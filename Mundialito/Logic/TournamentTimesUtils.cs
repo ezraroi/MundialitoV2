@@ -17,7 +17,7 @@ public class TournamentTimesUtils
     {
         if (String.IsNullOrEmpty(config.TournamentStartDate))
         {
-            return new DateTime(2024, 6, 1).ToUniversalTime();
+            return new DateTime(2024, 6, 14).ToUniversalTime();
         }
         else
         {
@@ -29,7 +29,7 @@ public class TournamentTimesUtils
     {
         if (String.IsNullOrEmpty(config.TournamentEndDate))
         {
-            return new DateTime(2024, 7, 13).ToUniversalTime();
+            return new DateTime(2024, 7, 14).ToUniversalTime();
         }
         else
         {
