@@ -3,8 +3,6 @@ using Mundialito.Models;
 using Mundialito.Logic;
 using System.Diagnostics;
 using Mundialito.DAL.ActionLogs;
-using System.Net.Mail;
-using System.Net;
 using System.Text;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.Games;
@@ -32,8 +30,9 @@ public class BetsController : ControllerBase
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IEmailSender emailSender;
+    private readonly ILogger logger;
 
-    public BetsController(IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
+    public BetsController(ILogger<BetsController> logger, IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
     {
         this.config = config.Value;
         this.httpContextAccessor = httpContextAccessor;
@@ -44,6 +43,7 @@ public class BetsController : ControllerBase
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
         this.emailSender = emailSender;
+        this.logger = logger;
     }
 
     [HttpGet]

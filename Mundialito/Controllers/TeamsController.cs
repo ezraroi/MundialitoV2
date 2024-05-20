@@ -1,6 +1,5 @@
 ﻿using Mundialito.DAL.Teams;
 using System.Diagnostics;
-using Mundialito.DAL.Games;
 using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -14,12 +13,13 @@ namespace Mundialito.Controllers;
 public class TeamsController : ControllerBase
 {
     private readonly ITeamsRepository teamsRepository;
-    private readonly IActionLogsRepository actionLogsRepository;
+    private readonly ILogger logger;
 
-    public TeamsController(ITeamsRepository teamsRepository, IActionLogsRepository actionLogsRepository)
+
+    public TeamsController(ILogger<TeamsController> logger, ITeamsRepository teamsRepository)
     {
         this.teamsRepository = teamsRepository;
-        this.actionLogsRepository = actionLogsRepository;
+        this.logger = logger;
     }
 
     [HttpGet]

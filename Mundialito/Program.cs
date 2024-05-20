@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Mundialito.Configuration;
@@ -123,11 +124,25 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
    opt.TokenLifespan = TimeSpan.FromHours(5));
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+if (!builder.Environment.IsDevelopment())
+{
+	builder.Logging.AddApplicationInsights(
+			configureTelemetryConfiguration: (config) =>
+				config.ConnectionString = builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING"),
+				configureApplicationInsightsLoggerOptions: (options) => { }
+		);
+}
+else
+{
+	builder.Logging.ClearProviders();
+	builder.Logging.AddConsole();
+}
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+	app.Logger.LogInformation("Running in Dev mode");
 	app.UseExceptionHandler("/Home/Error");
 	app.UseHsts();
 }
@@ -143,7 +158,7 @@ app.MapControllers();
 app.MapControllerRoute(
 	 name: "default",
 	 pattern: "{controller=Home}/{action=Index}/{id?}");
+app.Logger.LogInformation("Starting Database Seeding");
 DatabaseInitilaizer.Seed(app);
+app.Logger.LogInformation("Database Seeding Done");
 app.Run();
-
-

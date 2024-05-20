@@ -10,10 +10,12 @@ namespace Mundialito.Controllers;
 public class PlayersController : ControllerBase
 {
     private readonly IPlayersRepository playersRepository;
+    private readonly ILogger logger;
 
-    public PlayersController(IPlayersRepository playersRepository)
+    public PlayersController(ILogger<PlayersController> logger, IPlayersRepository playersRepository)
     {
         this.playersRepository = playersRepository;
+        this.logger = logger;
     }
 
     [HttpGet]

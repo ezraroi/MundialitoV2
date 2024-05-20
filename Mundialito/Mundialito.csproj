@@ -23,5 +23,6 @@
     <PackageReference Include="MimeKit" Version="4.5.0"/>
     <PackageReference Include="Azure.Communication.Email" Version="1.0.1"/>
     <PackageReference Include="Azure.ResourceManager.Communication" Version="1.2.0"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0"/>
   </ItemGroup>
 </Project>

@@ -7,21 +7,22 @@ namespace Mundialito.Mail;
 
 public class EmailSender : IEmailSender
 {
-     private readonly EmailClient _emailClient;
      private readonly Config _config;
+     private readonly ILogger _logger;
 
-    public EmailSender(IOptions<Config> config)
+    public EmailSender(ILogger<EmailSender> logger, IOptions<Config> config)
     {
         _config = config.Value;
+        _logger = logger;
     }
 
     public async void SendEmail(string toEmail, string subject, string messsage)
     {
         try
         {
-            // This code demonstrates how to fetch your connection string
-            // from an environment variable.
             string connectionString = _config.EmailConnectionString;
+            // TODO: Skip if empty
+            _logger.LogInformation($"Will send mail to {toEmail} with connection string {connectionString}");
             EmailClient emailClient = new EmailClient(connectionString);
             EmailSendOperation emailSendOperation = await emailClient.SendAsync(
                 Azure.WaitUntil.Completed,
@@ -32,12 +33,12 @@ public class EmailSender : IEmailSender
             EmailSendResult statusMonitor = emailSendOperation.Value;
             /// Get the OperationId so that it can be used for tracking the message for troubleshooting
             string operationId = emailSendOperation.Id;
-            Console.WriteLine($"Email operation id = {operationId}");
+            _logger.LogInformation($"Email operation id = {operationId}, status = {statusMonitor.Status}");
         }
         catch (RequestFailedException ex)
         {
             /// OperationID is contained in the exception message and can be used for troubleshooting purposes
-            Console.WriteLine($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
+            _logger.LogError($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
         }
     }
 }

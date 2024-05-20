@@ -16,7 +16,7 @@ namespace Mundialito.Controllers;
 [Authorize]
 public class UsersController : ControllerBase
 {
-    private const String ObjectType = "User";
+    private const string ObjectType = "User";
     private readonly IBetsRepository betsRepository;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
@@ -24,8 +24,9 @@ public class UsersController : ControllerBase
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly IGeneralBetsRepository generalBetsRepository;
+    private readonly ILogger logger;
 
-    public UsersController(IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository)
+    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository)
     {
         this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
@@ -34,6 +35,7 @@ public class UsersController : ControllerBase
         this.dateTimeProvider = dateTimeProvider;
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.generalBetsRepository = generalBetsRepository;
+        this.logger = logger;
     }
 
     [HttpGet]

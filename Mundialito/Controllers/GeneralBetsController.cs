@@ -15,15 +15,16 @@ namespace Mundialito.Controllers;
 [Authorize]
 public class GeneralBetsController : ControllerBase
 {
-    private const String ObjectType = "GeneralBet";
+    private const string ObjectType = "GeneralBet";
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly UserManager<MundialitoUser> userManager;
+    private readonly ILogger logger;
 
-    public GeneralBetsController(IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.dateTimeProvider = dateTimeProvider;
@@ -31,6 +32,7 @@ public class GeneralBetsController : ControllerBase
         this.actionLogsRepository = actionLogsRepository;
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.userManager = userManager;
+        this.logger = logger;
     }
 
     [HttpGet]

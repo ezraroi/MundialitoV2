@@ -27,8 +27,9 @@ public class GamesController : ControllerBase
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
+    private readonly ILogger logger;
 
-    public GamesController(IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
+    public GamesController(ILogger<GamesController> logger, IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.config = config.Value;
@@ -39,6 +40,7 @@ public class GamesController : ControllerBase
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
         this.userManager = userManager;
+        this.logger = logger;
     }
 
     [HttpGet]

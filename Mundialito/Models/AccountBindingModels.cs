@@ -82,14 +82,17 @@ public class ResetPasswordModel
     [JsonPropertyName("Password")]
     public string Password { get; set; }
     
+    [Required]
     [DataType(DataType.Password)]
     [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
     [JsonPropertyName("ConfirmPassword")]
     public string ConfirmPassword { get; set; }
     
+    [Required]
     [JsonPropertyName("Email")]
     public string Email { get; set; }
-    
+        
+    [Required]
     [JsonPropertyName("Token")]
     public string Token { get; set; }
 

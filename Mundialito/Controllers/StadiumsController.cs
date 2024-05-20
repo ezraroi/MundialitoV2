@@ -13,12 +13,12 @@ namespace Mundialito.Controllers;
 public class StadiumsController : ControllerBase
 {
     private readonly IStadiumsRepository stadiumsRepository;
-    private readonly IActionLogsRepository actionLogsRepository;
+    private readonly ILogger logger;
 
-    public StadiumsController(IStadiumsRepository stadiumsRepository, IActionLogsRepository actionLogsRepository)
+    public StadiumsController(ILogger<StadiumsController> logger, IStadiumsRepository stadiumsRepository)
     {
         this.stadiumsRepository = stadiumsRepository;
-        this.actionLogsRepository = actionLogsRepository;
+        this.logger = logger;
     }
 
     [HttpGet]
