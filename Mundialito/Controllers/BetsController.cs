@@ -58,7 +58,6 @@ public class BetsController : ControllerBase
         var item = betsRepository.GetBet(id);
         if (item == null)
             return NotFound(new ErrorMessage{ Message = string.Format("Bet with id '{0}' not found", id)});
-
         return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
     }
 
@@ -94,7 +93,7 @@ public class BetsController : ControllerBase
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         var res = betsRepository.InsertBet(newBet);
-        Trace.TraceInformation("Posting new Bet: {0}", newBet);
+        logger.LogInformation("Posting new Bet from {}", user.UserName);
         betsRepository.Save();
         bet.BetId = res.BetId;
         AddLog(ActionType.CREATE, string.Format("Posting new Bet: {0}", res));
@@ -102,6 +101,7 @@ public class BetsController : ControllerBase
         {
             SendBetMail(newBet, user);
         }
+        logger.LogInformation("Bet os user {} was saved", user.UserName);
         return Ok(bet);
     }
 
@@ -130,13 +130,14 @@ public class BetsController : ControllerBase
         } catch (Exception e) {
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
+        logger.LogInformation("Updating bet from {}", user.UserName);
         betsRepository.Save();
-        Trace.TraceInformation("Updating Bet: {0}", betToUpdate);
         AddLog(ActionType.UPDATE, string.Format("Updating Bet: {0}", betToUpdate));
         if (ShouldSendMail())
         {
             SendBetMail(betToUpdate, user);
         }
+        logger.LogInformation("Bet {} of {} was updated", id, user.UserName);
         return Ok(new NewBetModel(id, bet));
     }
 
@@ -156,10 +157,11 @@ public class BetsController : ControllerBase
         } catch (Exception e) {
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
+        logger.LogInformation("Deleting bet {} of {}", id, user.UserName);
         betsRepository.DeleteBet(id);
         betsRepository.Save();
-        Trace.TraceInformation("Deleting Bet {0}", id);
         AddLog(ActionType.DELETE, string.Format("Deleting Bet: {0}", id));
+        logger.LogInformation("Bet {} of {} was deleted", id, user.UserName);
         return Ok();
     }
 
@@ -172,7 +174,7 @@ public class BetsController : ControllerBase
         }
         catch (Exception e)
         {
-            Trace.TraceError("Exception during log. Exception: {0}", e.Message);
+            logger.LogError("Exception during log. Exception: {0}", e.Message);
         }
     }
 
@@ -197,7 +199,7 @@ public class BetsController : ControllerBase
         }
         catch (Exception ex)
         {
-            Trace.TraceError("Exception during mail sending. Exception: {0}", ex.Message);
+            logger.LogError("Exception during mail sending. Exception: {0}", ex.Message);
         }
     }
 }

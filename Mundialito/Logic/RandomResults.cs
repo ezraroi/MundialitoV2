@@ -13,18 +13,22 @@ public class RandomResults
 
     public KeyValuePair<int, int> GetRandomResult()
     {
-        Dictionary<int, float> weightsWithZero = new Dictionary<int, float>();
-        weightsWithZero.Add(0, 0.3f);
-        weightsWithZero.Add(1, 0.4f);
-        weightsWithZero.Add(2, 0.35f);
-        weightsWithZero.Add(3, 0.20f);
-        weightsWithZero.Add(4, 0.1f);
+        Dictionary<int, float> weightsWithZero = new Dictionary<int, float>
+        {
+            { 0, 0.3f },
+            { 1, 0.4f },
+            { 2, 0.35f },
+            { 3, 0.20f },
+            { 4, 0.1f }
+        };
 
-        Dictionary<int, float> weightsNoZero = new Dictionary<int, float>();
-        weightsNoZero.Add(1, 0.4f);
-        weightsNoZero.Add(2, 0.35f);
-        weightsNoZero.Add(3, 0.20f);
-        weightsNoZero.Add(4, 0.1f);
+        Dictionary<int, float> weightsNoZero = new Dictionary<int, float>
+        {
+            { 1, 0.4f },
+            { 2, 0.35f },
+            { 3, 0.20f },
+            { 4, 0.1f }
+        };
         var mark = GetRandomMark();
         switch (mark)
         {

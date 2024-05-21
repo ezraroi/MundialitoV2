@@ -67,7 +67,6 @@ public class GeneralBetsController : ControllerBase
         var item = generalBetsRepository.GetUserGeneralBet(username);
         if (item == null)
             return NotFound(string.Format("User '{0}' dosen't have a general bet yet", username));
-
         return Ok(new GeneralBetViewModel(item, tournamentTimesUtils.GetGeneralBetsCloseTime()));
     }
 
@@ -76,9 +75,7 @@ public class GeneralBetsController : ControllerBase
     {
         var item = generalBetsRepository.GetGeneralBet(id);
         if (item == null)
-        {
             return NotFound(new ErrorMessage { Message = string.Format("General Bet with id '{0}' not found", id)});
-        }
         return Ok(new GeneralBetViewModel(item, tournamentTimesUtils.GetGeneralBetsCloseTime()));
     }
 
@@ -94,31 +91,31 @@ public class GeneralBetsController : ControllerBase
         }
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
-        }
-        var generalBet = new GeneralBet();
-        generalBet.User = user;
-        generalBet.WinningTeamId = newBet.WinningTeamId;
-        generalBet.GoldBootPlayerId = newBet.GoldenBootPlayerId;
+        var generalBet = new GeneralBet
+        {
+            User = user,
+            WinningTeamId = newBet.WinningTeamId,
+            GoldBootPlayerId = newBet.GoldenBootPlayerId
+        };
         var res = generalBetsRepository.InsertGeneralBet(generalBet);
-        Trace.TraceInformation("Posting new General Bet: {0}", generalBet);
+        logger.LogInformation("Posting new general bet {} from {}", generalBet, user.UserName);
         generalBetsRepository.Save();
         newBet.GeneralBetId = res.GeneralBetId;
         AddLog(ActionType.CREATE, String.Format("Posting new Generel Bet: {0}", res));
+        logger.LogInformation("Saved general bet of {}", user.UserName);
         return Ok(newBet);
     }
 
     [HttpPut]
+    [Authorize]
     public async Task<ActionResult<UpdateGenralBetModel>> UpdateBet(int id, UpdateGenralBetModel bet)
     {
         if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
             return BadRequest("General bets are already closed for betting");
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
-        }
         var betToUpdate = generalBetsRepository.GetGeneralBet(id);
         if (betToUpdate.User.Id != user.Id)
         {
@@ -127,8 +124,9 @@ public class GeneralBetsController : ControllerBase
         }
         betToUpdate.WinningTeamId = bet.WinningTeamId;
         betToUpdate.GoldBootPlayerId = bet.GoldenBootPlayerId;
+        logger.LogInformation("Updating general bet of {} with {}", user.UserName, betToUpdate);
         generalBetsRepository.Save();
-        Trace.TraceInformation("Updating General Bet: {0}", betToUpdate);
+        logger.LogInformation("Updated general bet of {}", user.UserName);
         AddLog(ActionType.UPDATE, String.Format("Updating new Generel Bet: {0}", betToUpdate));
         return bet;
     }
@@ -149,9 +147,10 @@ public class GeneralBetsController : ControllerBase
             AddLog(ActionType.ERROR, string.Format("General Bet '{0}' dosen't exits", id));
             return NotFound(new ErrorMessage { Message = string.Format("General Bet '{0}' dosen't exits", id)});
         }
-        Trace.TraceInformation("Resolved General Bet '{0}' with data: {1}", id, resolvedBet);
+        logger.LogInformation("Resolving general bet {0} with data: {1}", id, resolvedBet);
         item.Resolve(resolvedBet.PlayerIsRight, resolvedBet.TeamIsRight);
         generalBetsRepository.Save();
+        logger.LogInformation("Resolved general bet {0}", id);
         AddLog(ActionType.UPDATE, String.Format("Resolved Generel Bet: {0}", item));
         return Ok();
     }
@@ -180,7 +179,7 @@ public class GeneralBetsController : ControllerBase
         }
         catch (Exception e)
         {
-            Trace.TraceError("Exception during log. Exception: {0}", e.Message);
+            logger.LogError("Exception during log. Exception: {0}", e.Message);
         }
     }
 }

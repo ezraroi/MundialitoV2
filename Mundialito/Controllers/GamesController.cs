@@ -77,10 +77,8 @@ public class GamesController : ControllerBase
         var game = gamesRepository.GetGame(id);
         if (game == null)
             return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", id)});
-
         if (game.IsOpen(dateTimeProvider.UTCNow))
             return BadRequest(new ErrorMessage{ Message = String.Format("Game '{0}' is stil open for betting", id)});
-
         return Ok(betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points));
     }
 
@@ -89,15 +87,13 @@ public class GamesController : ControllerBase
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
-        }
         var game = GetGameByID(id);
         var uid = user.Id;
         var item = betsRepository.GetGameBets(id).SingleOrDefault(bet => bet.User.Id == uid);
         if (item == null)
         {
-            Trace.TraceInformation("No bet found for game {0} and user {1}, creating empty Bet", game.Result, uid);
+            logger.LogInformation("No bet found for game {0} and user {1}, creating empty Bet", game.Result, uid);
             return Ok(new BetViewModel() { BetId = -1, HomeScore = null, AwayScore = null, IsOpenForBetting = true, IsResolved = false, Game = new BetGame() { GameId = id } });
         }
         return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
@@ -119,13 +115,15 @@ public class GamesController : ControllerBase
         {
             return BadRequest(new ErrorMessage{ Message = "Home team and Away team can not be the same team"});
         }
-        var newGame = new Game();
-        newGame.HomeTeamId = game.HomeTeam.TeamId;
-        newGame.AwayTeamId = game.AwayTeam.TeamId;
-        newGame.StadiumId = game.Stadium.StadiumId;
-        newGame.Date = game.Date;
+        var newGame = new Game
+        {
+            HomeTeamId = game.HomeTeam.TeamId,
+            AwayTeamId = game.AwayTeam.TeamId,
+            StadiumId = game.Stadium.StadiumId,
+            Date = game.Date
+        };
         var res = gamesRepository.InsertGame(newGame);
-        Trace.TraceInformation("Posting new Game: {0}", game);
+        logger.LogInformation("Posting new Game: {0}", game);
         gamesRepository.Save();
         game.GameId = res.GameId;
         game.IsOpen = true;
@@ -145,7 +143,7 @@ public class GamesController : ControllerBase
 
         if (item.IsOpen(dateTimeProvider.UTCNow) && (game.HomeScore != null || game.AwayScore != null || game.CornersMark != null || game.CardsMark != null))
             return BadRequest(new ErrorMessage{ Message = "Open game can not be updated with results"});
-
+        logger.LogInformation("Resolving bet {} with {}", id, game);
         item.AwayScore = game.AwayScore;
         item.HomeScore = game.HomeScore;
         item.CardsMark = game.CardsMark;
@@ -155,10 +153,11 @@ public class GamesController : ControllerBase
         if (item.IsBetResolved(dateTimeProvider.UTCNow))
         {
             AddLog(ActionType.UPDATE, String.Format("Will resolve bets of game {0}", item.GameId));
-            Trace.TraceInformation("Will reoslve Game {0} bets", id);
+            logger.LogInformation("Will reoslve Game {0} bets", id);
             betsResolver.ResolveBets(item);
         }
         AddLog(ActionType.UPDATE, String.Format("Updating Game {0}", item));
+        logger.LogInformation("Bet {} was resolved", id);
         return Ok(new PutGameModelResult(item, dateTimeProvider.UTCNow));
     }
 
@@ -169,10 +168,11 @@ public class GamesController : ControllerBase
         var game = gamesRepository.GetGame(id);
         if (game == null)
             return NotFound(new ErrorMessage{ Message = string.Format("No such game with id '{0}'", id)});
-        Trace.TraceInformation("Deleting Game {0}", id);
+        logger.LogInformation("Deleting Game {0}", id);
         gamesRepository.DeleteGame(id);
         gamesRepository.Save();
         AddLog(ActionType.DELETE, String.Format("Deleting Game {0}", id));
+        logger.LogInformation("Game {0} was deleted", id);
         return Ok();
     }
 
@@ -194,7 +194,7 @@ public class GamesController : ControllerBase
         }
         catch (Exception e)
         {
-            Trace.TraceError("Exception during log. Exception: {0}", e.Message);
+            logger.LogError("Exception during log. Exception: {0}", e.Message);
         }
     }
 
@@ -207,9 +207,10 @@ public class GamesController : ControllerBase
                 {
                     if (task.Result == null)
                     {
-                        Trace.TraceError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
+                        logger.LogError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
                         return;
                     }
+                    logger.LogInformation("Adding monkey user bet");
                     var randomResults = new RandomResults();
                     var result = randomResults.GetRandomResult();
                     betsRepository.InsertBet(new Bet()
@@ -222,10 +223,9 @@ public class GamesController : ControllerBase
                         CornersMark = randomResults.GetRandomMark()
                     });
                     betsRepository.Save();
+                    logger.LogInformation("Monkey bet was saved");
                 }
             );
-
-
         }
     }
 }

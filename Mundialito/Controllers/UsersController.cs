@@ -57,16 +57,12 @@ public class UsersController : ControllerBase
     {
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
-        {
             return NotFound(new ErrorMessage { Message = string.Format("No such user '{0}'", username) });
-        }
         var userModel = new UserModel(user);
         betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
         var generalBet = generalBetsRepository.GetUserGeneralBet(username);
         if (generalBet != null)
-        {
             userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
-        }
         return await IsAdmin(userModel);
     }
 
@@ -80,6 +76,7 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public IActionResult GeneratePrivateKey(string email)
     {
+        logger.LogInformation("Generating private key for {}", email);
         return Ok(PrivateKeyValidator.GeneratePrivateKey(email));
     }
 
@@ -89,10 +86,9 @@ public class UsersController : ControllerBase
     {
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
-        {
             return NotFound(new ErrorMessage { Message = "User not found" });
-        }
         user.Role = Role.Admin;
+        logger.LogInformation("Makeing user {} admin", user.UserName);
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
         {
@@ -100,6 +96,7 @@ public class UsersController : ControllerBase
             return BadRequest(ModelState);
         }
         AddLog(ActionType.UPDATE, string.Format("Made  user {0} admin", id));
+        logger.LogInformation("User {} is now admin", user.UserName);
         return Ok();
     }
 
@@ -107,18 +104,17 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(String id)
     {
-        Trace.TraceInformation("Deleting user {0} by {1}", id, httpContextAccessor.HttpContext?.User.Identity.Name);
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
-        {
             return NotFound(new ErrorMessage { Message = "User not found" });
-        }
+        logger.LogInformation("Deleting user {0} by {1}", id, user.UserName);
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
         {
             ModelState.AddModelError("", "Cannot delete user");
             return BadRequest(ModelState);
         }
+        logger.LogInformation("Deleted user {0}", id);
         AddLog(ActionType.DELETE, string.Format("Deleted user: {0}", id));
         return Ok();
     }
@@ -127,9 +123,7 @@ public class UsersController : ControllerBase
     {
         var user = await userManager.FindByIdAsync(param.Id);
         if (user == null)
-        {
             return NotFound();
-        }
         param.IsAdmin = user.Role == Role.Admin;
         return Ok(param);
     }
@@ -143,7 +137,7 @@ public class UsersController : ControllerBase
         }
         catch (Exception e)
         {
-            Trace.TraceError("Exception during log. Exception: {0}", e.Message);
+            logger.LogInformation("Exception during log. Exception: {0}", e.Message);
         }
     }
 

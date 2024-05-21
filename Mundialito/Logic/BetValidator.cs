@@ -7,20 +7,22 @@ namespace Mundialito.Logic;
 
 public class BetValidator : IBetValidator
 {
-    private const String ObjectType = "Bet";
+    private const string ObjectType = "Bet";
     private readonly IGamesRepository gamesRepository;
     private readonly IBetsRepository betsRepository;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IActionLogsRepository actionLogsRepository;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly ILogger logger;
 
-    public BetValidator(IGamesRepository gamesRepository, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor)
+    public BetValidator(ILogger<BetValidator> logger, IGamesRepository gamesRepository, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.gamesRepository = gamesRepository;
         this.betsRepository = betsRepository;
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
+        this.logger = logger;
     }
 
     public void ValidateNewBet(Bet bet)
@@ -56,7 +58,7 @@ public class BetValidator : IBetValidator
             AddLog(ActionType.ERROR, string.Format("Bet {0} dosen't exist", bet.BetId));
             throw new Exception(string.Format("Bet {0} dosen't exist", bet.BetId));
         }
-        if (String.IsNullOrEmpty(bet.UserId))
+        if (string.IsNullOrEmpty(bet.UserId))
         {
             AddLog(ActionType.ERROR, string.Format("Updated bet {0} must have user", bet.BetId));
             throw new Exception(string.Format("Updated bet {0} must have user", bet.BetId));
@@ -105,7 +107,7 @@ public class BetValidator : IBetValidator
         }
         catch (Exception e)
         {
-            Trace.TraceError("Exception during log. Exception: {0}", e.Message);
+            logger.LogError("Exception during log. Exception: {0}", e.Message);
         }
     }
 }

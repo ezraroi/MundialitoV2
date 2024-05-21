@@ -3,6 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using Mundialito.DAL.Accounts;
+using Microsoft.Extensions.Options;
+using Mundialito.Configuration;
 
 namespace Mundialito.Logic;
 
@@ -10,10 +12,12 @@ public class TokenService
 {
     private const int ExpirationMinutes = 60 * 24 * 60;
     private readonly ILogger<TokenService> _logger;
+    private readonly JwtTokenSettings _config;
 
-    public TokenService(ILogger<TokenService> logger)
+    public TokenService(ILogger<TokenService> logger, IOptions<JwtTokenSettings> config)
     {
         _logger = logger;
+        _config = config.Value;
     }
 
     public string CreateToken(MundialitoUser user)
@@ -25,17 +29,15 @@ public class TokenService
             expiration
         );
         var tokenHandler = new JwtSecurityTokenHandler();
-        
         _logger.LogInformation("JWT Token created");
-        
         return tokenHandler.WriteToken(token);
     }
 
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials,
         DateTime expiration) =>
         new(
-            new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidIssuer"],
-            new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidAudience"],
+            _config.ValidIssuer,
+            _config.ValidAudience,
             claims,
             expires: expiration,
             signingCredentials: credentials
@@ -43,8 +45,8 @@ public class TokenService
 
     private List<Claim> CreateClaims(MundialitoUser user)
     {
-        var jwtSub = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["JwtRegisteredClaimNamesSub"];
-        
+        var jwtSub = _config.JwtRegisteredClaimNamesSub;
+        _logger.LogInformation("Creating claims for {}", user.UserName);
         try
         {
             var claims = new List<Claim>
@@ -57,20 +59,18 @@ public class TokenService
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role.ToString())
             };
-            
             return claims;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError("Failed to create claim: {}", e.Message);
             throw;
         }
     }
 
     private SigningCredentials CreateSigningCredentials()
     {
-        var symmetricSecurityKey = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
-        
+        var symmetricSecurityKey = _config.SymmetricSecurityKey;
         return new SigningCredentials(
             new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(symmetricSecurityKey)

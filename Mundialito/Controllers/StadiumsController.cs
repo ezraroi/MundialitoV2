@@ -63,9 +63,10 @@ public class StadiumsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public void DeleteStadium(int id)
     {
-        Trace.TraceInformation("Deleting Stadium {0}", id);
+        logger.LogInformation("Deleting Stadium {0}", id);
         stadiumsRepository.DeleteStadium(id);
         stadiumsRepository.Save();
+        logger.LogInformation("Deleted Stadium {0}", id);
     }
 
 }

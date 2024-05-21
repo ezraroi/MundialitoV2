@@ -7,8 +7,8 @@ namespace Mundialito.Mail;
 
 public class EmailSender : IEmailSender
 {
-     private readonly Config _config;
-     private readonly ILogger _logger;
+    private readonly Config _config;
+    private readonly ILogger _logger;
 
     public EmailSender(ILogger<EmailSender> logger, IOptions<Config> config)
     {
@@ -20,12 +20,15 @@ public class EmailSender : IEmailSender
     {
         try
         {
-            string connectionString = _config.EmailConnectionString;
-            // TODO: Skip if empty
-            _logger.LogInformation($"Will send mail to {toEmail} with connection string {connectionString}");
-            EmailClient emailClient = new EmailClient(connectionString);
+            if (string.IsNullOrEmpty(_config.EmailConnectionString))
+            {
+                _logger.LogInformation("Not sending mail as connection string is not defined in config");
+                return;
+            }
+            _logger.LogInformation($"Will send mail to {toEmail} with connection string {_config.EmailConnectionString}");
+            EmailClient emailClient = new EmailClient(_config.EmailConnectionString);
             EmailSendOperation emailSendOperation = await emailClient.SendAsync(
-                Azure.WaitUntil.Completed,
+                WaitUntil.Completed,
                 _config.FromAddress,
                 toEmail,
                 subject, null,

@@ -32,7 +32,6 @@ public class TeamsController : ControllerBase
     public ActionResult<Team> GetTeamById(int id)
     {
         var item = teamsRepository.GetTeam(id);
-
         if (item == null)
             return NotFound(new ErrorMessage{ Message = string.Format("Team with id '{0}' not found", id)});
         return Ok(item);
@@ -71,9 +70,10 @@ public class TeamsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public void DeleteTeam(int id)
     {
-        Trace.TraceInformation("Deleting Team {0}", id);
+        logger.LogInformation("Deleting Team {0}", id);
         teamsRepository.DeleteTeam(id);
         teamsRepository.Save();
+        logger.LogInformation("Deleted Team {0}", id);
     }
 
 }
