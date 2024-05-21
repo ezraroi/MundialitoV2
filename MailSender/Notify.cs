@@ -27,7 +27,7 @@ namespace Mundialito.Function
             .AddJsonFile("appsettings.json")
             .Build();
             this.config = configuration.GetSection("App").Get<Config>();
-            emailSender = new EmailSender(Options.Create(this.config));
+            emailSender = new EmailSender(loggerFactory.CreateLogger<EmailSender>(), Options.Create(this.config));
         }
 
         [Function("Notify")]
