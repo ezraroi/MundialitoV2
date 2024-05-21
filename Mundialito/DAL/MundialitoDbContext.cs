@@ -60,7 +60,7 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 		if (appConfig.GetSection("App").GetValue("UseSqlLite", false)){
 			options.UseSqlite(appConfig.GetConnectionString("App"));
 		} else {
-			options.UseSqlServer(appConfig.GetConnectionString("App"));
+			options.UseSqlServer(appConfig.GetConnectionString("App"), b => b.EnableRetryOnFailure());
 		}
 		
 	}
