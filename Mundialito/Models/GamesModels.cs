@@ -70,7 +70,7 @@ public class GameViewModel
     [JsonPropertyName("IsPendingUpdate")]
     public Boolean IsPendingUpdate { get; private set; }
 
-    [JsonPropertyName("TeamId")]
+    [JsonPropertyName("IsBetResolved")]
     public Boolean IsBetResolved { get; private set; }
 
     [JsonPropertyName("Mark")]
