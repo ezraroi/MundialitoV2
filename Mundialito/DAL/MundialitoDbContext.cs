@@ -24,10 +24,17 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	public DbSet<ActionLog> ActionLogs { get; set; }
 	public DbSet<Player> Players { get; set; }
 	private readonly IConfiguration appConfig;
+	private readonly string _connectionString;
 
 	public MundialitoDbContext(IConfiguration config)
 	{
 		appConfig = config;
+	}
+
+	public MundialitoDbContext(IConfiguration config, string connectionString)
+	{
+		appConfig = config;
+		_connectionString = connectionString;
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,14 +62,20 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 						.IsUnique();
 	}
 
-	protected override void OnConfiguring(DbContextOptionsBuilder options) {
-		bool sqlLite = appConfig.GetSection("App").GetValue("UseSqlLite", false);
-		if (appConfig.GetSection("App").GetValue("UseSqlLite", false)){
-			options.UseSqlite(appConfig.GetConnectionString("App"));
+	protected override void OnConfiguring(DbContextOptionsBuilder options)
+	{
+		if (string.IsNullOrEmpty(_connectionString)) {
+			bool sqlLite = appConfig.GetSection("App").GetValue("UseSqlLite", false);
+			if (appConfig.GetSection("App").GetValue("UseSqlLite", false))
+			{
+				options.UseSqlite(appConfig.GetConnectionString("App"));
+			}
+			else
+			{
+				options.UseSqlServer(appConfig.GetConnectionString("App"), b => b.EnableRetryOnFailure());
+			}
 		} else {
-			options.UseSqlServer(appConfig.GetConnectionString("App"), b => b.EnableRetryOnFailure());
+			options.UseSqlServer(_connectionString, b => b.EnableRetryOnFailure());
 		}
-		
 	}
-	
 }

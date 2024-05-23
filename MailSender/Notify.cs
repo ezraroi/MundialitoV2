@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Text;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,7 @@ namespace Mundialito.Function
         private readonly IConfigurationRoot configuration;
         private readonly Config config;
         private readonly IEmailSender emailSender;
+        private readonly string connectionString;
 
         public Notify(ILoggerFactory loggerFactory)
         {
@@ -27,8 +29,8 @@ namespace Mundialito.Function
             .AddJsonFile("appsettings.json")
             .Build();
             this.config = configuration.GetSection("App").Get<Config>();
-            _logger.LogInformation($"Connection string: {configuration.GetConnectionString("App")}");
-            _logger.LogInformation($"UseSqlLite: {config.UseSqlLite}");
+            connectionString = Environment.GetEnvironmentVariable("ConnectionString"); 
+            _logger.LogInformation($"Connection string: {connectionString}");
             emailSender = new EmailSender(loggerFactory.CreateLogger<EmailSender>(), Options.Create(this.config));
         }
 
@@ -93,7 +95,7 @@ namespace Mundialito.Function
 
         private List<MundialitoUser> GetUsersToNotify(Game game)
         {
-            var db = new MundialitoDbContext(configuration);
+            var db = new MundialitoDbContext(configuration, connectionString);
             IEnumerable<MundialitoUser> source = db.Users.ToList();
             Dictionary<string, Bet> gameBets = Enumerable.ToDictionary<Bet, string, Bet>(new BetsRepository(db).GetGameBets(game.GameId), bet => bet.UserId, bet => bet);
             return Enumerable.ToList<MundialitoUser>(Enumerable.Where<MundialitoUser>(source, user => !gameBets.ContainsKey(user.Id)));
