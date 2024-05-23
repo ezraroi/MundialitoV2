@@ -20,7 +20,7 @@ namespace Mundialito.Function
         private readonly IConfigurationRoot configuration;
         private readonly Config config;
         private readonly IEmailSender emailSender;
-        private readonly string connectionString;
+        private readonly MundialitoDbContext mundialitoDbContext;
 
         public Notify(ILoggerFactory loggerFactory)
         {
@@ -29,8 +29,9 @@ namespace Mundialito.Function
             .AddJsonFile("appsettings.json")
             .Build();
             this.config = configuration.GetSection("App").Get<Config>();
-            connectionString = Environment.GetEnvironmentVariable("ConnectionString"); 
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionString"); 
             _logger.LogInformation($"Connection string: {connectionString}");
+            mundialitoDbContext = new MundialitoDbContext(configuration, connectionString);
             emailSender = new EmailSender(loggerFactory.CreateLogger<EmailSender>(), Options.Create(this.config));
         }
 
@@ -95,15 +96,14 @@ namespace Mundialito.Function
 
         private List<MundialitoUser> GetUsersToNotify(Game game)
         {
-            var db = new MundialitoDbContext(configuration, connectionString);
-            IEnumerable<MundialitoUser> source = db.Users.ToList();
-            Dictionary<string, Bet> gameBets = Enumerable.ToDictionary<Bet, string, Bet>(new BetsRepository(db).GetGameBets(game.GameId), bet => bet.UserId, bet => bet);
+            IEnumerable<MundialitoUser> source = mundialitoDbContext.Users.ToList();
+            Dictionary<string, Bet> gameBets = Enumerable.ToDictionary<Bet, string, Bet>(new BetsRepository(mundialitoDbContext).GetGameBets(game.GameId), bet => bet.UserId, bet => bet);
             return Enumerable.ToList<MundialitoUser>(Enumerable.Where<MundialitoUser>(source, user => !gameBets.ContainsKey(user.Id)));
         }
         
         private List<Game> GetOpenGames(ILogger log)
         {
-            List<Game> list1 = Enumerable.ToList<Game>(new GamesRepository(new MundialitoDbContext(configuration)).Get(null, null, ""));
+            List<Game> list1 = Enumerable.ToList<Game>(new GamesRepository(mundialitoDbContext).Get(null, null, ""));
             log.LogInformation(string.Format("Got {0} games from database", list1.Count));
             List<Game> list2 = Enumerable.ToList<Game>(Enumerable.Where<Game>((IEnumerable<Game>)Enumerable.OrderBy<Game, DateTime>((IEnumerable<Game>)list1, (Func<Game, DateTime>)(game => game.Date)), (Func<Game, bool>)(game => game.IsOpen())));
             log.LogInformation(string.Format("{0} games still can be notified", list2.Count));
