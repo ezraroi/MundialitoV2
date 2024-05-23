@@ -27,6 +27,8 @@ namespace Mundialito.Function
             .AddJsonFile("appsettings.json")
             .Build();
             this.config = configuration.GetSection("App").Get<Config>();
+            _logger.LogInformation($"Connection string: {configuration.GetConnectionString("App")}");
+            _logger.LogInformation($"UseSqlLite: {config.UseSqlLite}");
             emailSender = new EmailSender(loggerFactory.CreateLogger<EmailSender>(), Options.Create(this.config));
         }
 
