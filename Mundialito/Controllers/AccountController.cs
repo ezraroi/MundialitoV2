@@ -63,9 +63,7 @@ public class AccountController : ControllerBase
         MundialitoUser user = new MundialitoUser
         {
             UserName = model.UserName,
-            NormalizedUserName = model.UserName,
             Email = model.Email,
-            NormalizedEmail = model.Email,
             LastName = model.LastName,
             FirstName = model.FirstName,
             Role = Role.User,

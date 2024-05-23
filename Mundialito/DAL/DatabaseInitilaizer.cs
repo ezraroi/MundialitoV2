@@ -51,8 +51,6 @@ public class DatabaseInitilaizer
             LastName = config.AdminLastName,
             FirstName = config.AdminFirstName,
             Role = Role.Admin,
-            NormalizedEmail = config.AdminEmail,
-            NormalizedUserName = config.AdminUserName,
         };
         userManager.CreateAsync(user, "123456").Wait();
         if (!String.IsNullOrEmpty(config.MonkeyUserName))
@@ -63,8 +61,6 @@ public class DatabaseInitilaizer
                 FirstName = "Monkey",
                 LastName = "Monk",
                 Email = "monkey@zoo.com",
-                NormalizedEmail = "monkey@zoo.com",
-                NormalizedUserName = config.MonkeyUserName,
                 Role = Role.User,
             };
             userManager.CreateAsync(monkey, "monkey").Wait();
