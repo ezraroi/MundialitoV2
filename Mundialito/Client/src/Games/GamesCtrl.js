@@ -24,7 +24,7 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
     };
 
     $scope.isPendingUpdate = function() {
-        return function( item ) {
+        return function(item) {
             return item.IsPendingUpdate;
         };
     };
