@@ -63,7 +63,9 @@ public class AccountController : ControllerBase
         MundialitoUser user = new MundialitoUser
         {
             UserName = model.UserName,
+            NormalizedUserName = model.UserName,
             Email = model.Email,
+            NormalizedEmail = model.Email,
             LastName = model.LastName,
             FirstName = model.FirstName,
             Role = Role.User,
@@ -189,7 +191,7 @@ public class AccountController : ControllerBase
             return BadRequest(forgotPasswordModel);
         var user = await _userManager.FindByEmailAsync(forgotPasswordModel.Email);
         if (user == null)
-            return NotFound(new ErrorMessage { Message = "No user with the provided email is registered" });
+            return NotFound(new ErrorMessage { Message = $"No user with the provided email {forgotPasswordModel.Email} is registered" });
         _logger.LogInformation("Generating reset password token for {user}", user.UserName);
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         _logger.LogInformation("Token generated");

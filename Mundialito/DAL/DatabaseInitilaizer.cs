@@ -15,9 +15,9 @@ namespace Mundialito.DAL;
 public class DatabaseInitilaizer
 {
 
-    private static Dictionary<String, Stadium> stadiumsDic = new Dictionary<string, Stadium>();
-    private static Dictionary<String, Team> teamsDic = new Dictionary<string, Team>();
-    private static Dictionary<String, Player> playersDic = new Dictionary<string, Player>();
+    private static Dictionary<string, Stadium> stadiumsDic = new Dictionary<string, Stadium>();
+    private static Dictionary<string, Team> teamsDic = new Dictionary<string, Team>();
+    private static Dictionary<string, Player> playersDic = new Dictionary<string, Player>();
 
     public static void Seed(IApplicationBuilder applicationBuilder)
     {
@@ -51,6 +51,8 @@ public class DatabaseInitilaizer
             LastName = config.AdminLastName,
             FirstName = config.AdminFirstName,
             Role = Role.Admin,
+            NormalizedEmail = config.AdminEmail,
+            NormalizedUserName = config.AdminUserName,
         };
         userManager.CreateAsync(user, "123456").Wait();
         if (!String.IsNullOrEmpty(config.MonkeyUserName))
@@ -61,6 +63,8 @@ public class DatabaseInitilaizer
                 FirstName = "Monkey",
                 LastName = "Monk",
                 Email = "monkey@zoo.com",
+                NormalizedEmail = "monkey@zoo.com",
+                NormalizedUserName = config.MonkeyUserName,
                 Role = Role.User,
             };
             userManager.CreateAsync(monkey, "monkey").Wait();

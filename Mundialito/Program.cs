@@ -66,6 +66,7 @@ builder.Services.AddSwaggerGen(opt =>
 builder.Services.AddIdentity<MundialitoUser, IdentityRole>(
 	options =>
 	{
+		options.User.RequireUniqueEmail = true;
 		options.SignIn.RequireConfirmedAccount = false;
 		options.SignIn.RequireConfirmedEmail = false;
 		options.Password.RequireDigit = false;
