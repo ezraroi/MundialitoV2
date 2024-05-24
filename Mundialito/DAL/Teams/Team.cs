@@ -34,4 +34,9 @@ public class Team
 
     [JsonPropertyName("AwayMatches")]
     public ICollection<Game>? AwayMatches { get; set; }
+    
+    [Required]
+    [Url]
+    [JsonPropertyName("TeamPage")]
+    public required string TeamPage { get; set; }
 }

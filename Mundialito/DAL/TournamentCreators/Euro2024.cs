@@ -7,6 +7,38 @@ using Mundialito.DAL.Teams;
 namespace Mundialito.DAL.DBCreators;
 public class Euro2024 : ITournamentCreator
 {
+    private Dictionary<string, int> teamsCodes;
+
+    public Euro2024()
+    {
+        teamsCodes = new Dictionary<string, int>() {
+            { "ALBANIA", 2},
+            { "AUSTRIA", 8},
+            { "BELGIUM", 13},
+            { "CROATIA", 56370 },
+            { "CZECHIA", 58837},
+            { "DENMARK", 35 },
+            { "ENGLAND", 39},
+            { "FRANCE", 43 },
+            { "GEORGIA", 57157},
+            { "GERMANY", 47},
+            { "HUNGARY", 57},
+            { "ITALY", 66},
+            { "NETHERLANDS", 95},
+            { "POLAND", 109}, 
+            { "PORTUGAL", 110},
+            { "ROMANIA", 113},
+            { "SCOTLAND", 117},
+            { "SERBIA", 147},
+            { "SLOVAKIA", 58836},
+            { "SLOVENIA", 57163},
+            { "SPAIN", 122},
+            { "SWITZERLAND", 128},
+            { "TÜRKİYE", 135},
+            { "UKRAINE", 57166}
+        };
+    }
+
     public List<Team> GetTeams()
     {
         var teams = new List<Team>();
@@ -403,7 +435,8 @@ public class Euro2024 : ITournamentCreator
         return players;
     }
 
-    private string GetTeamName(string team) {
+    private string GetTeamName(string team)
+    {
         return Strings.UCase(team);
     }
     private DateTime GetFixedDate(DateTime date)
@@ -415,7 +448,14 @@ public class Euro2024 : ITournamentCreator
 
     private Team CreateTeam(String name, String shortName)
     {
-        return new Team() { Name = name, ShortName = shortName, Flag = string.Format("https://img.uefa.com/imgml/flags/50x50/{0}.png", shortName), Logo = string.Format("https://img.uefa.com/imgml/flags/100x100/{0}.png", shortName) };
+        return new Team()
+        {
+            Name = name,
+            ShortName = shortName,
+            Flag = string.Format("https://img.uefa.com/imgml/flags/50x50/{0}.png", shortName),
+            Logo = string.Format("https://img.uefa.com/imgml/flags/100x100/{0}.png", shortName),
+            TeamPage = string.Format("https://www.uefa.com/euro2024/teams/{0}--{1}/", teamsCodes[name.ToUpper()].ToString(), name.ToLower())
+        };
     }
 }
 

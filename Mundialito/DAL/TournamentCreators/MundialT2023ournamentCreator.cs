@@ -511,7 +511,14 @@ public class Mundial2023TournamentCreator : ITournamentCreator
 
     private Team CreateTeam(String name, String shortName)
     {
-        return new Team() { Name = name, ShortName = shortName, Flag = string.Format("https://api.fifa.com/api/v1/picture/flags-sq-2/{0}", shortName), Logo = string.Format("https://api.fifa.com/api/v1/picture/flags-sq-2/{0}", shortName) };
+        return new Team()
+        {
+            Name = name,
+            ShortName = shortName,
+            Flag = string.Format("https://api.fifa.com/api/v1/picture/flags-sq-2/{0}", shortName),
+            Logo = string.Format("https://api.fifa.com/api/v1/picture/flags-sq-2/{0}", shortName),
+            TeamPage = string.Empty,
+        };
     }
 }
 
