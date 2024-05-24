@@ -23,16 +23,19 @@ public class DatabaseInitilaizer
     {
         using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
         {
+            var logger = applicationBuilder.ApplicationServices.GetService<ILogger<DatabaseInitilaizer>>();
             var context = serviceScope.ServiceProvider.GetService<MundialitoDbContext>();
             var userManager = serviceScope.ServiceProvider.GetService<UserManager<MundialitoUser>>();
             var config = serviceScope.ServiceProvider.GetService<IOptions<Config>>().Value;
             if (context.Users.Count() == 0)
             {
-                CreateFirstUsers(config, userManager);
+                logger.LogInformation("No users found. will populate the database");
+                CreateFirstUsers(config, userManager, logger);
                 if (!String.IsNullOrEmpty(config.TournamentDBCreatorName))
                 {
                     Type t = Type.GetType("Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName);
                     ITournamentCreator tournamentCreator = Activator.CreateInstance(t) as ITournamentCreator;
+                    logger.LogInformation("Using tournament creator {0}", config.TournamentDBCreatorName);
                     SetupTeams(context, tournamentCreator);
                     SetupStadiums(context, tournamentCreator);
                     SetupPlayers(context, tournamentCreator);
@@ -42,7 +45,7 @@ public class DatabaseInitilaizer
         }
     }
 
-    private static void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager)
+    private static void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
     {
         var user = new MundialitoUser
         {
@@ -52,6 +55,7 @@ public class DatabaseInitilaizer
             FirstName = config.AdminFirstName,
             Role = Role.Admin,
         };
+        logger.LogInformation("Creating user {0}", user);
         userManager.CreateAsync(user, "123456").Wait();
         if (!String.IsNullOrEmpty(config.MonkeyUserName))
         {
@@ -63,9 +67,9 @@ public class DatabaseInitilaizer
                 Email = "monkey@zoo.com",
                 Role = Role.User,
             };
+            logger.LogInformation("Creating user {0}", monkey);
             userManager.CreateAsync(monkey, "monkey").Wait();
         }
-
     }
 
     private static void SetupPlayers(MundialitoDbContext context, ITournamentCreator tournamentCreator)
