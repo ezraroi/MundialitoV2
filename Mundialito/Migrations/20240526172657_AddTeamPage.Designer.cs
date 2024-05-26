@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mundialito.DAL;
 
@@ -11,9 +12,11 @@ using Mundialito.DAL;
 namespace Mundialito.Migrations
 {
     [DbContext(typeof(MundialitoDbContext))]
-    partial class MundialitoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240526172657_AddTeamPage")]
+    partial class AddTeamPage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
