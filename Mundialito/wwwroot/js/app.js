@@ -1016,7 +1016,7 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
                 HomeTeam: '',
                 AwayTeam: '',
                 Date: '',
-                Stadium: ''
+                Stadium: '',
             };
         },
 
@@ -1971,8 +1971,10 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             return [
                 { property: 'Name', label: 'Name', type: 'text', attr: { required: true } },
                 { property: 'Flag', label: 'Flag', type: 'url', attr: { required: true } },
+                { property: 'TeamPage', label: 'TeamPage', type: 'url', attr: { required: false } },
                 { property: 'Logo', label: 'Logo', type: 'url', attr: { required: true } },
                 { property: 'ShortName', label: 'Short Name', type: 'text', attr: { ngMaxlength: 3, ngMinlength: 3, required: true } },
+                { property: 'TournamentTeamId', label: 'Tournament Team Id', type: 'number', attr: { required: false } },
             ];
         },
 
@@ -1982,7 +1984,10 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
                 Name: '',
                 Flag: '',
                 Logo: '',
-                ShortName: ''
+                ShortName: '',
+                TournamentTeamId: null,
+                TeamPage: null,
+
             }
         },
 

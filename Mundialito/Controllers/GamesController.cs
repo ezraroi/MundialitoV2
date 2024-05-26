@@ -1,7 +1,6 @@
 ﻿using Mundialito.DAL.Games;
 using Mundialito.Models;
 using Mundialito.DAL.Bets;
-using System.Diagnostics;
 using Mundialito.Logic;
 using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +17,7 @@ namespace Mundialito.Controllers;
 [Authorize]
 public class GamesController : ControllerBase
 {
-    private const String ObjectType = "Game";
+    private const string ObjectType = "Game";
     private readonly IGamesRepository gamesRepository;
     private readonly IBetsRepository betsRepository;
     private readonly IBetsResolver betsResolver;

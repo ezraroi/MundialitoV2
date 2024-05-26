@@ -7,65 +7,33 @@ using Mundialito.DAL.Teams;
 namespace Mundialito.DAL.DBCreators;
 public class Euro2024 : ITournamentCreator
 {
-    private Dictionary<string, int> teamsCodes;
-
-    public Euro2024()
-    {
-        teamsCodes = new Dictionary<string, int>() {
-            { "ALBANIA", 2},
-            { "AUSTRIA", 8},
-            { "BELGIUM", 13},
-            { "CROATIA", 56370 },
-            { "CZECHIA", 58837},
-            { "DENMARK", 35 },
-            { "ENGLAND", 39},
-            { "FRANCE", 43 },
-            { "GEORGIA", 57157},
-            { "GERMANY", 47},
-            { "HUNGARY", 57},
-            { "ITALY", 66},
-            { "NETHERLANDS", 95},
-            { "POLAND", 109}, 
-            { "PORTUGAL", 110},
-            { "ROMANIA", 113},
-            { "SCOTLAND", 117},
-            { "SERBIA", 147},
-            { "SLOVAKIA", 58836},
-            { "SLOVENIA", 57163},
-            { "SPAIN", 122},
-            { "SWITZERLAND", 128},
-            { "TÜRKİYE", 135},
-            { "UKRAINE", 57166}
-        };
-    }
-
     public List<Team> GetTeams()
     {
         var teams = new List<Team>();
-        teams.Add(CreateTeam("ALBANIA", "ALB"));
-        teams.Add(CreateTeam("AUSTRIA", "AUT"));
-        teams.Add(CreateTeam("BELGIUM", "BEL"));
-        teams.Add(CreateTeam("CROATIA", "CRO"));
-        teams.Add(CreateTeam("CZECHIA", "CZE"));
-        teams.Add(CreateTeam("DENMARK", "DEN"));
-        teams.Add(CreateTeam("ENGLAND", "ENG"));
-        teams.Add(CreateTeam("FRANCE", "FRA"));
-        teams.Add(CreateTeam("GEORGIA", "GEO"));
-        teams.Add(CreateTeam("GERMANY", "GER"));
-        teams.Add(CreateTeam("HUNGARY", "HUN"));
-        teams.Add(CreateTeam("ITALY", "ITA"));
-        teams.Add(CreateTeam("NETHERLANDS", "NED"));
-        teams.Add(CreateTeam("POLAND", "POL"));
-        teams.Add(CreateTeam("PORTUGAL", "POR"));
-        teams.Add(CreateTeam("ROMANIA", "ROU"));
-        teams.Add(CreateTeam("SCOTLAND", "SCO"));
-        teams.Add(CreateTeam("SERBIA", "SRB"));
-        teams.Add(CreateTeam("SLOVAKIA", "SVK"));
-        teams.Add(CreateTeam("SLOVENIA", "SVN"));
-        teams.Add(CreateTeam("SPAIN", "ESP"));
-        teams.Add(CreateTeam("SWITZERLAND", "SUI"));
-        teams.Add(CreateTeam("TÜRKİYE", "TUR"));
-        teams.Add(CreateTeam("UKRAINE", "UKR"));
+        teams.Add(CreateTeam("ALBANIA", "ALB", 2));
+        teams.Add(CreateTeam("AUSTRIA", "AUT", 8));
+        teams.Add(CreateTeam("BELGIUM", "BEL", 13));
+        teams.Add(CreateTeam("CROATIA", "CRO", 56370));
+        teams.Add(CreateTeam("CZECHIA", "CZE", 58837));
+        teams.Add(CreateTeam("DENMARK", "DEN", 35));
+        teams.Add(CreateTeam("ENGLAND", "ENG", 39));
+        teams.Add(CreateTeam("FRANCE", "FRA", 43));
+        teams.Add(CreateTeam("GEORGIA", "GEO", 57157));
+        teams.Add(CreateTeam("GERMANY", "GER", 47));
+        teams.Add(CreateTeam("HUNGARY", "HUN", 57));
+        teams.Add(CreateTeam("ITALY", "ITA", 66));
+        teams.Add(CreateTeam("NETHERLANDS", "NED", 95));
+        teams.Add(CreateTeam("POLAND", "POL", 109));
+        teams.Add(CreateTeam("PORTUGAL", "POR", 110));
+        teams.Add(CreateTeam("ROMANIA", "ROU", 113));
+        teams.Add(CreateTeam("SCOTLAND", "SCO", 117));
+        teams.Add(CreateTeam("SERBIA", "SRB", 147));
+        teams.Add(CreateTeam("SLOVAKIA", "SVK", 58836));
+        teams.Add(CreateTeam("SLOVENIA", "SVN", 57163));
+        teams.Add(CreateTeam("SPAIN", "ESP", 122));
+        teams.Add(CreateTeam("SWITZERLAND", "SUI", 128));
+        teams.Add(CreateTeam("TÜRKİYE", "TUR", 135));
+        teams.Add(CreateTeam("UKRAINE", "UKR", 57166));
         return teams;
     }
 
@@ -446,7 +414,7 @@ public class Euro2024 : ITournamentCreator
         // return date.Se(65);
     }
 
-    private Team CreateTeam(String name, String shortName)
+    private Team CreateTeam(String name, String shortName, int tournamentTeamId)
     {
         return new Team()
         {
@@ -454,7 +422,8 @@ public class Euro2024 : ITournamentCreator
             ShortName = shortName,
             Flag = string.Format("https://img.uefa.com/imgml/flags/50x50/{0}.png", shortName),
             Logo = string.Format("https://img.uefa.com/imgml/flags/100x100/{0}.png", shortName),
-            TeamPage = string.Format("https://www.uefa.com/euro2024/teams/{0}--{1}/", teamsCodes[name.ToUpper()].ToString(), name.ToLower())
+            TournamentTeamId = tournamentTeamId,
+            TeamPage = string.Format("https://www.uefa.com/euro2024/teams/{0}--{1}/", tournamentTeamId.ToString(), name.ToLower())
         };
     }
 }

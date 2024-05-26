@@ -52,7 +52,7 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
                 HomeTeam: '',
                 AwayTeam: '',
                 Date: '',
-                Stadium: ''
+                Stadium: '',
             };
         },
 

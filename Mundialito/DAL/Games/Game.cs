@@ -7,6 +7,7 @@ namespace Mundialito.DAL.Games;
 
 public class Game 
 {
+    [Required]
     [JsonPropertyName("GameId")]
     public int GameId { get; set; }
 

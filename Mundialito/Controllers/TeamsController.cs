@@ -62,6 +62,8 @@ public class TeamsController : ControllerBase
         teamToUpdate.Flag = team.Flag;
         teamToUpdate.Logo = team.Logo;
         teamToUpdate.ShortName = team.ShortName;
+        teamToUpdate.TournamentTeamId = team.TournamentTeamId;
+        teamToUpdate.TeamPage = team.TeamPage;
         teamsRepository.Save();
         return team;
     }
