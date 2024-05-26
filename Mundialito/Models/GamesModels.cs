@@ -23,6 +23,13 @@ public class GameViewModel
         IsPendingUpdate = game.IsPendingUpdate();
         IsBetResolved = game.IsBetResolved();
         Mark = game.Mark();
+        if (game.HomeTeam.TournamentTeamId.HasValue && game.AwayTeam.TournamentTeamId.HasValue)
+        {
+            GameStatsPage = string.Format($"https://www.uefa.com/euro2024/teams/comparison/{game.HomeTeam.TournamentTeamId.Value}/{game.AwayTeam.TournamentTeamId.Value}/");
+        } else
+        {
+            GameStatsPage = null;
+        }
     }
 
     [JsonPropertyName("GameId")]
@@ -44,16 +51,16 @@ public class GameViewModel
     public int? AwayScore { get; private set; }
 
     [JsonPropertyName("CornersMark")]
-    public String CornersMark { get; private set; }
+    public string CornersMark { get; private set; }
 
     [JsonPropertyName("CardsMark")]
-    public String CardsMark { get; private set; }
+    public string CardsMark { get; private set; }
 
     [JsonPropertyName("Stadium")]
     public Stadium Stadium { get; private set; }
 
     [JsonPropertyName("UserHasBet")]
-    public Boolean UserHasBet { get; set; }
+    public bool UserHasBet { get; set; }
 
     [JsonPropertyName("CloseTime")]
     public DateTime CloseTime
@@ -65,16 +72,19 @@ public class GameViewModel
     }
 
     [JsonPropertyName("IsOpen")]
-    public Boolean IsOpen { get; private set; }
+    public bool IsOpen { get; private set; }
 
     [JsonPropertyName("IsPendingUpdate")]
-    public Boolean IsPendingUpdate { get; private set; }
+    public bool IsPendingUpdate { get; private set; }
 
     [JsonPropertyName("IsBetResolved")]
-    public Boolean IsBetResolved { get; private set; }
+    public bool IsBetResolved { get; private set; }
 
     [JsonPropertyName("Mark")]
-    public String Mark { get; private set; }
+    public string Mark { get; private set; }
+
+    [JsonPropertyName("GameStatsPage")]
+    public string? GameStatsPage { get; set; }
 
 }
 
@@ -92,6 +102,8 @@ public class GameTeamModel
         Flag = team.Flag;
         Logo = team.Logo;
         ShortName = team.ShortName;
+        TournamentTeamId = team.TournamentTeamId;
+        TeamPage = team.TeamPage;
     }
 
     [JsonPropertyName("TeamId")]
@@ -108,6 +120,14 @@ public class GameTeamModel
 
     [JsonPropertyName("ShortName")]
     public string ShortName { get; set; }
+
+    [Url]
+    [JsonPropertyName("TeamPage")]
+    public string? TeamPage { get; set; }
+
+    [JsonPropertyName("TournamentTeamId")]
+    public int? TournamentTeamId { get; set; }
+
 
 }
 
@@ -134,10 +154,10 @@ public class NewGameModel
     public GameTeamModel? AwayTeam { get; set; }
 
     [JsonPropertyName("IsOpen")]
-    public Boolean IsOpen { get; set; }
+    public bool IsOpen { get; set; }
 
     [JsonPropertyName("IsPendingUpdate")]
-    public Boolean IsPendingUpdate { get; set; }
+    public bool IsPendingUpdate { get; set; }
 }
 
 public class PutGameModel
@@ -166,10 +186,10 @@ public class PutGameModel
     public int? AwayScore { get; set; }
 
     [JsonPropertyName("CornersMark")]
-    public String? CornersMark { get; set; }
+    public string? CornersMark { get; set; }
 
     [JsonPropertyName("CardsMark")]
-    public String? CardsMark { get; set; }
+    public string? CardsMark { get; set; }
 
 }
 
@@ -188,15 +208,15 @@ public class PutGameModelResult : PutGameModel
     public int GameId { get; private set; }
 
     [JsonPropertyName("IsOpen")]
-    public Boolean IsOpen { get; private set; }
+    public bool IsOpen { get; private set; }
 
     [JsonPropertyName("IsPendingUpdate")]
-    public Boolean IsPendingUpdate { get; private set; }
+    public bool IsPendingUpdate { get; private set; }
 
     [JsonPropertyName("IsBetResolved")]
-    public Boolean IsBetResolved { get; private set; }
+    public bool IsBetResolved { get; private set; }
 
     [JsonPropertyName("Mark")]
-    public String Mark { get; private set; }
+    public string Mark { get; private set; }
 
 }

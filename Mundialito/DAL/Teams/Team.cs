@@ -6,8 +6,12 @@ namespace Mundialito.DAL.Teams;
 
 public class Team
 {
+    [Required]
     [JsonPropertyName("TeamId")]
     public int TeamId { get; set; }
+
+    [JsonPropertyName("TournamentTeamId")]
+    public int? TournamentTeamId { get; set; }
     
     [Required]
     [JsonPropertyName("Name")]
@@ -34,4 +38,9 @@ public class Team
 
     [JsonPropertyName("AwayMatches")]
     public ICollection<Game>? AwayMatches { get; set; }
+    
+    [Url]
+    [JsonPropertyName("TeamPage")]
+    public string? TeamPage { get; set; }
+    
 }
