@@ -19,4 +19,7 @@ public class AuthResponse
 
     [JsonPropertyName("AccessToken")]
     public string? AccessToken { get; set; }
+
+    [JsonPropertyName("Roles")]
+    public string? Roles { get; set; }
 }

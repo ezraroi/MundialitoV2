@@ -126,6 +126,7 @@ public class AccountController : ControllerBase
             AccessToken = accessToken,
             FirstName = userInDb.FirstName,
             LastName = userInDb.LastName,
+            Roles = userInDb.Role.ToString(),
         });
     }
 
