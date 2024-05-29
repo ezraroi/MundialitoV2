@@ -51,13 +51,13 @@ public class AccountController : ControllerBase
         }
         if (_tournamentTimesUtils.GetGeneralBetsCloseTime() < DateTime.UtcNow)
         {
-            return BadRequest("Tournament is not open for registration anymore");
+            return BadRequest(new ErrorMessage { Message = "Tournament is not open for registration anymore" });
         }
         if (_config.PrivateKeyProtection)
         {
             if (!PrivateKeyValidator.ValidatePrivateKey(model.PrivateKey, model.Email))
             {
-                return BadRequest("Invalid private key");
+                return BadRequest(new ErrorMessage { Message = "Invalid private key" });
             }
         }
         MundialitoUser user = new MundialitoUser
@@ -72,20 +72,17 @@ public class AccountController : ControllerBase
         IdentityResult result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
         {
+            var message = new StringBuilder();
             _logger.LogError("Failed to create user {User}({Mail})", user.UserName, user.Email);
             if (result.Errors != null)
             {
                 foreach (IdentityError error in result.Errors)
                 {
                     _logger.LogError("Error: {err}({code})", error.Description, error.Code);
-                    ModelState.AddModelError("", error.Description);
+                    message.AppendLine(error.Description);
                 }
             }
-            if (ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            return BadRequest(ModelState);
+            return BadRequest(new ErrorMessage { Message = message.ToString() });
         }
         _logger.LogInformation("{User} created successfully", user.UserName);
         return Ok();
