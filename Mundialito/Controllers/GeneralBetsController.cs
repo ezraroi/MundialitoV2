@@ -107,7 +107,7 @@ public class GeneralBetsController : ControllerBase
         return Ok(newBet);
     }
 
-    [HttpPut]
+    [HttpPut("{id}")]
     [Authorize]
     public async Task<ActionResult<UpdateGenralBetModel>> UpdateBet(int id, UpdateGenralBetModel bet)
     {
@@ -131,9 +131,8 @@ public class GeneralBetsController : ControllerBase
         return bet;
     }
 
-    [HttpPut]
+    [HttpPut("{id}/resolve")]
     [Authorize(Roles = "Admin")]
-    [Route("{id}/resolve")]
     public IActionResult ResolveGeneralBet(int id, ResolveGeneralBetModel resolvedBet)
     {
         if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsResolveTime())
