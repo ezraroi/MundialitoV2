@@ -87,6 +87,7 @@ public class GamesController : ControllerBase
             return BadRequest(new ErrorMessage { Message = "HomeScore and AwayScore must be provided" });
         if (simulateGameModel.CornersMark == null || simulateGameModel.CardsMark == null)
             return BadRequest(new ErrorMessage { Message = "CornersMark and CardsMark must be provided" });
+        logger.LogInformation("Simulating game {} with {}", id, simulateGameModel);
         var bets = betsRepository.GetBets();
         item.AwayScore = simulateGameModel.AwayScore;
         item.HomeScore = simulateGameModel.HomeScore;
@@ -153,7 +154,7 @@ public class GamesController : ControllerBase
         game.GameId = res.GameId;
         game.IsOpen = true;
         game.IsPendingUpdate = false;
-        AddLog(ActionType.CREATE, String.Format("Posting new game: {0}", newGame));
+        AddLog(ActionType.CREATE, string.Format("Posting new game: {0}", newGame));
         AddMonkeyBet(res);
         return game;
     }
