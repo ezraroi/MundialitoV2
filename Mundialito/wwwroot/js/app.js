@@ -820,7 +820,7 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', function ($scope, $log, Constants, GamesManager, BetsManager, game, userBet, Alert, $location) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location) {
     $scope.game = game;
     $scope.simulatedGame = {};
     $scope.userBet = userBet;
@@ -941,6 +941,22 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         localStorage.setItem('gridState', state);
     };
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
+    UsersManager.getTable().then((users) => {
+        let topUsers = _.chain(users).filter((user) => user.Username !== $scope.security.user.Username)
+            .first(3).pluck('Username').value();
+        $scope.top3UsersBets = _.filter($scope.gameBets, (bet) => topUsers.includes(bet.User.Username));
+        let myPlace = 0;
+        users.forEach((user, place) => {
+            if (user.Username === $scope.security.user.Username) {
+                myPlace = place;
+            }
+        });
+        let lowIndex = Math.max(myPlace - 3, 0);
+        let upperIndex = Math.min(myPlace + 3, users.length);
+        let neighbors = _.chain(users.slice(lowIndex, upperIndex + 1))
+            .pluck('Username').filter((user) => user !== $scope.security.user.Username).value();
+        $scope.neighborsBets = _.filter($scope.gameBets, (bet) => neighbors.includes(bet.User.Username));
+    });
 }]);
 'use strict';
 angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesManager','games','teams', 'StadiumsManager' ,'Alert',function ($scope,$log, GamesManager, games, teams, StadiumsManager, Alert) {
