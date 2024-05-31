@@ -115,6 +115,7 @@ builder.Services.AddScoped<IBetsResolver, BetsResolver>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IActionLogsRepository, ActionLogsRepository>();
 builder.Services.AddScoped<TokenService, TokenService>();
+builder.Services.AddScoped<TableBuilder, TableBuilder>();
 builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();

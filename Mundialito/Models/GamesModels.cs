@@ -26,7 +26,8 @@ public class GameViewModel
         if (game.HomeTeam.TournamentTeamId.HasValue && game.AwayTeam.TournamentTeamId.HasValue)
         {
             GameStatsPage = string.Format($"https://www.uefa.com/euro2024/teams/comparison/{game.HomeTeam.TournamentTeamId.Value}/{game.AwayTeam.TournamentTeamId.Value}/");
-        } else
+        }
+        else
         {
             GameStatsPage = null;
         }
@@ -219,4 +220,23 @@ public class PutGameModelResult : PutGameModel
     [JsonPropertyName("Mark")]
     public string Mark { get; private set; }
 
+}
+
+public class SimulateGameModel
+{
+    [Required]
+    [JsonPropertyName("HomeScore")]
+    public required int HomeScore { get; set; }
+
+    [Required]
+    [JsonPropertyName("AwayScore")]
+    public required int AwayScore { get; set; }
+
+    [Required]
+    [JsonPropertyName("CornersMark")]
+    public required string CornersMark { get; set; }
+
+    [Required]
+    [JsonPropertyName("CardsMark")]
+    public required string CardsMark { get; set; }
 }

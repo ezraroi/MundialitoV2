@@ -43,22 +43,22 @@ public class BetViewModel
     public int? AwayScore { get; set; }
 
     [JsonPropertyName("CornersMark")]
-    public String CornersMark { get; set; }
+    public string CornersMark { get; set; }
 
     [JsonPropertyName("CardsMark")]
-    public String CardsMark { get; set; }
+    public string CardsMark { get; set; }
 
     [JsonPropertyName("CornersWin")]
-    public Boolean CornersWin { get; set; }
+    public bool CornersWin { get; set; }
 
     [JsonPropertyName("CardsWin")]
-    public Boolean CardsWin{ get; set; }
+    public bool CardsWin { get; set; }
 
     [JsonPropertyName("GameMarkWin")]
-    public Boolean GameMarkWin { get; set; }
+    public bool GameMarkWin { get; set; }
 
     [JsonPropertyName("ResultWin")]
-    public Boolean ResultWin { get; set; }
+    public bool ResultWin { get; set; }
 
     [JsonPropertyName("Points")]
     public int Points { get; set; }
@@ -70,10 +70,10 @@ public class BetViewModel
     public BetGame Game { get; set; }
 
     [JsonPropertyName("IsOpenForBetting")]
-    public Boolean IsOpenForBetting { get; set; }
+    public bool IsOpenForBetting { get; set; }
 
     [JsonPropertyName("IsResolved")]
-    public Boolean IsResolved { get; set; }
+    public bool IsResolved { get; set; }
 }
 
 public class BetUser
@@ -137,13 +137,13 @@ public class NewBetModel
     [StringLength(1)]
     [RegularExpression("[1X2]")]
     [JsonPropertyName("CornersMark")]
-    public String CornersMark { get; set; }
+    public string CornersMark { get; set; }
 
     [Required]
     [StringLength(1)]
     [RegularExpression("[1X2]")]
     [JsonPropertyName("CardsMark")]
-    public String CardsMark { get; set; }
+    public string CardsMark { get; set; }
 }
 
 public class UpdateBetModel
@@ -171,13 +171,13 @@ public class UpdateBetModel
     [StringLength(1)]
     [RegularExpression("[1X2]")]
     [JsonPropertyName("CornersMark")]
-    public String CornersMark { get; set; }
+    public string CornersMark { get; set; }
 
     [Required]
     [StringLength(1)]
     [RegularExpression("[1X2]")]
     [JsonPropertyName("CardsMark")]
-    public String CardsMark { get; set; }
+    public string CardsMark { get; set; }
 }
 
 public class BetGame
@@ -204,7 +204,7 @@ public class BetGame
     public BetGameTeam AwayTeam { get; set; }
 
     [JsonPropertyName("IsOpen")]
-    public Boolean IsOpen { get; set; }
+    public bool IsOpen { get; set; }
 
 }
 

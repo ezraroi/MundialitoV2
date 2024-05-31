@@ -9,6 +9,7 @@ using Mundialito.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Mundialito.DAL.Accounts;
+using Mundialito.DAL.GeneralBets;
 
 namespace Mundialito.Controllers;
 
@@ -26,9 +27,11 @@ public class GamesController : ControllerBase
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
+    private readonly TableBuilder tableBuilder;
+    private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly ILogger logger;
 
-    public GamesController(ILogger<GamesController> logger, IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager)
+    public GamesController(ILogger<GamesController> logger, IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.config = config.Value;
@@ -39,6 +42,8 @@ public class GamesController : ControllerBase
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
         this.userManager = userManager;
+        this.tableBuilder = tableBuilder;
+        this.generalBetsRepository = generalBetsRepository;
         this.logger = logger;
     }
 
@@ -63,11 +68,32 @@ public class GamesController : ControllerBase
     {
         var item = gamesRepository.GetGame(id);
         if (item == null)
-            return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", id)});
+            return NotFound(new ErrorMessage { Message = string.Format("Game with id '{0}' not found", id) });
 
         var res = new GameViewModel(item);
         res.UserHasBet = betsRepository.GetUserBetOnGame(httpContextAccessor.HttpContext?.User.Identity.Name, id) != null;
         return Ok(res);
+    }
+
+    [HttpPost(("{id}/simulate"))]
+    public ActionResult<IEnumerable<UserModel>> SimulateGame(int id, SimulateGameModel simulateGameModel)
+    {
+        var item = gamesRepository.GetGame(id);
+        if (item == null)
+            return NotFound(new ErrorMessage { Message = string.Format("Game with id '{0}' not found", id) });
+        if (!item.IsPendingUpdate(dateTimeProvider.UTCNow))
+            return BadRequest(new ErrorMessage { Message = string.Format("Game with id '{0}' is not in pending update state", id) });
+        if (simulateGameModel.HomeScore == null || simulateGameModel.AwayScore == null)
+            return BadRequest(new ErrorMessage { Message = "HomeScore and AwayScore must be provided" });
+        if (simulateGameModel.CornersMark == null || simulateGameModel.CardsMark == null)
+            return BadRequest(new ErrorMessage { Message = "CornersMark and CardsMark must be provided" });
+        var bets = betsRepository.GetBets();
+        item.AwayScore = simulateGameModel.AwayScore;
+        item.HomeScore = simulateGameModel.HomeScore;
+        item.CardsMark = simulateGameModel.CardsMark;
+        item.CornersMark = simulateGameModel.CornersMark;
+        betsResolver.ResolveBets(item, betsRepository.GetGameBets(id));
+        return Ok(tableBuilder.GetTable(userManager.Users, bets, generalBetsRepository.GetGeneralBets()));
     }
 
     [HttpGet("{id}/Bets")]
@@ -75,9 +101,9 @@ public class GamesController : ControllerBase
     {
         var game = gamesRepository.GetGame(id);
         if (game == null)
-            return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", id)});
+            return NotFound(new ErrorMessage { Message = string.Format("Game with id '{0}' not found", id) });
         if (game.IsOpen(dateTimeProvider.UTCNow))
-            return BadRequest(new ErrorMessage{ Message = String.Format("Game '{0}' is stil open for betting", id)});
+            return BadRequest(new ErrorMessage { Message = String.Format("Game '{0}' is stil open for betting", id) });
         return Ok(betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points));
     }
 
@@ -112,7 +138,7 @@ public class GamesController : ControllerBase
     {
         if (game.AwayTeam.TeamId == game.HomeTeam.TeamId)
         {
-            return BadRequest(new ErrorMessage{ Message = "Home team and Away team can not be the same team"});
+            return BadRequest(new ErrorMessage { Message = "Home team and Away team can not be the same team" });
         }
         var newGame = new Game
         {
@@ -138,10 +164,10 @@ public class GamesController : ControllerBase
     {
         var item = gamesRepository.GetGame(id);
         if (item == null)
-            return NotFound(new ErrorMessage{ Message = string.Format("No such game with id '{0}'", id)});
+            return NotFound(new ErrorMessage { Message = string.Format("No such game with id '{0}'", id) });
 
         if (item.IsOpen(dateTimeProvider.UTCNow) && (game.HomeScore != null || game.AwayScore != null || game.CornersMark != null || game.CardsMark != null))
-            return BadRequest(new ErrorMessage{ Message = "Open game can not be updated with results"});
+            return BadRequest(new ErrorMessage { Message = "Open game can not be updated with results" });
         logger.LogInformation("Resolving bet {} with {}", id, game);
         item.AwayScore = game.AwayScore;
         item.HomeScore = game.HomeScore;
@@ -151,9 +177,13 @@ public class GamesController : ControllerBase
         gamesRepository.Save();
         if (item.IsBetResolved(dateTimeProvider.UTCNow))
         {
-            AddLog(ActionType.UPDATE, String.Format("Will resolve bets of game {0}", item.GameId));
+            AddLog(ActionType.UPDATE, string.Format("Will resolve bets of game {0}", item.GameId));
             logger.LogInformation("Will reoslve Game {0} bets", id);
-            betsResolver.ResolveBets(item);
+            var bets = betsRepository.GetGameBets(item.GameId);
+            betsResolver.ResolveBets(item, bets);
+            if (bets.Count() > 0) {
+                betsRepository.Save();
+            }
         }
         AddLog(ActionType.UPDATE, String.Format("Updating Game {0}", item));
         logger.LogInformation("Bet {} was resolved", id);
@@ -166,7 +196,7 @@ public class GamesController : ControllerBase
     {
         var game = gamesRepository.GetGame(id);
         if (game == null)
-            return NotFound(new ErrorMessage{ Message = string.Format("No such game with id '{0}'", id)});
+            return NotFound(new ErrorMessage { Message = string.Format("No such game with id '{0}'", id) });
         logger.LogInformation("Deleting Game {0}", id);
         gamesRepository.DeleteGame(id);
         gamesRepository.Save();

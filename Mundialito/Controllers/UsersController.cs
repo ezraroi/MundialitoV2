@@ -7,7 +7,6 @@ using Mundialito.DAL.Bets;
 using Mundialito.DAL.GeneralBets;
 using Mundialito.Logic;
 using Mundialito.Models;
-using System.Diagnostics;
 
 namespace Mundialito.Controllers;
 
@@ -24,9 +23,10 @@ public class UsersController : ControllerBase
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly IGeneralBetsRepository generalBetsRepository;
+    private readonly TableBuilder tableBuilder;
     private readonly ILogger logger;
 
-    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository)
+    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository, TableBuilder tableBuilder)
     {
         this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
@@ -36,6 +36,7 @@ public class UsersController : ControllerBase
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.generalBetsRepository = generalBetsRepository;
         this.logger = logger;
+        this.tableBuilder = tableBuilder;
     }
 
     [HttpGet]
@@ -47,9 +48,9 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("table")]
-    public IEnumerable<UserModel> GetTable()
+    public ActionResult<IEnumerable<UserModel>> GetTable()
     {
-        return GetTableDetails();
+        return Ok(GetTableDetails());
     }
 
     [HttpGet("{username}")]
@@ -143,29 +144,7 @@ public class UsersController : ControllerBase
 
     private IEnumerable<UserModel> GetTableDetails()
     {
-        var users = userManager.Users.ToDictionary(user => user.Id, user => new UserModel(user));
-        var yesterdayPlaces = new Dictionary<string, int>(users.Count);
-        var allBets = betsRepository.GetBets();
-        allBets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => users[bet.User.Id].AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
-        allBets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).Where(bet => bet.Game.Date < dateTimeProvider.UTCNow.Subtract(TimeSpan.FromDays(1))).ToList().ForEach(bet => users[bet.User.Id].YesterdayPoints += bet.Points.HasValue ? bet.Points.Value : 0);
-        generalBetsRepository.GetGeneralBets().ToList().ForEach(generalBet =>
-            {
-                users[generalBet.User.Id].SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
-            });
-        var res = users.Values.ToList().OrderByDescending(user => user.YesterdayPoints).ToList();
-        for (int i = 0; i < res.Count; i++)
-        {
-            yesterdayPlaces.Add(res[i].Id, i + 1);
-        }
-        res = res.OrderByDescending(user => user.Points).ToList();
-        for (int i = 0; i < res.Count; i++)
-        {
-            res[i].Place = (i + 1).ToString();
-            var diff = yesterdayPlaces[res[i].Id] - (i + 1);
-            res[i].PlaceDiff = string.Format("{0}{1}", diff > 0 ? "+" : string.Empty, diff);
-            res[i].TotalMarks = res[i].Marks + res[i].Results;
-        }
-        return res;
+        return tableBuilder.GetTable(userManager.Users, betsRepository.GetBets(), generalBetsRepository.GetGeneralBets());
     }
 }
 
