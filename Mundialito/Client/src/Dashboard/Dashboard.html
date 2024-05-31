@@ -18,7 +18,7 @@
             <div class="panel-heading"><i class="fa fa-clock-o"></i> Pending Update Games</div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
-                    <a class="list-group-item" ng-repeat="game in games track by game.GameId | filter:isPendingUpdate()"
+                    <a class="list-group-item" ng-repeat="game in games | filter:isPendingUpdate()"
                         href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">

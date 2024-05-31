@@ -1,33 +1,23 @@
-﻿using Mundialito.DAL.ActionLogs;
-using Mundialito.DAL.Bets;
+﻿using Mundialito.DAL.Bets;
 using Mundialito.DAL.Games;
-using System.Diagnostics;
 
 namespace Mundialito.Logic;
 
 public class BetsResolver : IBetsResolver
 {
-    private const string ObjectType = "Bet";
-    private readonly IBetsRepository betsRepository;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IActionLogsRepository actionLogsRepository;
-    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ILogger logger;
 
-    public BetsResolver(ILogger<BetsResolver> logger, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor)
+    public BetsResolver(ILogger<BetsResolver> logger, IDateTimeProvider dateTimeProvider)
     {
-        this.httpContextAccessor= httpContextAccessor;
-        this.betsRepository = betsRepository;
         this.dateTimeProvider = dateTimeProvider;
-        this.actionLogsRepository = actionLogsRepository;
         this.logger = logger;
     }
 
-    public void ResolveBets(Game game)
+    public void ResolveBets(Game game, IEnumerable<Bet> bets)
     {
         if (!game.IsBetResolved(dateTimeProvider.UTCNow))
             throw new ArgumentException(string.Format("Game {0} is not resolved yet", game.GameId));
-        var bets = betsRepository.GetGameBets(game.GameId);
         foreach (Bet bet in bets)
         {
             var points = 0;
@@ -61,23 +51,6 @@ public class BetsResolver : IBetsResolver
                 bet.CornersWin = false;
             bet.Points = points;
             logger.LogInformation("{0} of {1} got {2} points", bet.BetId, game.GameId, points);
-            AddLog(ActionType.UPDATE, String.Format("Resolved bet {0} with points {1}", bet, points));
-        }
-        if (bets.Count() > 0)
-            betsRepository.Save();
-    }
-
-    private void AddLog(ActionType actionType, String message)
-    {
-        try
-        {
-            
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
-            actionLogsRepository.Save();
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Exception during log. Exception: {0}", e.Message);
         }
     }
 }

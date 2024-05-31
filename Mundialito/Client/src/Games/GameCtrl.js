@@ -1,12 +1,12 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', function ($scope, $log, GamesManager, BetsManager, game, userBet, Alert) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', function ($scope, $log, Constants, GamesManager, BetsManager, game, userBet, Alert, $location) {
     $scope.game = game;
+    $scope.simulatedGame = {};
     $scope.userBet = userBet;
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
 
-    if (!$scope.game.IsOpen)
-    {
+    if (!$scope.game.IsOpen) {
         BetsManager.getGameBets($scope.game.GameId).then(function (data) {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
@@ -16,13 +16,13 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Games
             chart1.options = {
                 displayExactValues: true,
                 is3D: true,
-                backgroundColor: { fill:'transparent' },
-                chartArea: {left:10,top:20,bottom:0,height:"100%"},
+                backgroundColor: { fill: 'transparent' },
+                chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
                 title: 'Bets Distribution'
             };
-            var mark1 = _.filter(data, function(bet) { return bet.HomeScore > bet.AwayScore}).length;
-            var markX = _.filter(data, function(bet) { return bet.HomeScore === bet.AwayScore}).length;
-            var mark2 = _.filter(data, function(bet) { return bet.HomeScore < bet.AwayScore}).length;
+            var mark1 = _.filter(data, function (bet) { return bet.HomeScore > bet.AwayScore }).length;
+            var markX = _.filter(data, function (bet) { return bet.HomeScore === bet.AwayScore }).length;
+            var mark2 = _.filter(data, function (bet) { return bet.HomeScore < bet.AwayScore }).length;
             chart1.data = [
                 ['Game Mark', 'Number Of Users'],
                 ['1', mark1],
@@ -33,46 +33,56 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Games
         });
     }
 
-    $scope.updateGame = function() {
-        if  ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
+    $scope.updateGame = () => {
+        if ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        $scope.game.update().success(function (data) {
+        $scope.game.update().success((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
-        }).catch(function (err) {
+        }).catch((err) => {
             Alert.error('Failed to update game, please try again');
             $log.error('Error updating game', err);
         });
     };
 
-    $scope.updateBet = function() {
+    $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().success(function (data) {
+            $scope.userBet.update().success((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
-            }).error(function (err) {
+            }).error((err) => {
                 Alert.error('Failed to update bet, please try again');
                 $log.error('Error updating bet', err);
             });
         }
         else {
-            BetsManager.addBet($scope.userBet).then(function (data) {
+            BetsManager.addBet($scope.userBet).then((data) => {
                 $log.log('GameCtrl: Bet ' + data.BetId + ' was added');
                 $scope.userBet = data;
                 Alert.success('Bet was added successfully');
-            }, function (err) {
+            }, (err) => {
                 Alert.error('Failed to add bet, please try again');
                 $log.error('Error adding bet', err);
             });
         }
     };
 
-    $scope.sort = function(column) {
+    $scope.simulateGame = () => {
+        $log.debug('GameCtrl: simulating game');
+        GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
+            $scope.users = data;
+            Alert.success('Table updated with simulation result');
+        }).catch((err) => {
+            Alert.error('Failed to simulate game, please try again');
+            $log.error('Error simulating game', err);
+        });
+    }
+
+    $scope.sort = (column) => {
         $log.debug('GameCtrl: sorting by ' + column);
-        $scope.gameBets = _.sortBy($scope.gameBets, function (item) {
-            switch (column)
-            {
+        $scope.gameBets = _.sortBy($scope.gameBets, (item) => {
+            switch (column) {
                 case 'points': return item.Points;
                 case 'cards': return item.CardsMark;
                 case 'corners': return item.CornersMark;
@@ -81,4 +91,33 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Games
             }
         });
     };
+
+    $scope.gridOptions = {
+        ...Constants.TABLE_GRID_OPTIONS, ...{
+            data: 'users',
+            onRegisterApi: (gridApi) => {
+                $scope.gridApi = gridApi;
+                $scope.gridApi.colResizable.on.columnSizeChanged($scope, saveState);
+                $scope.gridApi.core.on.columnVisibilityChanged($scope, saveState);
+                $scope.gridApi.core.on.sortChanged($scope, saveState);
+            }
+        }
+    };
+    $scope.getTableHeight = () => {
+        var rowHeight = 30;
+        var headerHeight = 30;
+        var total = (($scope.users ? $scope.users.length : 0) * rowHeight + headerHeight);
+        $log.debug('Total Height: ' + total);
+        return {
+            height: total + "px"
+        };
+    };
+    $scope.goToUser = (rowItem) => {
+        $location.path(rowItem.entity.getUrl());
+    };
+    function saveState() {
+        var state = $scope.gridApi.saveState.save();
+        localStorage.setItem('gridState', state);
+    };
+    $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
 }]);

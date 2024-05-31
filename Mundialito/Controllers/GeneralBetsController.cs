@@ -6,7 +6,6 @@ using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.GeneralBets;
 using Mundialito.Logic;
 using Mundialito.Models;
-using System.Diagnostics;
 
 namespace Mundialito.Controllers;
 

@@ -1,5 +1,5 @@
 'use strict';
-angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'DSCacheFactory', function ($http, $q, Game, $log, MundialitoUtils, DSCacheFactory) {
+angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'DSCacheFactory', 'User', function ($http, $q, Game, $log, MundialitoUtils, DSCacheFactory, User) {
     var gamesPromise = undefined;
     var openGamesPromise = undefined;
     var gamesManager = {
@@ -186,6 +186,24 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
                 });
             return deferred.promise;
         } ,
+
+        simulateGame: function(gameId, gameResulst) {
+            var deferred = $q.defer();
+            $log.debug('GamesManager: will simulate game ' + gameId);
+            $http.post('api/games/' + gameId + '/simulate', gameResulst, { tracker: 'simulateGame'})
+                .success((usersArray) => {
+                    var users = [];
+                    usersArray.forEach((userData) => {
+                        users.push(new User(userData));
+                    });
+                    deferred.resolve(users);
+                })
+                .error(() => {
+                    deferred.reject();
+                });
+            return deferred.promise;
+
+        },
 
         /*  This function is useful when we got somehow the game data and we wish to store it or update the pool and get a game instance in return */
         setGame: function(gameData) {

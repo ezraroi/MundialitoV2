@@ -207,8 +207,28 @@ angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate
     }]);
 angular.module('mundialitoApp').constant('Constants',
     {
-        LOGIN_PATH   : '/login',
-        REFRESH_TIME : 300000
+        LOGIN_PATH: '/login',
+        REFRESH_TIME: 300000,
+        TABLE_GRID_OPTIONS: {
+            saveWidths: true,
+            saveVisible: true,
+            saveOrder: true,
+            enableRowSelection: false,
+            enableSelectAll: false,
+            multiSelect: false,
+            rowTemplate: '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.Username }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>',
+            columnDefs: [
+                { field: 'Place', displayName: '', resizable: false, maxWidth: 30 },
+                { field: 'Name', displayName: 'Name', resizable: true, minWidth: 150 },
+                { field: 'TotalMarks', displayName: 'Total Marks', resizable: true },
+                { field: 'Results', displayName: 'Results', resizable: true },
+                { field: 'Marks', displayName: 'Marks', resizable: true },
+                { field: 'YellowCards', displayName: 'Yellow Cards Marks', resizable: true },
+                { field: 'Corners', displayName: 'Corners Marks', resizable: true },
+                { field: 'Points', displayName: 'Points', resizable: true },
+                { field: 'PlaceDiff', displayName: '', resizable: false, maxWidth: 45, cellTemplate: '<div ng-class="{\'text-success\': COL_FIELD.indexOf(\'+\') !== -1, \'text-danger\': (COL_FIELD.indexOf(\'+\') === -1) && (COL_FIELD !== \'0\')}"><div class="ngCellText">{{::COL_FIELD}}</div></div>' }
+            ],
+        }
     }
 );
 'use strict';
@@ -634,178 +654,140 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players',
-    function ($scope, $log, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players) {
-    $scope.generalBetsAreOpen = false;
-    $scope.submittedGeneralBet = true;
-    $scope.pendingUpdateGames = false;
+angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players',
+    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players) {
+        $scope.generalBetsAreOpen = false;
+        $scope.submittedGeneralBet = true;
+        $scope.pendingUpdateGames = false;
 
-    $scope.teamsDic = {};
-    $scope.playersDic = {};
+        $scope.teamsDic = {};
+        $scope.playersDic = {};
 
-    for (var i = 0; i < teams.length; i++) {
-        $scope.teamsDic[teams[i].TeamId] = teams[i];
-    }
-
-    for (var i = 0; i < players.length; i++) {
-        $scope.playersDic[players[i].PlayerId] = players[i];
-    }
-
-    GamesManager.loadAllGames().then(function (games) {
-        $scope.games = games;
-        $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
-    });
-
-    var userHasGeneralBet = function () {
-        if (!angular.isDefined($scope.security.user) || ($scope.security.user == null)) {
-            $log.debug('DashboardCtrl: user info not loaded yet, will retry in 1 second');
-            $timeout(userHasGeneralBet, 1000);
+        for (var i = 0; i < teams.length; i++) {
+            $scope.teamsDic[teams[i].TeamId] = teams[i];
         }
-        else {
-            GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then(function (data) {
-                $scope.submittedGeneralBet = data === true;
-            });
+
+        for (var i = 0; i < players.length; i++) {
+            $scope.playersDic[players[i].PlayerId] = players[i];
         }
-    };
 
-    userHasGeneralBet();
-
-    GeneralBetsManager.canSubmtiGeneralBet().then(function (data) {
-        $scope.generalBetsAreOpen = (data === true);
-        if (!$scope.generalBetsAreOpen) {
-            GeneralBetsManager.loadAllGeneralBets().then(function (data) {
-                $scope.generalBets = data;
-                $scope.winningTeams = {};
-                $scope.winningPlayers = {};
-                for (var i = 0; i < $scope.generalBets.length ; i++) {
-                    if (!angular.isDefined($scope.winningTeams[$scope.generalBets[i].WinningTeamId])) {
-                        $scope.winningTeams[$scope.generalBets[i].WinningTeamId] = 0;
-                    }
-                    $scope.winningTeams[$scope.generalBets[i].WinningTeamId] += 1;
-                    if (!angular.isDefined($scope.winningPlayers[$scope.generalBets[i].GoldenBootPlayerId])) {
-                        $scope.winningPlayers[$scope.generalBets[i].GoldenBootPlayerId] = 0;
-                    }
-                    $scope.winningPlayers[$scope.generalBets[i].GoldenBootPlayerId] += 1;
-                }
-
-                var chart1 = {};
-                chart1.type = "PieChart";
-                chart1.options = {
-                    displayExactValues: true,
-                    is3D: true,
-                    backgroundColor: { fill: 'transparent' },
-                    chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
-                    title: 'Winning Team Bets Distribution'
-                };
-                chart1.data = [
-                    ['Team', 'Number Of Users']
-                ];
-                for (var teamId in $scope.winningTeams) {
-                    chart1.data.push([$scope.teamsDic[teamId].Name, $scope.winningTeams[teamId]]);
-                }
-                $scope.chart = chart1;
-                chart1 = {};
-                chart1.type = "PieChart";
-                chart1.options = {
-                    displayExactValues: true,
-                    is3D: true,
-                    backgroundColor: { fill: 'transparent' },
-                    chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
-                    title: 'Winning Golden Boot Player Bets Distribution'
-                };
-                chart1.data = [
-                    ['Player', 'Number Of Users']
-                ];
-                for (var playerId in $scope.winningPlayers) {
-                    chart1.data.push([$scope.playersDic[playerId].Name, $scope.winningPlayers[playerId]]);
-                }
-                $scope.playersChart = chart1;
-            });
-        }
-    });
-
-    UsersManager.getTable().then(function (users) {
-        $scope.users = users;
-    });
-
-    $scope.isOpenForBetting = function () {
-        return function (item) {
-            return item.IsOpen;
-        };
-    };
-
-    $scope.isPendingUpdate = function () {
-        return function (item) {
-            return item.IsPendingUpdate;
-        };
-    };
-
-    $scope.isDecided = function () {
-        return function (item) {
-            return !item.IsOpen && !item.IsPendingUpdate;
-        };
-    };
-
-    function getRowTemplate() {
-        var rowtpl = '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.Username }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>';
-        return rowtpl;
-    }
-
-    $scope.gridOptions = {
-        data: 'users',
-        saveWidths: true,
-        saveVisible: true,
-        saveOrder: true,
-        enableRowSelection: false,
-        enableSelectAll: false,
-        multiSelect: false,
-        rowTemplate: getRowTemplate(),
-        columnDefs: [
-            { field: 'Place', displayName: '', resizable: false, maxWidth: 30 },
-            { field: 'Name', displayName: 'Name', resizable: true, minWidth: 150},
-            { field: 'TotalMarks', displayName: 'Total Marks', resizable: true },
-            { field: 'Results', displayName: 'Results', resizable: true },
-            { field: 'Marks', displayName: 'Marks', resizable: true },
-            { field: 'YellowCards', displayName: 'Yellow Cards Marks', resizable: true },
-            { field: 'Corners', displayName: 'Corners Marks', resizable: true },
-            { field: 'Points', displayName: 'Points', resizable: true },
-            { field: 'PlaceDiff', displayName: '', resizable: false, maxWidth: 45, cellTemplate: '<div ng-class="{\'text-success\': COL_FIELD.indexOf(\'+\') !== -1, \'text-danger\': (COL_FIELD.indexOf(\'+\') === -1) && (COL_FIELD !== \'0\')}"><div class="ngCellText">{{::COL_FIELD}}</div></div>' }
-        ],
-        onRegisterApi: function(gridApi){
-            $scope.gridApi = gridApi;
-            $scope.gridApi.colResizable.on.columnSizeChanged($scope, saveState);
-            $scope.gridApi.core.on.columnVisibilityChanged($scope, saveState);
-            $scope.gridApi.core.on.sortChanged($scope, saveState);
-        }
-    };
-
-    function saveState() {
-        var state = $scope.gridApi.saveState.save();
-        localStorage.setItem('gridState', state);
-    };
-
-    function restoreState() {
-        $timeout(function () {
-            var state = localStorage.getItem('gridState');
-            if (state) $scope.gridApi.saveState.restore($scope, state);
+        GamesManager.loadAllGames().then(function (games) {
+            $scope.games = games;
+            $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
         });
-    };
 
-    $scope.getTableHeight = function () {
-        var rowHeight = 30; // your row height
-        var headerHeight = 30; // your header height
-        var total = ( ($scope.users ? $scope.users.length : 0) * rowHeight + headerHeight);
-        $log.debug('Total Height: ' + total);
-        return {
-            height: total + "px"
+        var userHasGeneralBet = function () {
+            if (!angular.isDefined($scope.security.user) || ($scope.security.user == null)) {
+                $log.debug('DashboardCtrl: user info not loaded yet, will retry in 1 second');
+                $timeout(userHasGeneralBet, 1000);
+            }
+            else {
+                GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then(function (data) {
+                    $scope.submittedGeneralBet = data === true;
+                });
+            }
         };
-    };
 
-    $scope.goToUser = function (rowItem) {
-        $location.path(rowItem.entity.getUrl())
-    }
+        userHasGeneralBet();
 
-}]);
+        GeneralBetsManager.canSubmtiGeneralBet().then((data) => {
+            $scope.generalBetsAreOpen = (data === true);
+            if (!$scope.generalBetsAreOpen) {
+                GeneralBetsManager.loadAllGeneralBets().then(function (data) {
+                    $scope.generalBets = data;
+                    $scope.winningTeams = {};
+                    $scope.winningPlayers = {};
+                    for (var i = 0; i < $scope.generalBets.length; i++) {
+                        if (!angular.isDefined($scope.winningTeams[$scope.generalBets[i].WinningTeamId])) {
+                            $scope.winningTeams[$scope.generalBets[i].WinningTeamId] = 0;
+                        }
+                        $scope.winningTeams[$scope.generalBets[i].WinningTeamId] += 1;
+                        if (!angular.isDefined($scope.winningPlayers[$scope.generalBets[i].GoldenBootPlayerId])) {
+                            $scope.winningPlayers[$scope.generalBets[i].GoldenBootPlayerId] = 0;
+                        }
+                        $scope.winningPlayers[$scope.generalBets[i].GoldenBootPlayerId] += 1;
+                    }
+
+                    var chart1 = {};
+                    chart1.type = "PieChart";
+                    chart1.options = {
+                        displayExactValues: true,
+                        is3D: true,
+                        backgroundColor: { fill: 'transparent' },
+                        chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
+                        title: 'Winning Team Bets Distribution'
+                    };
+                    chart1.data = [
+                        ['Team', 'Number Of Users']
+                    ];
+                    for (var teamId in $scope.winningTeams) {
+                        chart1.data.push([$scope.teamsDic[teamId].Name, $scope.winningTeams[teamId]]);
+                    }
+                    $scope.chart = chart1;
+                    chart1 = {};
+                    chart1.type = "PieChart";
+                    chart1.options = {
+                        displayExactValues: true,
+                        is3D: true,
+                        backgroundColor: { fill: 'transparent' },
+                        chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
+                        title: 'Winning Golden Boot Player Bets Distribution'
+                    };
+                    chart1.data = [
+                        ['Player', 'Number Of Users']
+                    ];
+                    for (var playerId in $scope.winningPlayers) {
+                        chart1.data.push([$scope.playersDic[playerId].Name, $scope.winningPlayers[playerId]]);
+                    }
+                    $scope.playersChart = chart1;
+                });
+            }
+        });
+
+        UsersManager.getTable().then((users) => {
+            $scope.users = users;
+        });
+
+        $scope.isOpenForBetting = () => (item) => item.IsOpen;
+        $scope.isPendingUpdate = () => (item) => item.IsPendingUpdate;
+        $scope.isDecided = () => (item) => !item.IsOpen && !item.IsPendingUpdate;
+
+        $scope.gridOptions = {
+            ...Constants.TABLE_GRID_OPTIONS, ...{
+                data: 'users',
+                onRegisterApi: (gridApi) => {
+                    $scope.gridApi = gridApi;
+                    $scope.gridApi.colResizable.on.columnSizeChanged($scope, saveState);
+                    $scope.gridApi.core.on.columnVisibilityChanged($scope, saveState);
+                    $scope.gridApi.core.on.sortChanged($scope, saveState);
+                }
+            }
+        };
+
+        function saveState() {
+            var state = $scope.gridApi.saveState.save();
+            localStorage.setItem('gridState', state);
+        };
+
+        function restoreState() {
+            $timeout(() => {
+                var state = localStorage.getItem('gridState');
+                if (state) $scope.gridApi.saveState.restore($scope, state);
+            });
+        };
+        $scope.getTableHeight = () => {
+            var rowHeight = 30;
+            var headerHeight = 30;
+            var total = (($scope.users ? $scope.users.length : 0) * rowHeight + headerHeight);
+            $log.debug('Total Height: ' + total);
+            return {
+                height: total + "px"
+            };
+        };
+        $scope.goToUser = (rowItem) => {
+            $location.path(rowItem.entity.getUrl());
+        };
+    }]);
 
 'use strict';
 angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,$log) {
@@ -838,14 +820,14 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', function ($scope, $log, GamesManager, BetsManager, game, userBet, Alert) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', function ($scope, $log, Constants, GamesManager, BetsManager, game, userBet, Alert, $location) {
     $scope.game = game;
+    $scope.simulatedGame = {};
     $scope.userBet = userBet;
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
 
-    if (!$scope.game.IsOpen)
-    {
+    if (!$scope.game.IsOpen) {
         BetsManager.getGameBets($scope.game.GameId).then(function (data) {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
@@ -855,13 +837,13 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Games
             chart1.options = {
                 displayExactValues: true,
                 is3D: true,
-                backgroundColor: { fill:'transparent' },
-                chartArea: {left:10,top:20,bottom:0,height:"100%"},
+                backgroundColor: { fill: 'transparent' },
+                chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
                 title: 'Bets Distribution'
             };
-            var mark1 = _.filter(data, function(bet) { return bet.HomeScore > bet.AwayScore}).length;
-            var markX = _.filter(data, function(bet) { return bet.HomeScore === bet.AwayScore}).length;
-            var mark2 = _.filter(data, function(bet) { return bet.HomeScore < bet.AwayScore}).length;
+            var mark1 = _.filter(data, function (bet) { return bet.HomeScore > bet.AwayScore }).length;
+            var markX = _.filter(data, function (bet) { return bet.HomeScore === bet.AwayScore }).length;
+            var mark2 = _.filter(data, function (bet) { return bet.HomeScore < bet.AwayScore }).length;
             chart1.data = [
                 ['Game Mark', 'Number Of Users'],
                 ['1', mark1],
@@ -872,46 +854,56 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Games
         });
     }
 
-    $scope.updateGame = function() {
-        if  ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
+    $scope.updateGame = () => {
+        if ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        $scope.game.update().success(function (data) {
+        $scope.game.update().success((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
-        }).catch(function (err) {
+        }).catch((err) => {
             Alert.error('Failed to update game, please try again');
             $log.error('Error updating game', err);
         });
     };
 
-    $scope.updateBet = function() {
+    $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().success(function (data) {
+            $scope.userBet.update().success((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
-            }).error(function (err) {
+            }).error((err) => {
                 Alert.error('Failed to update bet, please try again');
                 $log.error('Error updating bet', err);
             });
         }
         else {
-            BetsManager.addBet($scope.userBet).then(function (data) {
+            BetsManager.addBet($scope.userBet).then((data) => {
                 $log.log('GameCtrl: Bet ' + data.BetId + ' was added');
                 $scope.userBet = data;
                 Alert.success('Bet was added successfully');
-            }, function (err) {
+            }, (err) => {
                 Alert.error('Failed to add bet, please try again');
                 $log.error('Error adding bet', err);
             });
         }
     };
 
-    $scope.sort = function(column) {
+    $scope.simulateGame = () => {
+        $log.debug('GameCtrl: simulating game');
+        GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
+            $scope.users = data;
+            Alert.success('Table updated with simulation result');
+        }).catch((err) => {
+            Alert.error('Failed to simulate game, please try again');
+            $log.error('Error simulating game', err);
+        });
+    }
+
+    $scope.sort = (column) => {
         $log.debug('GameCtrl: sorting by ' + column);
-        $scope.gameBets = _.sortBy($scope.gameBets, function (item) {
-            switch (column)
-            {
+        $scope.gameBets = _.sortBy($scope.gameBets, (item) => {
+            switch (column) {
                 case 'points': return item.Points;
                 case 'cards': return item.CardsMark;
                 case 'corners': return item.CornersMark;
@@ -920,6 +912,35 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Games
             }
         });
     };
+
+    $scope.gridOptions = {
+        ...Constants.TABLE_GRID_OPTIONS, ...{
+            data: 'users',
+            onRegisterApi: (gridApi) => {
+                $scope.gridApi = gridApi;
+                $scope.gridApi.colResizable.on.columnSizeChanged($scope, saveState);
+                $scope.gridApi.core.on.columnVisibilityChanged($scope, saveState);
+                $scope.gridApi.core.on.sortChanged($scope, saveState);
+            }
+        }
+    };
+    $scope.getTableHeight = () => {
+        var rowHeight = 30;
+        var headerHeight = 30;
+        var total = (($scope.users ? $scope.users.length : 0) * rowHeight + headerHeight);
+        $log.debug('Total Height: ' + total);
+        return {
+            height: total + "px"
+        };
+    };
+    $scope.goToUser = (rowItem) => {
+        $location.path(rowItem.entity.getUrl());
+    };
+    function saveState() {
+        var state = $scope.gridApi.saveState.save();
+        localStorage.setItem('gridState', state);
+    };
+    $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
 }]);
 'use strict';
 angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesManager','games','teams', 'StadiumsManager' ,'Alert',function ($scope,$log, GamesManager, games, teams, StadiumsManager, Alert) {
@@ -963,7 +984,7 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
     };
 }]);
 'use strict';
-angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'DSCacheFactory', function ($http, $q, Game, $log, MundialitoUtils, DSCacheFactory) {
+angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'DSCacheFactory', 'User', function ($http, $q, Game, $log, MundialitoUtils, DSCacheFactory, User) {
     var gamesPromise = undefined;
     var openGamesPromise = undefined;
     var gamesManager = {
@@ -1150,6 +1171,24 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
                 });
             return deferred.promise;
         } ,
+
+        simulateGame: function(gameId, gameResulst) {
+            var deferred = $q.defer();
+            $log.debug('GamesManager: will simulate game ' + gameId);
+            $http.post('api/games/' + gameId + '/simulate', gameResulst, { tracker: 'simulateGame'})
+                .success((usersArray) => {
+                    var users = [];
+                    usersArray.forEach((userData) => {
+                        users.push(new User(userData));
+                    });
+                    deferred.resolve(users);
+                })
+                .error(() => {
+                    deferred.reject();
+                });
+            return deferred.promise;
+
+        },
 
         /*  This function is useful when we got somehow the game data and we wish to store it or update the pool and get a game instance in return */
         setGame: function(gameData) {

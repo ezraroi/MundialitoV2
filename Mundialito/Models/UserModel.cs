@@ -8,39 +8,39 @@ public class UserModel
     public UserModel(MundialitoUser user)
     {
         Username = user.UserName;
-        Name = String.Format("{0} {1}", user.FirstName, user.LastName);
+        Name = string.Format("{0} {1}", user.FirstName, user.LastName);
         Points = 0;
-        Place = String.Empty;
+        Place = string.Empty;
         Id = user.Id;
         Email = user.Email;
     }
 
-    public UserModel(String id, String username)
+    public UserModel(string id, string username)
     {
         Username = username;
         Id = id;
     }
 
     [JsonPropertyName("Id")]
-    public String Id { get; private set; }
+    public string Id { get; private set; }
 
     [JsonPropertyName("Place")]
-    public String Place { get; set; }
+    public string Place { get; set; }
 
     [JsonPropertyName("PlaceDiff")]
-    public String PlaceDiff { get; set; }
+    public string PlaceDiff { get; set; }
 
     [JsonPropertyName("Email")]
-    public String Email { get; set; }
+    public string Email { get; set; }
     
     [JsonPropertyName("IsAdmin")]
     public bool IsAdmin { get; set; }
 
     [JsonPropertyName("Username")]
-    public String Username { get; set; }
+    public string Username { get; set; }
 
     [JsonPropertyName("Name")]
-    public String Name { get; set; }
+    public string Name { get; set; }
 
     [JsonPropertyName("Points")]
     public int Points { get; set; }
