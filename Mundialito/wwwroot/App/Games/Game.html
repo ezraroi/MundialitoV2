@@ -172,7 +172,7 @@
 </div>
 <!-- End of Uer Bet -->
 <!-- Bets Highlights-->
-<div class="row" ng-if="!game.IsOpen">
+<div class="row" ng-if="(!game.IsOpen && usersMap)">
     <div class="col-md-12">
         <div class="panel panel-info" cg-busy="{tracker:'getUsers'}">
             <div class="panel-heading"><i class="fa fa-bolt"></i> Bets HighLights</div>
@@ -185,19 +185,21 @@
                                 <div class="table-responsive" ng-if="top3UsersBets.length > 0">
                                     <table class="table table-striped">
                                         <thead>
-                                            <th style="cursor: pointer" ng-click="sort('user')"><i class="fa fa-user"></i> User</th>
-                                            <th style="cursor: pointer" ng-click="sort('result')">Result</th>
-                                            <th style="cursor: pointer" ng-click="sort('cards')"><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
-                                            <th style="cursor: pointer" ng-click="sort('corners')"><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
-                                            <th style="cursor: pointer" ng-click="sort('points')">Points</th>
+                                            <th>#</th>
+                                            <th><i class="fa fa-user"></i> User</th>
+                                            <th>Result</th>
+                                            <th><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
+                                            <th><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
+                                            <th>Points</th>
                                         </thead>
                                         <tbody>
                                             <tr ng-repeat="bet in top3UsersBets">
-                                                <td><a href="users/{{bet.User.Username}}">{{bet.User.FirstName}} {{bet.User.LastName}}</a></td>
-                                                <td>{{bet.HomeScore}} - {{bet.AwayScore}}</td>
-                                                <td>{{bet.CardsMark}}</td>
-                                                <td>{{bet.CornersMark}}</td>
-                                                <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{bet.Points}}</span></td>
+                                                <td>{{::getUserPlace(bet.User)}}</td>
+                                                <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}} {{::bet.User.LastName}}</a></td>
+                                                <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
+                                                <td>{{::bet.CardsMark}}</td>
+                                                <td>{{::bet.CornersMark}}</td>
+                                                <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -214,19 +216,21 @@
                                 <div class="table-responsive" ng-if="neighborsBets.length > 0">
                                     <table class="table table-striped">
                                         <thead>
-                                            <th style="cursor: pointer" ng-click="sort('user')"><i class="fa fa-user"></i> User</th>
-                                            <th style="cursor: pointer" ng-click="sort('result')">Result</th>
-                                            <th style="cursor: pointer" ng-click="sort('cards')"><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
-                                            <th style="cursor: pointer" ng-click="sort('corners')"><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
+                                            <th>#</th>
+                                            <th><i class="fa fa-user"></i> User</th>
+                                            <th>Result</th>
+                                            <th><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
+                                            <th><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
                                             <th style="cursor: pointer" ng-click="sort('points')">Points</th>
                                         </thead>
                                         <tbody>
                                             <tr ng-repeat="bet in neighborsBets">
-                                                <td><a href="users/{{bet.User.Username}}">{{bet.User.FirstName}} {{bet.User.LastName}}</a></td>
-                                                <td>{{bet.HomeScore}} - {{bet.AwayScore}}</td>
-                                                <td>{{bet.CardsMark}}</td>
-                                                <td>{{bet.CornersMark}}</td>
-                                                <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{bet.Points}}</span></td>
+                                                <td>{{::getUserPlace(bet.User)}}</td>
+                                                <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}} {{::bet.User.LastName}}</a></td>
+                                                <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
+                                                <td>{{::bet.CardsMark}}</td>
+                                                <td>{{::bet.CornersMark}}</td>
+                                                <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -249,10 +253,11 @@
                 <div ng-if="game.IsOpen" class="text-info">
                     <i class="fa fa-info-circle"></i> Other users bets will be displayed once the game will be closed
                 </div>
-                <div ng-if="!game.IsOpen">
+                <div ng-if="(!game.IsOpen && usersMap)">
                     <div class="table-responsive" ng-if="gameBets.length > 0">
                         <table class="table table-striped">
                             <thead>
+                                <th style="cursor: pointer">#</th>
                                 <th style="cursor: pointer" ng-click="sort('user')"><i class="fa fa-user"></i> User</th>
                                 <th style="cursor: pointer" ng-click="sort('result')">Result</th>
                                 <th style="cursor: pointer" ng-click="sort('cards')"><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
@@ -261,11 +266,12 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="bet in gameBets">
-                                    <td><a href="users/{{bet.User.Username}}">{{bet.User.FirstName}} {{bet.User.LastName}}</a></td>
-                                    <td>{{bet.HomeScore}} - {{bet.AwayScore}}</td>
-                                    <td>{{bet.CardsMark}}</td>
-                                    <td>{{bet.CornersMark}}</td>
-                                    <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{bet.Points}}</span></td>
+                                    <td>{{::getUserPlace(bet.User)}}</td>
+                                    <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}} {{::bet.User.LastName}}</a></td>
+                                    <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
+                                    <td>{{::bet.CardsMark}}</td>
+                                    <td>{{::bet.CornersMark}}</td>
+                                    <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                 </tr>
                             </tbody>
                         </table>

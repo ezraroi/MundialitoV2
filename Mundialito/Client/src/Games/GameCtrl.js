@@ -119,10 +119,16 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         var state = $scope.gridApi.saveState.save();
         localStorage.setItem('gridState', state);
     };
+    $scope.getUserPlace = (user) => {
+        return $scope.usersMap.get(user.Username).Place;
+    }
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
     UsersManager.getTable().then((users) => {
-        let topUsers = _.chain(users).filter((user) => user.Username !== $scope.security.user.Username)
-            .first(3).pluck('Username').value();
+        $scope.usersMap = new Map();
+        users.forEach((obj) => {
+            $scope.usersMap.set(obj.Username, obj);
+        });
+        let topUsers = _.chain(users).first(3).pluck('Username').value();
         $scope.top3UsersBets = _.filter($scope.gameBets, (bet) => topUsers.includes(bet.User.Username));
         let myPlace = 0;
         users.forEach((user, place) => {
