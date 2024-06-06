@@ -1,7 +1,7 @@
 angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
     'ui.bootstrap.datetimepicker', 'FacebookPluginDirectives', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
-    .value('cgBusyTemplateName','App/Partials/angular-busy.html')
-    .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider','Constants', function ( $routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
+    .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
+    .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
         $locationProvider.html5Mode(true);
         $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
         $httpProvider.interceptors.push('myHttpInterceptor');
@@ -12,131 +12,103 @@ angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate
             when('/', {
                 templateUrl: 'App/Dashboard/Dashboard.html',
                 controller: 'DashboardCtrl',
-                resolve : {
-                    teams : ['TeamsManager', function ( TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }],
-                    players: ['PlayersManager', function (PlayersManager) {
-                        return PlayersManager.loadAllPlayers();
-                    }]
+                resolve: {
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
             }).
             when('/bets_center', {
                 templateUrl: 'App/Bets/BetsCenter.html',
                 controller: 'BetsCenterCtrl',
-                resolve : {
-                    games : ['GamesManager', function (GamesManager) {
-                        return GamesManager.loadOpenGames();
-                    }]
+                resolve: {
+                    games: ['GamesManager', (GamesManager) => GamesManager.loadOpenGames()]
                 }
             }).
             when('/users/:username', {
                 templateUrl: 'App/Users/UserProfile.html',
                 controller: 'UserProfileCtrl',
-                resolve : {
-                    profileUser: ['$route', 'UsersManager', function ($route, UsersManager) {
+                resolve: {
+                    profileUser: ['$route', 'UsersManager', ($route, UsersManager) => {
                         var username = $route.current.params.username;
                         return UsersManager.getUser(username, true);
                     }],
-                    userGameBets : ['$route', 'BetsManager', function ($route, BetsManager) {
+                    userGameBets: ['$route', 'BetsManager', ($route, BetsManager) => {
                         var username = $route.current.params.username;
                         return BetsManager.getUserBets(username);
                     }],
-                    teams : ['TeamsManager', function ( TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }],
-                    generalBetsAreOpen : ['GeneralBetsManager', function (GeneralBetsManager) {
-                        return GeneralBetsManager.canSubmtiGeneralBet();
-                    }],
-                    players: ['PlayersManager', function (PlayersManager) {
-                        return PlayersManager.loadAllPlayers();
-                    }]
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    generalBetsAreOpen: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.canSubmtiGeneralBet()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()],
                 }
             }).
             when('/manage_users', {
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    users : ['UsersManager', function (UsersManager) {
-                        return UsersManager.loadAllUsers();
-                    }],
-                    teams : ['TeamsManager', function (TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }],
-                    generalBets: ['GeneralBetsManager' , function (GeneralBetsManager) {
-                        return GeneralBetsManager.loadAllGeneralBets();
-                    }],
-                    players: ['PlayersManager', function (PlayersManager) {
-                        return PlayersManager.loadAllPlayers();
-                    }]
+                    users: ['UsersManager', (UsersManager) => UsersManager.loadAllUsers()],
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    generalBets: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
             }).
             when('/teams', {
                 templateUrl: 'App/Teams/Teams.html',
                 controller: 'TeamsCtrl',
                 resolve: {
-                    teams: ['TeamsManager', function (TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }]
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()]
                 }
             }).
             when('/teams/:teamId', {
                 templateUrl: 'App/Teams/Team.html',
                 controller: 'TeamCtrl',
                 resolve: {
-                    team: ['$route','TeamsManager',  function ($route, TeamsManager) {
-                        var teamId = $route.current.params.teamId;
-                        return TeamsManager.getTeam(teamId);
-                    }],
-                    games : ['$route','GamesManager', function ($route, GamesManager) {
-                        var teamId = $route.current.params.teamId;
-                        return GamesManager.getTeamGames(teamId);
-                    }]
+                    team: ['$route', 'TeamsManager', ($route, TeamsManager) => {
+                            var teamId = $route.current.params.teamId;
+                            return TeamsManager.getTeam(teamId);
+                        }],
+                    games: ['$route', 'GamesManager', ($route, GamesManager) => {
+                            var teamId = $route.current.params.teamId;
+                            return GamesManager.getTeamGames(teamId);
+                        }]
                 }
             }).
             when('/games/:gameId', {
                 templateUrl: 'App/Games/Game.html',
                 controller: 'GameCtrl',
                 resolve: {
-                    game: ['$route','GamesManager', function ($route, GamesManager) {
-                        var gameId = $route.current.params.gameId;
-                        return  GamesManager.getGame(gameId);
-                    }],
-                    userBet: ['$route','BetsManager', function ($route, BetsManager) {
-                        var gameId = $route.current.params.gameId;
-                        return BetsManager.getUserBetOnGame(gameId);
-                    }]
+                    game: ['$route', 'GamesManager', ($route, GamesManager) => {
+                            var gameId = $route.current.params.gameId;
+                            return GamesManager.getGame(gameId);
+                        }],
+                    userBet: ['$route', 'BetsManager', ($route, BetsManager) => {
+                            var gameId = $route.current.params.gameId;
+                            return BetsManager.getUserBetOnGame(gameId);
+                        }]
                 }
             }).
             when('/games', {
                 templateUrl: 'App/Games/Games.html',
                 controller: 'GamesCtrl',
                 resolve: {
-                    games: ['GamesManager', function (GamesManager) {
-                        return GamesManager.loadAllGames();
-                    }],
-                    teams : ['TeamsManager', function (TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }]
+                    games: ['GamesManager', (GamesManager) => GamesManager.loadAllGames()],
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()]
                 }
             }).
             when('/stadiums/:stadiumId', {
                 templateUrl: 'App/Stadiums/Stadium.html',
                 controller: 'StadiumCtrl',
                 resolve: {
-                    stadium: ['$q','$route','StadiumsManager',  function ($q, $route, StadiumsManager) {
-                        var stadiumId = $route.current.params.stadiumId;
-                        return StadiumsManager.getStadium(stadiumId, true);
-                    }]
+                    stadium: ['$q', '$route', 'StadiumsManager', (_$q, $route, StadiumsManager) => {
+                            var stadiumId = $route.current.params.stadiumId;
+                            return StadiumsManager.getStadium(stadiumId, true);
+                        }]
                 }
             }).
             when('/stadiums', {
                 templateUrl: 'App/Stadiums/Stadiums.html',
                 controller: 'StadiumsCtrl',
                 resolve: {
-                    stadiums : ['StadiumsManager', function (StadiumsManager) {
-                        return StadiumsManager.loadAllStadiums();
-                    }]
+                    stadiums: ['StadiumsManager', (StadiumsManager) => StadiumsManager.loadAllStadiums()]
                 }
             }).
             when('/login', {
@@ -654,8 +626,8 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players',
-    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players) {
+angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players', 'BetsManager',
+    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players, BetsManager) {
         $scope.generalBetsAreOpen = false;
         $scope.submittedGeneralBet = true;
         $scope.pendingUpdateGames = false;
@@ -671,25 +643,33 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.playersDic[players[i].PlayerId] = players[i];
         }
 
-        GamesManager.loadAllGames().then(function (games) {
+        GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
             $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
+            $scope.pendingUpdateGamesFolloweesBets = [];
+            $log.info('DashboardCtrl: followees:' + $scope.security.user.Followees);
+            _.filter($scope.games, (game) => game.IsPendingUpdate).forEach(game => {
+                BetsManager.getGameBets(game.GameId).then((data) => {
+                    let followeesBets = _.filter(data, (bet) => { 
+                        return $scope.security.user.Followees.includes(bet.User.Username);
+                    });
+                    $scope.pendingUpdateGamesFolloweesBets = $scope.pendingUpdateGamesFolloweesBets.concat(followeesBets);
+                });
+            });
         });
 
-        var userHasGeneralBet = function () {
+        var userHasGeneralBet = () => {
             if (!angular.isDefined($scope.security.user) || ($scope.security.user == null)) {
                 $log.debug('DashboardCtrl: user info not loaded yet, will retry in 1 second');
                 $timeout(userHasGeneralBet, 1000);
             }
             else {
-                GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then(function (data) {
+                GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then((data) => {
                     $scope.submittedGeneralBet = data === true;
                 });
             }
         };
-
         userHasGeneralBet();
-
         GeneralBetsManager.canSubmtiGeneralBet().then((data) => {
             $scope.generalBetsAreOpen = (data === true);
             if (!$scope.generalBetsAreOpen) {
@@ -751,6 +731,8 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.isOpenForBetting = () => (item) => item.IsOpen;
         $scope.isPendingUpdate = () => (item) => item.IsPendingUpdate;
         $scope.isDecided = () => (item) => !item.IsOpen && !item.IsPendingUpdate;
+        $scope.isGameBet = (game) => (item) => item.Game.GameId === game.GameId;
+        $scope.hasBets = (game) => _.filter($scope.pendingUpdateGamesFolloweesBets, (bet) => bet.Game.GameId === game.GameId).length > 0
 
         $scope.gridOptions = {
             ...Constants.TABLE_GRID_OPTIONS, ...{
@@ -949,6 +931,8 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         users.forEach((obj) => {
             $scope.usersMap.set(obj.Username, obj);
         });
+        let followeesUsers = _.chain(users).filter((user) => $scope.security.user.Followees.includes(user.Username)).pluck('Username').value();
+        $scope.followeesBets = _.filter($scope.gameBets, (bet) => followeesUsers.includes(bet.User.Username));
         let topUsers = _.chain(users).first(3).pluck('Username').value();
         $scope.top3UsersBets = _.filter($scope.gameBets, (bet) => topUsers.includes(bet.User.Username));
         let myPlace = 0;
@@ -1343,7 +1327,7 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
 angular.module('mundialitoApp').factory('MundialitoUtils', [ 'Constants', function (Constants) {
 
     var Utils = {
-        shouldRefreshInstance : function(instance) {
+        shouldRefreshInstance : (instance) => {
             if (!angular.isDefined(instance.LoadTime) || !angular.isDate(instance.LoadTime)) {
                 return false;
             }
@@ -2200,7 +2184,7 @@ angular.module('mundialitoApp').factory('User', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log', '$routeParams', 'Alert', 'GeneralBetsManager', 'profileUser', 'userGameBets', 'teams', 'generalBetsAreOpen', 'players', function ($scope, $log, $routeParams, Alert, GeneralBetsManager, profileUser, userGameBets, teams, generalBetsAreOpen, players) {
+angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log', 'UsersManager', 'Alert', 'GeneralBetsManager', 'profileUser', 'userGameBets', 'teams', 'generalBetsAreOpen', 'players', function ($scope, $log, UsersManager, Alert, GeneralBetsManager, profileUser, userGameBets, teams, generalBetsAreOpen, players) {
     $scope.profileUser = profileUser;
     $scope.userGameBets = userGameBets;
     $scope.teams = teams;
@@ -2208,38 +2192,39 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     $scope.noGeneralBetWasSubmitted = false;
     $scope.generalBetsAreOpen = (generalBetsAreOpen === true);
     $log.debug('UserProfileCtrl: generalBetsAreOpen = ' + generalBetsAreOpen);
+    $scope.alreadyFollow = $scope.security.user.Followees.includes($scope.profileUser.Username)
 
-    $scope.isLoggedUserProfile = function() {
+    $scope.isLoggedUserProfile = () => {
         var res = ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
         $log.debug('UserProfileCtrl: isLoggedUserProfile = ' + res);
         return ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
     };
 
-    $scope.isGeneralBetClosed = function() {
+    $scope.isGeneralBetClosed = () => {
         var res = !$scope.generalBetsAreOpen;
         $log.debug('UserProfileCtrl: isGeneralBetClosed = ' + res);
         return res;
     };
 
-    $scope.isGeneralBetReadOnly = function() {
+    $scope.isGeneralBetReadOnly = () => {
         var res = (!$scope.isLoggedUserProfile() || ($scope.isGeneralBetClosed()));
         $log.debug('UserProfileCtrl: isGeneralBetReadOnly = ' + res);
         return res;
     }
 
-    $scope.shoudLoadGeneralBet = function() {
+    $scope.shoudLoadGeneralBet = () => {
         var res = ($scope.isLoggedUserProfile() || ($scope.isGeneralBetClosed()));
         $log.debug('UserProfileCtrl: shoudLoadGeneralBet = ' + res);
         return res;
     }
 
     if ($scope.shoudLoadGeneralBet()) {
-        GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then(function (answer) {
+        GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then((answer) => {
             $log.debug('UserProfileCtrl: hasGeneralBet = ' + answer);
             if (answer === true) {
-                GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then(function (generalBet) {
+                GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then((generalBet) => {
                     $log.debug('UserProfileCtrl: got user general bet - ' + angular.toJson(generalBet));
-                    $scope.generalBet = generalBet
+                    $scope.generalBet = generalBet;
                 });
             }
             else {
@@ -2256,37 +2241,61 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         });
     }
 
-    $scope.saveGeneralBet = function() {
-        if (angular.isDefined($scope.generalBet.GeneralBetId))
-        {
-            $scope.generalBet.update().then(function() {
+    $scope.saveGeneralBet = () => {
+        if (angular.isDefined($scope.generalBet.GeneralBetId)) {
+            $scope.generalBet.update().then(() => {
                 Alert.success('General Bet was updated successfully');
-            }, function () {
+            }, () => {
                 Alert.error('Failed to update General Bet, please try again');
             });
         }
-        else
-        {
-            GeneralBetsManager.addGeneralBet($scope.generalBet).then(function(data) {
+
+        else {
+            GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
                 $log.log('UserProfileCtrl: General Bet ' + data.GeneralBetId + ' was added');
                 $scope.generalBet = data;
                 Alert.success('General Bet was added successfully');
-            }, function () {
+            }, () => {
                 Alert.error('Failed to add General Bet, please try again');
             });
         }
     };
 
+    $scope.social = () => {
+        if ($scope.alreadyFollow) {
+            UsersManager.unfollow($scope.profileUser.Username).then(() => {
+                $scope.alreadyFollow = false;
+                const index = $scope.security.user.Followees.indexOf($scope.profileUser.Username);
+                $scope.security.user.Followees.splice(index, 1);
+                Alert.success('You no longer following ' + $scope.profileUser.Username);
+            }).catch((err) => {
+                Alert.error('Failed to unfollow ' + $scope.profileUser.Username + ': ' + e);
+            });
+        } else {
+            UsersManager.follow($scope.profileUser.Username).then(() => {
+                $scope.alreadyFollow = true;
+                $scope.security.user.Followees.push($scope.profileUser.Username);
+                Alert.success('You are now following ' + $scope.profileUser.Username);
+            }).catch((err) => {
+                Alert.error('Failed to follow ' + $scope.profileUser.Username + ': ' + e);
+            });
+        }
+    };
 
+    UsersManager.getSocial($scope.profileUser.Username).then((data) => {
+        $log.log('UserProfileCtrl: Got social response');
+        $scope.followers = data['followers'];
+        $scope.followees = data['followees'];
+    });
 }]);
 
 'use strict';
 angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', '$log', 'MundialitoUtils', 'DSCacheFactory', function ($http, $q, User, $log, MundialitoUtils, DSCacheFactory) {
     var usersPromise = undefined;
     var usersManager = {
-        _cacheManager: DSCacheFactory('UsersManager', { cacheFlushInterval : 1800000 }),
+        _cacheManager: DSCacheFactory('UsersManager', { cacheFlushInterval: 1800000 }),
         _pool: {},
-        _retrieveInstance: function(username, userData) {
+        _retrieveInstance: function (username, userData) {
             var instance = this._pool[username];
 
             if (instance) {
@@ -2300,31 +2309,31 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             instance.LoadTime = new Date();
             return instance;
         },
-        _search: function(username) {
+        _search: function (username) {
             $log.debug('UsersManager: will fetch user ' + username + ' from local pool');
             var instance = this._pool[username];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('UsersManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('UsersManager: Instance was loaded at ' + instance, LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
         },
-        _load: function(username, deferred) {
+        _load: function (username, deferred) {
             var scope = this;
             $log.debug('UsersManager: will fetch user ' + username + ' from server');
-            $http.get('api/users/' + username, { tracker: 'getUser'})
-                .success(function(userData) {
+            $http.get('api/users/' + username, { tracker: 'getUser' })
+                .success(function (userData) {
                     var user = scope._retrieveInstance(userData.Username, userData);
                     deferred.resolve(user);
                 })
-                .error(function() {
+                .error(function () {
                     deferred.reject();
                 });
         },
 
         /* Public Methods */
         /* Use this function in order to get a user instance by it's id */
-        getUser: function(username,fresh) {
+        getUser: function (username, fresh) {
             var deferred = $q.defer();
             var user = undefined;
             if ((!angular.isDefined(fresh) || (!fresh))) {
@@ -2338,31 +2347,54 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             return deferred.promise;
         },
 
-        generatePrivateKey : function(email) {
+        generatePrivateKey: function (email) {
             var deferred = $q.defer();
             $log.debug('UsersManager: will generate private key for ' + email);
             $http.get('api/users/generateprivatekey/' + encodeURIComponent(email) + '/', { tracker: 'generatePrivateKey' })
-                .success(function(answer) {
+                .success(function (answer) {
                     deferred.resolve(answer);
                 })
-                .error(function() {
+                .error(function () {
                     deferred.reject();
                 });
             return deferred.promise;
         },
 
-        getTable: function() {
+        getTable: function () {
             var scope = this;
             $log.debug('UsersManager: will fetch table from server');
-            return $http.get('api/users/table', { tracker: 'getUsers'})
+            return $http.get('api/users/table', { tracker: 'getUsers' })
                 .then(function (usersArray) {
                     var users = [];
-                    usersArray.data.forEach(function (userData) {
+                    usersArray.data.forEach((userData) => {
                         var user = scope._retrieveInstance(userData.Username, userData);
                         users.push(user);
                     });
                     return users;
                 });
+        },
+
+        getSocial: (username) => {
+            $log.debug('UsersManager: will fetch followers and followees of user ' + username);
+            return $http.get('api/users/' + username + '/followees', { tracker: 'getSocial' })
+                .then((followees) => {
+                    return $http.get('api/users/' + username + '/followers', { tracker: 'getSocial' }).then((followers) => {
+                        return {
+                            followers: followers.data,
+                            followees: followees.data
+                        };
+                    });
+                });
+        },
+
+        follow: (username) => {
+            $log.debug('UsersManager: will follow ' + username);
+            return $http.post('api/users/follow/' + username, undefined, { tracker: 'follow' });
+        },
+
+        unfollow: (username) => {
+            $log.debug('UsersManager: will unfollow ' + username);
+            return $http.delete('api/users/follow/' + username, undefined, { tracker: 'unfollow' });
         },
 
         /* Use this function in order to get instances of all the users */
@@ -2373,17 +2405,17 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var deferred = $q.defer();
             var scope = this;
             $log.debug('UsersManager: will fetch all users from server');
-            $http.get('api/users', { tracker: 'getUsers'})
-                .success(function(usersArray) {
+            $http.get('api/users', { tracker: 'getUsers' })
+                .success(function (usersArray) {
                     var users = [];
-                    usersArray.forEach(function(userData) {
+                    usersArray.forEach(function (userData) {
                         var user = scope._retrieveInstance(userData.Username, userData);
                         users.push(user);
                     });
 
                     deferred.resolve(users);
                 })
-                .error(function() {
+                .error(function () {
                     deferred.reject();
                 });
             usersPromise = deferred.promise;
@@ -2391,14 +2423,14 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
         },
 
         /*  This function is useful when we got somehow the user data and we wish to store it or update the pool and get a user instance in return */
-        setUser: function(userData) {
+        setUser: function (userData) {
             $log.debug('UsersManager: will set user ' + userData.Username + ' to -' + angular.toJson(userData));
             var scope = this;
             var user = this._search(userData.Username);
             if (user) {
                 user.setData(userData);
             } else {
-                user = scope._retrieveInstance(userData.Username,userData);
+                user = scope._retrieveInstance(userData.Username, userData);
             }
             return user;
         }

@@ -32,7 +32,7 @@ public class UserModel
 
     [JsonPropertyName("Email")]
     public string Email { get; set; }
-    
+
     [JsonPropertyName("IsAdmin")]
     public bool IsAdmin { get; set; }
 
@@ -53,7 +53,7 @@ public class UserModel
 
     [JsonPropertyName("Marks")]
     public int Marks { get; private set; }
-    
+
     [JsonPropertyName("TotalMarks")]
     public int TotalMarks { get; set; }
 

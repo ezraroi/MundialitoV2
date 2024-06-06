@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Mundialito.DAL.Accounts;
 
 namespace Mundialito.Models;
 
@@ -20,4 +21,10 @@ public class UserInfoViewModel
 
     [JsonPropertyName("Roles")]
     public string? Roles { get; set; }
+
+    [JsonPropertyName("Followers")]
+    public ICollection<string> Followers { get; set; }
+    
+    [JsonPropertyName("Followees")]
+    public ICollection<string> Followees { get; set; }
 }

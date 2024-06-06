@@ -23,6 +23,7 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	public DbSet<GeneralBet> GeneralBets { get; set; }
 	public DbSet<ActionLog> ActionLogs { get; set; }
 	public DbSet<Player> Players { get; set; }
+	public DbSet<UserFollow> UserFollows { get; set; }
 	private readonly IConfiguration appConfig;
 	private readonly string _connectionString;
 
@@ -53,6 +54,21 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				.OnDelete(DeleteBehavior.NoAction)
 				.IsRequired();
 
+		modelBuilder.Entity<UserFollow>()
+					.HasKey(uf => new { uf.FollowerId, uf.FolloweeId });
+		modelBuilder.Entity<UserFollow>()
+			.HasOne(uf => uf.Follower)
+			.WithMany(u => u.Followees)
+			.HasForeignKey(uf => uf.FollowerId)
+			.OnDelete(DeleteBehavior.Restrict);
+
+		modelBuilder.Entity<UserFollow>()
+			.HasOne(uf => uf.Followee)
+			.WithMany(u => u.Followers)
+			.HasForeignKey(uf => uf.FolloweeId)
+			.OnDelete(DeleteBehavior.Restrict);
+
+
 		modelBuilder.Entity<IdentityUserLogin<string>>().HasKey(l => l.UserId);
 		modelBuilder.Entity<IdentityRole>().HasKey(r => r.Id);
 		modelBuilder.Entity<IdentityUserRole<string>>().HasKey(r => new { r.RoleId, r.UserId });
@@ -64,7 +80,8 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 
 	protected override void OnConfiguring(DbContextOptionsBuilder options)
 	{
-		if (string.IsNullOrEmpty(_connectionString)) {
+		if (string.IsNullOrEmpty(_connectionString))
+		{
 			bool sqlLite = appConfig.GetSection("App").GetValue("UseSqlLite", false);
 			if (appConfig.GetSection("App").GetValue("UseSqlLite", false))
 			{
@@ -74,7 +91,9 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 			{
 				options.UseSqlServer(appConfig.GetConnectionString("App"), b => b.EnableRetryOnFailure());
 			}
-		} else {
+		}
+		else
+		{
 			options.UseSqlServer(_connectionString, b => b.EnableRetryOnFailure());
 		}
 	}

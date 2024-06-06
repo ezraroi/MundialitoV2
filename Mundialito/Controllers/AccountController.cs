@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
 using Mundialito.Configuration;
@@ -132,11 +133,11 @@ public class AccountController : ControllerBase
     [Authorize]
     public async Task<ActionResult<UserInfoViewModel>> GetUserInfo()
     {
-        var user = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await _context.Users.Include(u => u.Followers)
+                .ThenInclude(f => f.Follower).Include(u => u.Followees).ThenInclude(f => f.Followee)
+            .FirstOrDefaultAsync(u => u.UserName == _httpContextAccessor.HttpContext.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
-        }
         return Ok(new UserInfoViewModel
         {
             UserName = user.UserName,
@@ -144,6 +145,8 @@ public class AccountController : ControllerBase
             LastName = user.LastName,
             Email = user.Email,
             Roles = user.Role.ToString(),
+            Followees = user.Followees.Select((user) => user.Followee.UserName).ToList(),
+            Followers = user.Followers.Select((user) => user.Follower.UserName).ToList(),
         });
     }
 

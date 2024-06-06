@@ -128,6 +128,8 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         users.forEach((obj) => {
             $scope.usersMap.set(obj.Username, obj);
         });
+        let followeesUsers = _.chain(users).filter((user) => $scope.security.user.Followees.includes(user.Username)).pluck('Username').value();
+        $scope.followeesBets = _.filter($scope.gameBets, (bet) => followeesUsers.includes(bet.User.Username));
         let topUsers = _.chain(users).first(3).pluck('Username').value();
         $scope.top3UsersBets = _.filter($scope.gameBets, (bet) => topUsers.includes(bet.User.Username));
         let myPlace = 0;
