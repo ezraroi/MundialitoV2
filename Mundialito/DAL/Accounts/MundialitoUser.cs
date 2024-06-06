@@ -20,4 +20,13 @@ public class MundialitoUser : IdentityUser
     [Required]
     public string? LastName { get; set; }
 
+    public ICollection<UserFollow> Followers { get; set; }
+    public ICollection<UserFollow> Followees { get; set; }
+
+    public MundialitoUser()
+    {
+        Followers = new List<UserFollow>();
+        Followees = new List<UserFollow>();
+    }
+
 }

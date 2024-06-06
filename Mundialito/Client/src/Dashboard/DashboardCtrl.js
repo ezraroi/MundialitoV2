@@ -1,6 +1,6 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players',
-    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players) {
+angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players', 'BetsManager',
+    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players, BetsManager) {
         $scope.generalBetsAreOpen = false;
         $scope.submittedGeneralBet = true;
         $scope.pendingUpdateGames = false;
@@ -16,25 +16,33 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.playersDic[players[i].PlayerId] = players[i];
         }
 
-        GamesManager.loadAllGames().then(function (games) {
+        GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
             $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
+            $scope.pendingUpdateGamesFolloweesBets = [];
+            $log.info('DashboardCtrl: followees:' + $scope.security.user.Followees);
+            _.filter($scope.games, (game) => game.IsPendingUpdate).forEach(game => {
+                BetsManager.getGameBets(game.GameId).then((data) => {
+                    let followeesBets = _.filter(data, (bet) => { 
+                        return $scope.security.user.Followees.includes(bet.User.Username);
+                    });
+                    $scope.pendingUpdateGamesFolloweesBets = $scope.pendingUpdateGamesFolloweesBets.concat(followeesBets);
+                });
+            });
         });
 
-        var userHasGeneralBet = function () {
+        var userHasGeneralBet = () => {
             if (!angular.isDefined($scope.security.user) || ($scope.security.user == null)) {
                 $log.debug('DashboardCtrl: user info not loaded yet, will retry in 1 second');
                 $timeout(userHasGeneralBet, 1000);
             }
             else {
-                GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then(function (data) {
+                GeneralBetsManager.hasGeneralBet($scope.security.user.Username).then((data) => {
                     $scope.submittedGeneralBet = data === true;
                 });
             }
         };
-
         userHasGeneralBet();
-
         GeneralBetsManager.canSubmtiGeneralBet().then((data) => {
             $scope.generalBetsAreOpen = (data === true);
             if (!$scope.generalBetsAreOpen) {
@@ -96,6 +104,8 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.isOpenForBetting = () => (item) => item.IsOpen;
         $scope.isPendingUpdate = () => (item) => item.IsPendingUpdate;
         $scope.isDecided = () => (item) => !item.IsOpen && !item.IsPendingUpdate;
+        $scope.isGameBet = (game) => (item) => item.Game.GameId === game.GameId;
+        $scope.hasBets = (game) => _.filter($scope.pendingUpdateGamesFolloweesBets, (bet) => bet.Game.GameId === game.GameId).length > 0
 
         $scope.gridOptions = {
             ...Constants.TABLE_GRID_OPTIONS, ...{

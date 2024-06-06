@@ -177,6 +177,37 @@
         <div class="panel panel-info" cg-busy="{tracker:'getUsers'}">
             <div class="panel-heading"><i class="fa fa-bolt"></i> Bets HighLights</div>
             <div class="panel-body">
+                <div class="row" ng-if="followeesBets.length > 0">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"><i class="fa fa-users"></i> Your Followees Bets</div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <th>#</th>
+                                            <th><i class="fa fa-user"></i> User</th>
+                                            <th>Result</th>
+                                            <th><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
+                                            <th><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
+                                            <th>Points</th>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="bet in followeesBets">
+                                                <td>{{::getUserPlace(bet.User)}}</td>
+                                                <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}} {{::bet.User.LastName}}</a></td>
+                                                <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
+                                                <td>{{::bet.CardsMark}}</td>
+                                                <td>{{::bet.CornersMark}}</td>
+                                                <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="panel panel-info">

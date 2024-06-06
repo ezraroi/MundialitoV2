@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
@@ -24,9 +26,10 @@ public class UsersController : ControllerBase
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly TableBuilder tableBuilder;
+    private readonly MundialitoDbContext mundialitoDbContext;
     private readonly ILogger logger;
 
-    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository, TableBuilder tableBuilder)
+    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
     {
         this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
@@ -37,6 +40,7 @@ public class UsersController : ControllerBase
         this.generalBetsRepository = generalBetsRepository;
         this.logger = logger;
         this.tableBuilder = tableBuilder;
+        this.mundialitoDbContext = mundialitoDbContext;
     }
 
     [HttpGet]
@@ -53,8 +57,89 @@ public class UsersController : ControllerBase
         return Ok(GetTableDetails());
     }
 
+    [HttpPost("follow/{username}")]
+    [Authorize]
+    public async Task<ActionResult> FollowUserAsync(string username)
+    {
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+            return Unauthorized();
+        var followee = await userManager.FindByNameAsync(username);
+        if (followee == null)
+            return NotFound(new ErrorMessage { Message = string.Format("No such user {}", username) });
+        if (user.Id == followee.Id)
+            return BadRequest(new ErrorMessage { Message = "You can't follow youself" });
+        var userFollow = new UserFollow
+        {
+            FollowerId = user.Id,
+            FolloweeId = followee.Id
+        };
+        logger.LogInformation("User {} added {} as follower", user.UserName, followee.UserName);
+        mundialitoDbContext.UserFollows.Add(userFollow);
+        mundialitoDbContext.SaveChanges();
+        return Ok();
+    }
+
+    [HttpDelete("follow/{username}")]
+    [Authorize]
+    public async Task<ActionResult> UnfollowUserAsync(string username)
+    {
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+            return Unauthorized();
+        var followee = await userManager.FindByNameAsync(username);
+        if (followee == null)
+            return NotFound(new ErrorMessage { Message = string.Format("No such user {}", username) });
+        var userFollow = await mundialitoDbContext.UserFollows
+                .FirstOrDefaultAsync(uf => uf.FollowerId == user.Id && uf.Followee.UserName == username);
+        if (userFollow != null)
+        {
+            mundialitoDbContext.UserFollows.Remove(userFollow);
+            mundialitoDbContext.SaveChanges();
+            return Ok();
+        }
+        else
+            return NotFound(new ErrorMessage { Message = string.Format("You do not follow {}", followee.UserName) });
+    }
+
+    [HttpGet("me/followees")]
+    [Authorize]
+    public async Task<IList<UserModel>> GetFolloweesAsync()
+    {
+        return await GetFolloweesAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+    }
+
+    [HttpGet("{username}/followees")]
+    [Authorize]
+    public async Task<IList<UserModel>> GetFolloweesAsync(string username)
+    {
+        return await mundialitoDbContext.UserFollows
+            .Where(uf => uf.Follower.UserName == username)
+            .Select(uf => uf.Followee)
+            .Select(item => new UserModel(item))
+            .ToListAsync();
+    }
+
+    [HttpGet("{username}/followers")]
+    [Authorize]
+    public async Task<IList<UserModel>> GetFollowersAsync(string username)
+    {
+        return await mundialitoDbContext.UserFollows
+            .Where(uf => uf.Followee.UserName == username)
+            .Select(uf => uf.Follower)
+            .Select(item => new UserModel(item))
+            .ToListAsync();
+    }
+
+    [HttpGet("me/followers")]
+    [Authorize]
+    public async Task<IList<UserModel>> GetFollowersAsync()
+    {
+        return await GetFollowersAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+    }
+
     [HttpGet("{username}")]
-    public async Task<ActionResult<UserModel>> GetUserByUsername(String username)
+    public async Task<ActionResult<UserModel>> GetUserByUsername(string username)
     {
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
@@ -83,7 +168,7 @@ public class UsersController : ControllerBase
 
     [HttpPost("MakeAdmin/{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> MakeAdmin(String id)
+    public async Task<IActionResult> MakeAdmin(string id)
     {
         var user = await userManager.FindByIdAsync(id);
         if (user == null)
@@ -103,7 +188,7 @@ public class UsersController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteUser(String id)
+    public async Task<IActionResult> DeleteUser(string id)
     {
         var user = await userManager.FindByIdAsync(id);
         if (user == null)

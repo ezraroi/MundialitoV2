@@ -1,7 +1,7 @@
 ﻿angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
     'ui.bootstrap.datetimepicker', 'FacebookPluginDirectives', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
-    .value('cgBusyTemplateName','App/Partials/angular-busy.html')
-    .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider','Constants', function ( $routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
+    .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
+    .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
         $locationProvider.html5Mode(true);
         $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
         $httpProvider.interceptors.push('myHttpInterceptor');
@@ -12,131 +12,103 @@
             when('/', {
                 templateUrl: 'App/Dashboard/Dashboard.html',
                 controller: 'DashboardCtrl',
-                resolve : {
-                    teams : ['TeamsManager', function ( TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }],
-                    players: ['PlayersManager', function (PlayersManager) {
-                        return PlayersManager.loadAllPlayers();
-                    }]
+                resolve: {
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
             }).
             when('/bets_center', {
                 templateUrl: 'App/Bets/BetsCenter.html',
                 controller: 'BetsCenterCtrl',
-                resolve : {
-                    games : ['GamesManager', function (GamesManager) {
-                        return GamesManager.loadOpenGames();
-                    }]
+                resolve: {
+                    games: ['GamesManager', (GamesManager) => GamesManager.loadOpenGames()]
                 }
             }).
             when('/users/:username', {
                 templateUrl: 'App/Users/UserProfile.html',
                 controller: 'UserProfileCtrl',
-                resolve : {
-                    profileUser: ['$route', 'UsersManager', function ($route, UsersManager) {
+                resolve: {
+                    profileUser: ['$route', 'UsersManager', ($route, UsersManager) => {
                         var username = $route.current.params.username;
                         return UsersManager.getUser(username, true);
                     }],
-                    userGameBets : ['$route', 'BetsManager', function ($route, BetsManager) {
+                    userGameBets: ['$route', 'BetsManager', ($route, BetsManager) => {
                         var username = $route.current.params.username;
                         return BetsManager.getUserBets(username);
                     }],
-                    teams : ['TeamsManager', function ( TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }],
-                    generalBetsAreOpen : ['GeneralBetsManager', function (GeneralBetsManager) {
-                        return GeneralBetsManager.canSubmtiGeneralBet();
-                    }],
-                    players: ['PlayersManager', function (PlayersManager) {
-                        return PlayersManager.loadAllPlayers();
-                    }]
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    generalBetsAreOpen: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.canSubmtiGeneralBet()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()],
                 }
             }).
             when('/manage_users', {
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    users : ['UsersManager', function (UsersManager) {
-                        return UsersManager.loadAllUsers();
-                    }],
-                    teams : ['TeamsManager', function (TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }],
-                    generalBets: ['GeneralBetsManager' , function (GeneralBetsManager) {
-                        return GeneralBetsManager.loadAllGeneralBets();
-                    }],
-                    players: ['PlayersManager', function (PlayersManager) {
-                        return PlayersManager.loadAllPlayers();
-                    }]
+                    users: ['UsersManager', (UsersManager) => UsersManager.loadAllUsers()],
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    generalBets: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
             }).
             when('/teams', {
                 templateUrl: 'App/Teams/Teams.html',
                 controller: 'TeamsCtrl',
                 resolve: {
-                    teams: ['TeamsManager', function (TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }]
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()]
                 }
             }).
             when('/teams/:teamId', {
                 templateUrl: 'App/Teams/Team.html',
                 controller: 'TeamCtrl',
                 resolve: {
-                    team: ['$route','TeamsManager',  function ($route, TeamsManager) {
-                        var teamId = $route.current.params.teamId;
-                        return TeamsManager.getTeam(teamId);
-                    }],
-                    games : ['$route','GamesManager', function ($route, GamesManager) {
-                        var teamId = $route.current.params.teamId;
-                        return GamesManager.getTeamGames(teamId);
-                    }]
+                    team: ['$route', 'TeamsManager', ($route, TeamsManager) => {
+                            var teamId = $route.current.params.teamId;
+                            return TeamsManager.getTeam(teamId);
+                        }],
+                    games: ['$route', 'GamesManager', ($route, GamesManager) => {
+                            var teamId = $route.current.params.teamId;
+                            return GamesManager.getTeamGames(teamId);
+                        }]
                 }
             }).
             when('/games/:gameId', {
                 templateUrl: 'App/Games/Game.html',
                 controller: 'GameCtrl',
                 resolve: {
-                    game: ['$route','GamesManager', function ($route, GamesManager) {
-                        var gameId = $route.current.params.gameId;
-                        return  GamesManager.getGame(gameId);
-                    }],
-                    userBet: ['$route','BetsManager', function ($route, BetsManager) {
-                        var gameId = $route.current.params.gameId;
-                        return BetsManager.getUserBetOnGame(gameId);
-                    }]
+                    game: ['$route', 'GamesManager', ($route, GamesManager) => {
+                            var gameId = $route.current.params.gameId;
+                            return GamesManager.getGame(gameId);
+                        }],
+                    userBet: ['$route', 'BetsManager', ($route, BetsManager) => {
+                            var gameId = $route.current.params.gameId;
+                            return BetsManager.getUserBetOnGame(gameId);
+                        }]
                 }
             }).
             when('/games', {
                 templateUrl: 'App/Games/Games.html',
                 controller: 'GamesCtrl',
                 resolve: {
-                    games: ['GamesManager', function (GamesManager) {
-                        return GamesManager.loadAllGames();
-                    }],
-                    teams : ['TeamsManager', function (TeamsManager) {
-                        return TeamsManager.loadAllTeams();
-                    }]
+                    games: ['GamesManager', (GamesManager) => GamesManager.loadAllGames()],
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()]
                 }
             }).
             when('/stadiums/:stadiumId', {
                 templateUrl: 'App/Stadiums/Stadium.html',
                 controller: 'StadiumCtrl',
                 resolve: {
-                    stadium: ['$q','$route','StadiumsManager',  function ($q, $route, StadiumsManager) {
-                        var stadiumId = $route.current.params.stadiumId;
-                        return StadiumsManager.getStadium(stadiumId, true);
-                    }]
+                    stadium: ['$q', '$route', 'StadiumsManager', (_$q, $route, StadiumsManager) => {
+                            var stadiumId = $route.current.params.stadiumId;
+                            return StadiumsManager.getStadium(stadiumId, true);
+                        }]
                 }
             }).
             when('/stadiums', {
                 templateUrl: 'App/Stadiums/Stadiums.html',
                 controller: 'StadiumsCtrl',
                 resolve: {
-                    stadiums : ['StadiumsManager', function (StadiumsManager) {
-                        return StadiumsManager.loadAllStadiums();
-                    }]
+                    stadiums: ['StadiumsManager', (StadiumsManager) => StadiumsManager.loadAllStadiums()]
                 }
             }).
             when('/login', {

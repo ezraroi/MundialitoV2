@@ -179,19 +179,15 @@
 		};
 		
 		var initialize = function () {
-			
-			
 			//Check for access token and get user info
 			if (accessToken()) {
 				accessToken(accessToken());
-				Api.getUserInfo(accessToken()).success(function (user) {
-				    Security.user = user;
-
+				return Api.getUserInfo(accessToken()).success((user) => {
+					Security.user = user;
 					if (securityProvider.events.reloadUser) securityProvider.events.reloadUser(Security, user); // Your Register events
 				});
 			}
-
-			
+			return $q.resolve();
 		};
 
 		//Public Variables
@@ -203,18 +199,17 @@
 		//Public Methods
 		Security.login = function (data) {
 			var deferred = $q.defer();
-
 			data.grant_type = 'password';
 			Api.login(data).success(function (user) {
 				accessToken(user.AccessToken, data.rememberMe);
-				Security.user = user;
-				Security.redirectAuthenticated(redirectTarget() || securityProvider.urls.home);
-				if (securityProvider.events.login) securityProvider.events.login(Security, user); // Your Login events
-				deferred.resolve(Security.user);
+				initialize().then(() => {
+					Security.redirectAuthenticated(redirectTarget() || securityProvider.urls.home);
+					if (securityProvider.events.login) securityProvider.events.login(Security, user); // Your Login events
+					deferred.resolve(Security.user);
+				});
 			}).error(function (errorData) {
 				deferred.reject(errorData);
 			});
-
 			return deferred.promise;
 		};
 

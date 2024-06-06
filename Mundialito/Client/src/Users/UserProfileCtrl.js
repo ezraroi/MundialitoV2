@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log', '$routeParams', 'Alert', 'GeneralBetsManager', 'profileUser', 'userGameBets', 'teams', 'generalBetsAreOpen', 'players', function ($scope, $log, $routeParams, Alert, GeneralBetsManager, profileUser, userGameBets, teams, generalBetsAreOpen, players) {
+angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log', 'UsersManager', 'Alert', 'GeneralBetsManager', 'profileUser', 'userGameBets', 'teams', 'generalBetsAreOpen', 'players', function ($scope, $log, UsersManager, Alert, GeneralBetsManager, profileUser, userGameBets, teams, generalBetsAreOpen, players) {
     $scope.profileUser = profileUser;
     $scope.userGameBets = userGameBets;
     $scope.teams = teams;
@@ -7,38 +7,39 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     $scope.noGeneralBetWasSubmitted = false;
     $scope.generalBetsAreOpen = (generalBetsAreOpen === true);
     $log.debug('UserProfileCtrl: generalBetsAreOpen = ' + generalBetsAreOpen);
+    $scope.alreadyFollow = $scope.security.user.Followees.includes($scope.profileUser.Username)
 
-    $scope.isLoggedUserProfile = function() {
+    $scope.isLoggedUserProfile = () => {
         var res = ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
         $log.debug('UserProfileCtrl: isLoggedUserProfile = ' + res);
         return ($scope.security.user != null) && ($scope.security.user.Username === $scope.profileUser.Username);
     };
 
-    $scope.isGeneralBetClosed = function() {
+    $scope.isGeneralBetClosed = () => {
         var res = !$scope.generalBetsAreOpen;
         $log.debug('UserProfileCtrl: isGeneralBetClosed = ' + res);
         return res;
     };
 
-    $scope.isGeneralBetReadOnly = function() {
+    $scope.isGeneralBetReadOnly = () => {
         var res = (!$scope.isLoggedUserProfile() || ($scope.isGeneralBetClosed()));
         $log.debug('UserProfileCtrl: isGeneralBetReadOnly = ' + res);
         return res;
     }
 
-    $scope.shoudLoadGeneralBet = function() {
+    $scope.shoudLoadGeneralBet = () => {
         var res = ($scope.isLoggedUserProfile() || ($scope.isGeneralBetClosed()));
         $log.debug('UserProfileCtrl: shoudLoadGeneralBet = ' + res);
         return res;
     }
 
     if ($scope.shoudLoadGeneralBet()) {
-        GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then(function (answer) {
+        GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then((answer) => {
             $log.debug('UserProfileCtrl: hasGeneralBet = ' + answer);
             if (answer === true) {
-                GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then(function (generalBet) {
+                GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then((generalBet) => {
                     $log.debug('UserProfileCtrl: got user general bet - ' + angular.toJson(generalBet));
-                    $scope.generalBet = generalBet
+                    $scope.generalBet = generalBet;
                 });
             }
             else {
@@ -55,26 +56,50 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         });
     }
 
-    $scope.saveGeneralBet = function() {
-        if (angular.isDefined($scope.generalBet.GeneralBetId))
-        {
-            $scope.generalBet.update().then(function() {
+    $scope.saveGeneralBet = () => {
+        if (angular.isDefined($scope.generalBet.GeneralBetId)) {
+            $scope.generalBet.update().then(() => {
                 Alert.success('General Bet was updated successfully');
-            }, function () {
+            }, () => {
                 Alert.error('Failed to update General Bet, please try again');
             });
         }
-        else
-        {
-            GeneralBetsManager.addGeneralBet($scope.generalBet).then(function(data) {
+
+        else {
+            GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
                 $log.log('UserProfileCtrl: General Bet ' + data.GeneralBetId + ' was added');
                 $scope.generalBet = data;
                 Alert.success('General Bet was added successfully');
-            }, function () {
+            }, () => {
                 Alert.error('Failed to add General Bet, please try again');
             });
         }
     };
 
+    $scope.social = () => {
+        if ($scope.alreadyFollow) {
+            UsersManager.unfollow($scope.profileUser.Username).then(() => {
+                $scope.alreadyFollow = false;
+                const index = $scope.security.user.Followees.indexOf($scope.profileUser.Username);
+                $scope.security.user.Followees.splice(index, 1);
+                Alert.success('You no longer following ' + $scope.profileUser.Username);
+            }).catch((err) => {
+                Alert.error('Failed to unfollow ' + $scope.profileUser.Username + ': ' + e);
+            });
+        } else {
+            UsersManager.follow($scope.profileUser.Username).then(() => {
+                $scope.alreadyFollow = true;
+                $scope.security.user.Followees.push($scope.profileUser.Username);
+                Alert.success('You are now following ' + $scope.profileUser.Username);
+            }).catch((err) => {
+                Alert.error('Failed to follow ' + $scope.profileUser.Username + ': ' + e);
+            });
+        }
+    };
 
+    UsersManager.getSocial($scope.profileUser.Username).then((data) => {
+        $log.log('UserProfileCtrl: Got social response');
+        $scope.followers = data['followers'];
+        $scope.followees = data['followees'];
+    });
 }]);
