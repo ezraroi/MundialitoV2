@@ -2469,7 +2469,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
 angular.module('mundialitoApp')
     .factory('FootballDataGamePlugin', ['$q', '$rootScope', 'GenericProxyService', function ($q, $rootScope, GenericProxyService) {
         var baseUrl = 'https://api.football-data.org/v4/matches/';
-        // var apiKey = '7edaa34b2da744eab36fd60aba7d2665'; 
         const integrationKey = 'football-data'
 
         function getGameDetails(gameId) {
@@ -2477,7 +2476,6 @@ angular.module('mundialitoApp')
             if ((!$rootScope.mundialitoApp.clientConfig) || (!$rootScope.mundialitoApp.clientConfig['football-data-api-key'])) {
                 return $q.reject('Skipping football-data as no api key provided');
             }
-            $rootScope.mundialitoApp.clientConfig['football-data-api-key']
             return GenericProxyService.proxyRequest('GET', url, undefined, {
                 'X-Auth-Token': $rootScope.mundialitoApp.clientConfig['football-data-api-key']
             }).then((response) => {
