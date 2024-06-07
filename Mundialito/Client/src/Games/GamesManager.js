@@ -23,7 +23,7 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             $log.debug('GamesManager: will fetch game ' + gameId + ' from local pool');
             var instance = this._pool[gameId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('GamesManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('GamesManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;

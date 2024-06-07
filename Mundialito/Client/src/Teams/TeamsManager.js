@@ -19,7 +19,7 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             $log.debug('TeamsManager: will fetch team ' + teamId + ' from local pool');
             var instance = this._pool[teamId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('TeamsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('TeamsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;

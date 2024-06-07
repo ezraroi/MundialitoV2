@@ -21,7 +21,7 @@ angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stad
             $log.debug('StadiumsManager: will fetch stadium ' + stadiumId + ' from local pool');
             var instance = this._pool[stadiumId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('StadiumsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('StadiumsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;

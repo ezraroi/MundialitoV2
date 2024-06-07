@@ -20,7 +20,7 @@ angular.module('mundialitoApp').factory('GeneralBetsManager', ['$http', '$q', 'G
             $log.debug('GeneralBetsManager: will fetch bet ' + betId + ' from local pool');
             var instance = this._pool[betId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('GeneralBetsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('GeneralBetsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
