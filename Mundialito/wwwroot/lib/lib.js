@@ -43775,7 +43775,7 @@ angular.module('security', [])
 					if (securityProvider.events.reloadUser) securityProvider.events.reloadUser(Security, user); // Your Register events
 				});
 			}
-			return $q.resolve();
+			return $q.when();
 		};
 
 		//Public Variables

@@ -819,8 +819,6 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });
-    }).catch((error) => {
-        console.error('Error fetching game details:', error);
     });
 
     $scope.fromKeyValue = (array) => {
@@ -829,7 +827,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             if (item.name !== '') {
                 res[item.name] = item.value;
             }
-            
+
         })
         return res;
     };
@@ -1297,8 +1295,11 @@ angular.module('mundialitoApp').factory('Alert', ['toaster', '$log', '$rootScope
 angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', 'Alert', '$location', 'Constants', function ($rootScope, $log, Alert, $location, Constants) {
     var ErrorHandler = this;
 
-    ErrorHandler.handle = function (data, status) {
+    ErrorHandler.handle = (data, status, headers, config) => {
         $log.log(data);
+        if (config.ignoreError) {
+            return;
+        }
         if (status === 401) {
             localStorage.removeItem('accessToken');
             sessionStorage.removeItem('accessToken');
@@ -1311,11 +1312,11 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
             title = data.Message;
         }
         if (data.errors) {
-            angular.forEach(data.errors, function (errors) {
-                angular.forEach(errors, function (errors) {
-                    message.push(errors);
+            angular.forEach(data.errors, (errors) => {
+                    angular.forEach(errors, (errors) => {
+                            message.push(errors);
+                        });
                 });
-            });
         }
         if (data.ModelState) {
             angular.forEach(data.ModelState, function (errors) {
@@ -1330,7 +1331,7 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
         }
         if (message.length === 0 && !title) {
             title = "General Error";
-            message.push("Looks like the server is down, please try again in few minutes")
+            message.push("Looks like the server is down, please try again in few minutes");
         }
         Alert.error(message.join('\n'), title);
     }
@@ -2466,15 +2467,15 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
 }]);
 
 angular.module('mundialitoApp')
-    .factory('FootballDataGamePlugin', ['GenericProxyService', function (GenericProxyService) {
+    .factory('FootballDataGamePlugin', ['$q', '$rootScope', 'GenericProxyService', function ($q, $rootScope, GenericProxyService) {
         var baseUrl = 'https://api.football-data.org/v4/matches/';
-        var apiKey = '7edaa34b2da744eab36fd60aba7d2665'; 
+        // var apiKey = '7edaa34b2da744eab36fd60aba7d2665'; 
         const integrationKey = 'football-data'
 
         function getGameDetails(gameId) {
             var url = baseUrl + gameId;
             return GenericProxyService.proxyRequest('GET', url, undefined, {
-                'X-Auth-Token': apiKey
+                'X-Auth-Token': $rootScope.mundialitoApp.clientConfig['football-data-api-key']
             }).then((response) => {
                 return {
                     data: response,
@@ -2482,7 +2483,7 @@ angular.module('mundialitoApp')
                     template: 'App/General/Plugins/FootballDataGameTemplate.html'
                 };
             }).catch((error) => {
-                return error;
+                return $q.reject(error);
             });
         }
 
@@ -2493,7 +2494,7 @@ angular.module('mundialitoApp')
     }]);
 
 angular.module('mundialitoApp')
-    .factory('GamePluginProvider', ['$q', function ($q) {
+    .factory('GamePluginProvider', ['$q', '$log', function ($q, $log) {
         var factories = [];
 
         function getGameDetailsFromAll(integrationData) {
@@ -2504,6 +2505,9 @@ angular.module('mundialitoApp')
             var promises = relevantPlugins.map((factory) => factory.getGameDetails(integrationData[factory.integrationKey]));
             return $q.all(promises).then((results) => {
                 return results;
+            }).catch((e) => { 
+                $log.error('Error fetching game details: ' + e);
+                return $q.reject(e)
             });
         }
 
@@ -2526,7 +2530,8 @@ angular.module('mundialitoApp')
                 method: method,
                 url: baseUrl + url,
                 data: data,
-                headers: headers
+                headers: headers,
+                ignoreError: true
             }).then((response) => {
                 deferred.resolve(response.data);
             }).catch((error) => {

@@ -127,7 +127,6 @@ public class AccountController : ControllerBase
             Roles = userInDb.Role.ToString(),
         });
     }
-// https://api.sportmonks.com/football/v3/fixtures/FIXTURE_ID?includes=participants;scores;periods;state;events
 
     [HttpGet("UserInfo")]
     [Authorize]

@@ -9,7 +9,8 @@ angular.module('mundialitoApp')
                 method: method,
                 url: baseUrl + url,
                 data: data,
-                headers: headers
+                headers: headers,
+                ignoreError: true
             }).then((response) => {
                 deferred.resolve(response.data);
             }).catch((error) => {

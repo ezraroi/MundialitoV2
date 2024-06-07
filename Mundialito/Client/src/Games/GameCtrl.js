@@ -15,8 +15,6 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });
-    }).catch((error) => {
-        console.error('Error fetching game details:', error);
     });
 
     $scope.fromKeyValue = (array) => {
@@ -25,7 +23,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             if (item.name !== '') {
                 res[item.name] = item.value;
             }
-            
+
         })
         return res;
     };

@@ -1,5 +1,5 @@
 angular.module('mundialitoApp')
-    .factory('GamePluginProvider', ['$q', function ($q) {
+    .factory('GamePluginProvider', ['$q', '$log', function ($q, $log) {
         var factories = [];
 
         function getGameDetailsFromAll(integrationData) {
@@ -10,6 +10,9 @@ angular.module('mundialitoApp')
             var promises = relevantPlugins.map((factory) => factory.getGameDetails(integrationData[factory.integrationKey]));
             return $q.all(promises).then((results) => {
                 return results;
+            }).catch((e) => { 
+                $log.error('Error fetching game details: ' + e);
+                return $q.reject(e)
             });
         }
 
