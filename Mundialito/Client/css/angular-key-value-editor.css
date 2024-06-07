@@ -1,0 +1,61 @@
+.key-value-editor.as-sortable-dragging .as-sortable-item-delete,
+.key-value-editor.as-sortable-dragging .input-group-addon,
+.key-value-editor.as-sortable-dragging input {
+  opacity: 0.65;
+}
+.key-value-editor.as-sortable-dragging .as-sortable-item-handle,
+.key-value-editor .as-sortable-item-delete:hover,
+.key-value-editor .as-sortable-DISABLED-item-delete:hover,
+.key-value-editor .as-sortable-item-handle:hover {
+  opacity: 1;
+}
+.key-value-editor .as-sortable-item-delete,
+.key-value-editor .as-sortable-DISABLED-item-delete,
+.key-value-editor .as-sortable-item-handle {
+  display: inline-block;
+  font-size: 14px;
+  opacity: 0.65;
+  padding: 6px;
+  vertical-align: middle;
+}
+.key-value-editor .as-sortable-item-delete,
+.key-value-editor .as-sortable-DISABLED-item-delete {
+  color: #333;
+}
+.key-value-editor .as-sortable-item-delete:hover,
+.key-value-editor .as-sortable-DISABLED-item-delete:hover,
+.key-value-editor .as-sortable-item-delete:focus,
+.key-value-editor .as-sortable-DISABLED-item-delete:focus,
+.key-value-editor .as-sortable-item-delete:active,
+.key-value-editor .as-sortable-DISABLED-item-delete:active {
+  text-decoration: none;
+}
+.key-value-editor .as-sortable-item-handle {
+  cursor: move;
+}
+.key-value-editor .as-sortable-placeholder {
+  border-top: 2px solid #0088ce;
+  clear: left;
+  width: 100% !important;
+}
+.key-value-editor .input-group-addon span[title]:not([data-original-title=""]) {
+  cursor: help;
+}
+.key-value-editor .key-value-editor-buttons {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50px;
+}
+.key-value-editor .key-value-editor-entry {
+  display: table;
+  padding-right: 50px;
+  position: relative;
+  width: 100%;
+}
+.key-value-editor .key-value-editor-input,
+.key-value-editor .key-value-editor-header {
+  float: left;
+  padding-right: 5px;
+  width: 50%;
+}

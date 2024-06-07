@@ -146,7 +146,8 @@ public class GamesController : ControllerBase
             HomeTeamId = game.HomeTeam.TeamId,
             AwayTeamId = game.AwayTeam.TeamId,
             StadiumId = game.Stadium.StadiumId,
-            Date = game.Date
+            Date = game.Date,
+            IntegrationsData = game.IntegrationsData
         };
         var res = gamesRepository.InsertGame(newGame);
         logger.LogInformation("Posting new Game: {0}", game);
@@ -175,6 +176,7 @@ public class GamesController : ControllerBase
         item.CardsMark = game.CardsMark;
         item.CornersMark = game.CornersMark;
         item.Date = game.Date;
+        item.IntegrationsData = game.IntegrationsData;
         gamesRepository.Save();
         if (item.IsBetResolved(dateTimeProvider.UTCNow))
         {
@@ -186,7 +188,7 @@ public class GamesController : ControllerBase
                 betsRepository.Save();
             }
         }
-        AddLog(ActionType.UPDATE, String.Format("Updating Game {0}", item));
+        AddLog(ActionType.UPDATE, string.Format("Updating Game {0}", item));
         logger.LogInformation("Bet {} was resolved", id);
         return Ok(new PutGameModelResult(item, dateTimeProvider.UTCNow));
     }

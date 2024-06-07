@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
@@ -47,6 +49,19 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				.HasForeignKey(m => m.HomeTeamId)
 				.OnDelete(DeleteBehavior.NoAction)
 				.IsRequired();
+
+		var dictionaryComparer = new ValueComparer<Dictionary<string, string>>(
+            (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+            c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+            c => JsonSerializer.Deserialize<Dictionary<string, string>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+        );
+
+        modelBuilder.Entity<Game>()
+            .Property(g => g.IntegrationsData)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
+            .Metadata.SetValueComparer(dictionaryComparer);
 
 		modelBuilder.Entity<Game>().HasOne(m => m.AwayTeam)
 				.WithMany(t => t.AwayMatches)

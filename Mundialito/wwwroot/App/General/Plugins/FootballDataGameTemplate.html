@@ -1,0 +1,45 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"><i class="fa fa-calculator"></i> Game Odds</div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Results</th>
+                            <th>Odds</th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
+                                        title=" {{game.HomeTeam.Name}}"></i> <b>{{game.HomeTeam.Name}} Wins</b>
+                                </td>
+                                <td>
+                                    {{plugins['football-data'].data.odds['homeWin']}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
+                                        title=" {{game.AwayTeam.Name}}"></i> <b>{{game.AwayTeam.Name}} Wins</b>
+                                </td>
+                                <td>
+                                    {{plugins['football-data'].data.odds['awayWin']}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="fa fa-times"></i> <b>Darw</b>
+                                </td>
+                                <td>
+                                    {{plugins['football-data'].data.odds['draw']}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

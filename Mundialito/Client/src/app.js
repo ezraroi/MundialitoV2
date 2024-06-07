@@ -1,4 +1,4 @@
-﻿angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
+﻿angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
     'ui.bootstrap.datetimepicker', 'FacebookPluginDirectives', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
     .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
     .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
@@ -132,7 +132,8 @@
                 redirectTo: '/'
             });
     }])
-    .run(['$rootScope', '$log', 'security', '$route', '$location', function ($rootScope, $log, security, $route, $location) {
+    .run(['$rootScope', '$log', 'security', '$route', '$location', 'GamePluginProvider', 'FootballDataGamePlugin', function ($rootScope, $log, security, $route, $location, GamePluginProvider, FootballDataGamePlugin) {
+        GamePluginProvider.registerFactory(FootballDataGamePlugin);
         security.events.login = function (security, user) {
             $log.log('Current user details: ' + angular.toJson(user));
             $rootScope.mundialitoApp.authenticating = false;

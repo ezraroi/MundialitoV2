@@ -1,13 +1,37 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider) {
     $scope.game = game;
     $scope.simulatedGame = {};
+    $scope.plugins = {};
     $scope.userBet = userBet;
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
+    $scope.toKeyValue = (object) => {
+        return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
+    };
+    $scope.IntegrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
+
+    GamePluginProvider.getGameDetailsFromAll($scope.game.IntegrationsData).then((results) => {
+        results.forEach((result) => {
+            $scope.plugins[result.property] = { data: result.data, template: result.template };
+        });
+    }).catch((error) => {
+        console.error('Error fetching game details:', error);
+    });
+
+    $scope.fromKeyValue = (array) => {
+        let res = {};
+        array.forEach((item) => {
+            if (item.name !== '') {
+                res[item.name] = item.value;
+            }
+            
+        })
+        return res;
+    };
 
     if (!$scope.game.IsOpen) {
-        BetsManager.getGameBets($scope.game.GameId).then(function (data) {
+        BetsManager.getGameBets($scope.game.GameId).then((data) => {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
 
@@ -20,9 +44,9 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
                 title: 'Bets Distribution'
             };
-            var mark1 = _.filter(data, function (bet) { return bet.HomeScore > bet.AwayScore }).length;
-            var markX = _.filter(data, function (bet) { return bet.HomeScore === bet.AwayScore }).length;
-            var mark2 = _.filter(data, function (bet) { return bet.HomeScore < bet.AwayScore }).length;
+            var mark1 = _.filter(data, function (bet) { return bet.HomeScore > bet.AwayScore; }).length;
+            var markX = _.filter(data, function (bet) { return bet.HomeScore === bet.AwayScore; }).length;
+            var mark2 = _.filter(data, function (bet) { return bet.HomeScore < bet.AwayScore; }).length;
             chart1.data = [
                 ['Game Mark', 'Number Of Users'],
                 ['1', mark1],
@@ -37,6 +61,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         if ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
+        $scope.game.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
         $scope.game.update().success((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);

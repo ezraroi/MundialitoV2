@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Mundialito.DAL.Games;
 
-public class Game 
+public class Game
 {
     [Required]
     [JsonPropertyName("GameId")]
@@ -14,7 +14,7 @@ public class Game
     [Required]
     [JsonPropertyName("HomeTeamId")]
     public int HomeTeamId { get; set; }
-    
+
     [JsonPropertyName("HomeTeam")]
     public virtual Team? HomeTeam { get; set; }
 
@@ -30,7 +30,7 @@ public class Game
     [JsonPropertyName("Date")]
     public DateTime Date { get; set; }
 
-    [Range(0,10)]
+    [Range(0, 10)]
     [JsonPropertyName("HomeScore")]
     public int? HomeScore { get; set; }
 
@@ -41,19 +41,22 @@ public class Game
     [StringLength(1)]
     [RegularExpression("[1X2-]")]
     [JsonPropertyName("CornersMark")]
-    public String? CornersMark { get; set; }
+    public string? CornersMark { get; set; }
 
     [StringLength(1)]
     [RegularExpression("[1X2-]")]
     [JsonPropertyName("CardsMark")]
-    public String? CardsMark { get; set; }
+    public string? CardsMark { get; set; }
 
     [Required]
     [JsonPropertyName("StadiumId")]
     public int StadiumId { get; set; }
-    
+
     [JsonPropertyName("Stadium")]
     public virtual Stadium? Stadium { get; set; }
+
+    [JsonPropertyName("IntegrationsData")]
+    public Dictionary<string, string>? IntegrationsData { get; set; }
 
     [JsonPropertyName("CloseTime")]
     public DateTime CloseTime
@@ -63,7 +66,7 @@ public class Game
             return Date.Subtract(TimeSpan.FromMinutes(30));
         }
     }
-    
+
     public override string ToString()
     {
         return string.Format("Game ID = {0}, {1} - {2}", GameId, HomeTeam != null ? HomeTeam.Name : "Unknown", AwayTeam != null ? AwayTeam.Name : "Unknown");
