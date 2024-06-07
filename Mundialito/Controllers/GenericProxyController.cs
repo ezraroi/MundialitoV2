@@ -8,10 +8,12 @@ namespace Mundialito.Controllers
     public class GenericProxyController : ControllerBase
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public GenericProxyController(IHttpClientFactory _httpClientFactory)
+        public GenericProxyController(IHttpClientFactory _httpClientFactory, ILogger<GenericProxyController> logger)
         {
             _httpClient = _httpClientFactory.CreateClient("MyHttpClient"); ;
+            _logger = logger;
         }
 
         [HttpGet("{*url}")]
@@ -27,13 +29,12 @@ namespace Mundialito.Controllers
         {
             // Construct the full URL
             var requestUrl = new Uri(url + QueryString.Create(queryParams).Value);
-
-            var requestMessage = new HttpRequestMessage
+                var requestMessage = new HttpRequestMessage
             {
                 Method = new HttpMethod(Request.Method),
                 RequestUri = requestUrl
             };
-
+            _logger.LogInformation($"Proxying request to {requestUrl}");
             // Copy headers from the incoming request to the outgoing request
             foreach (var header in Request.Headers)
             {
@@ -51,6 +52,8 @@ namespace Mundialito.Controllers
             }
 
             var response = await _httpClient.SendAsync(requestMessage);
+            _logger.LogInformation($"Got response from {requestUrl}");
+            _logger.LogInformation($"Stauts: {response.StatusCode}");
             Stream decompressedStream;
             if (response.Content.Headers.ContentEncoding.Contains("gzip"))
             {
