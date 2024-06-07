@@ -1,13 +1,13 @@
 angular.module('mundialitoApp')
     .factory('GenericProxyService', ['$http', '$q', function($http, $q) {
-        var baseUrl = 'api/genericproxy/';  // Proxy server URL
+        var baseUrl = 'api/genericproxy';  // Proxy server URL
 
         function proxyRequest(method, url, data, headers) {
             var deferred = $q.defer();
 
             $http({
                 method: method,
-                url: baseUrl + url,
+                url: baseUrl + '?url=' + url,
                 data: data,
                 headers: headers,
                 ignoreError: true
