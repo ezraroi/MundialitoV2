@@ -128,7 +128,6 @@ public class AccountController : ControllerBase
         });
     }
 
-
     [HttpGet("UserInfo")]
     [Authorize]
     public async Task<ActionResult<UserInfoViewModel>> GetUserInfo()

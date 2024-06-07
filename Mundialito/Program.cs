@@ -34,6 +34,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MundialitoDbContext>();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpClient("MyHttpClient").ConfigurePrimaryHttpMessageHandler(() =>
+			{
+                var handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true // Ignore SSL certificate validation
+                };
+                return handler;
+			});
 builder.Services.AddSwaggerGen(opt =>
 {
 	opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Mundialito", Version = "v1" });
@@ -119,7 +127,15 @@ builder.Services.AddScoped<TableBuilder, TableBuilder>();
 builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
-
+builder.Services.AddCors(options =>
+		{
+			options.AddPolicy("CorsPolicy", builder =>
+			{
+				builder.AllowAnyOrigin()
+					   .AllowAnyMethod()
+					   .AllowAnyHeader();
+			});
+		});
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
@@ -147,6 +163,7 @@ if (app.Environment.IsDevelopment())
 	app.UseExceptionHandler("/Home/Error");
 	app.UseHsts();
 }
+app.UseCors("CorsPolicy");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapFallbackToController("Index", "Home");

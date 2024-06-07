@@ -21,4 +21,5 @@ public class Config
     public string FromAddress { get; set; }
     public bool UseSqlLite {get; set;} = false;
     public string EmailConnectionString {get; set;}
+    public Dictionary<string, string> ClientConfig {get; set;}
 }

@@ -44510,3 +44510,1755 @@ angular.module("cgBusy",["ajoslin.promise-tracker"]);angular.module("cgBusy").va
 /*
 //# sourceMappingURL=angular-busy.min.js.map
 */
+(function() {
+    'use strict';
+    angular.module('key-value-editor', ['as.sortable']);
+  })();
+  
+  (function() {
+    'use strict';
+  
+    angular
+      .module('key-value-editor')
+      .directive('keyValueEditor', [
+        '$compile',
+        '$log',
+        '$templateCache',
+        '$timeout',
+        '$window',
+        'keyValueEditorConfig',
+        'keyValueEditorUtils',
+        function($compile, $log, $templateCache, $timeout, $window, config, utils) {
+  
+          var first = utils.first;
+          var contains = utils.contains;
+          var each = utils.each;
+          var counter = 1000;
+          var timeoutDelay = 25;
+  
+          var newEntry = function() {
+            return {name: '', value: ''};
+          };
+  
+          var addEntry = function(entries, entry) {
+            entries && entries.push(entry || newEntry());
+          };
+  
+  
+          var setFocusOn = function(selector, value) {
+            // $timeout just delays enough to ensure event/$digest resolution
+            $timeout(function() {
+              var element = first($window.document.querySelectorAll(selector));
+              if(element) {
+                element.focus();
+                // if setting value, this will set the cursor at the end of the text in the value
+                if(value) {
+                  element.value = '';
+                  element.value = value;
+                }
+              }
+            }, timeoutDelay);
+          };
+  
+          var uniqueForKey = function(unique, $index) {
+            return 'key-value-editor-key-' + unique + '-' + $index;
+          };
+  
+          var uniqueForValue = function(unique, $index) {
+            return 'key-value-editor-value-' + unique + '-' + $index;
+          };
+  
+          return {
+            restrict: 'AE',
+            scope: {
+              keyMinlength: '@',                        // min character length
+              keyMaxlength: '@',                        // max character length
+              valueMinlength: '@',                      // min character length
+              valueMaxlength: '@',                      // max character length
+              // entries: [{
+              //  name: 'foo',
+              //  value: 'bar',
+              //  isReadOnly: true|| false              // individual entries may be readonly
+              //  isReadonlyKey: true || false          // key name on an individual entry is readonly
+              //  cannotDelete: true || false           // individual entries can be permanent
+              //  keyValidator: '',                     // regex string
+              //  valueValidator: ''                    // regex string
+              //  keyValidatorError: '',                // custom validation error
+              //  valueValidatorError: ''               // custom validation error
+              //  keyIcon: '',                          // icon class, such as 'fa fa-lock'
+              //  keyIconTooltip: '',                   // text for tooltip
+              //  valueIcon: '',                        // icon class, such as 'fa fa-lock'
+              //  valueIconTooltip: ''                  // text for tooltip
+              // }]
+              entries: '=',
+              keyPlaceholder: '@',
+              valuePlaceholder: '@',
+              keyValidator: '@',                        // general key regex validation string
+              keyValidatorRegex: '=',                   // a regex object
+              valueValidator: '@',                      // general value regex validation string
+              valueValidatorRegex: '=',                 // a regex object
+              keyValidatorError: '@',                   // general key validation error message
+              keyValidatorErrorTooltip: '@',
+              keyValidatorErrorTooltipIcon: '@',
+              keyIconTooltip: '@',                      // if the tooltip for the key icon is generic
+              valueValidatorError: '@',                 // general value validation error message
+              valueValidatorErrorTooltip: '@',
+              valueValidatorErrorTooltipIcon: '@',
+              valueIconTooltip: '@',                    // if the tooltip for the value icon is generic
+              cannotAdd: '=?',
+              cannotSort: '=?',
+              cannotDelete: '=?',
+              isReadonly: '=?',
+              isReadonlyKeys: '=?',                      // will only apply to existing keys,
+              addRowLink: '@',                           // creates a link to "add row" and sets its text label
+              showHeader: '=?',                           // show placeholder text as headers
+              allowEmptyKeys: '=?',
+              keyRequiredError: '@'
+            },
+            link: function($scope, $elem, $attrs) {
+              // manually retrieving here so we can manipulate and compile in JS
+              var tpl = $templateCache.get('key-value-editor.html');
+              var unwatchEntries;
+  
+              // validation is irritating.
+              $scope.validation = {
+                key: $scope.keyValidator,
+                val: $scope.valueValidator
+              };
+              // override if we get a regex literal
+              if($attrs.keyValidatorRegex) {
+                $scope.validation.key = $scope.keyValidatorRegex;
+              }
+              if($attrs.valueValidatorRegex) {
+                $scope.validation.val = $scope.valueValidatorRegex;
+              }
+  
+              if('grabFocus' in $attrs) {
+                $scope.grabFocus = true;
+                // after render set to undefined to ensure it doesn't keep trying to grab focus
+                $timeout(function() {
+                    $scope.grabFocus = undefined;
+                });
+              }
+  
+              // if an attribute exists, set its corresponding bool to true
+              if('cannotAdd' in $attrs) {
+                $scope.cannotAdd = true;
+              }
+              if('cannotDelete' in $attrs) {
+                $scope.cannotDeleteAny = true;
+              }
+              if('isReadonly' in $attrs) {
+                $scope.isReadonlyAny = true;
+              }
+              // only applies to the initial set, if a user adds an entry the
+              // user must be allowed to set the key!
+              if('isReadonlyKeys' in $attrs) {
+                // the $scope.$watch here lets us wait until we are certain we get
+                // a legitimate first set, perhaps after a promise resolution, run the
+                // update, then unregister.
+                unwatchEntries = $scope.$watch('entries', function(newVal) {
+                  if(newVal) {
+                    each($scope.entries, function(entry) {
+                      entry.isReadonlyKey = true;
+                    });
+                    unwatchEntries();
+                  }
+                });
+              }
+  
+              if('cannotSort' in $attrs) {
+                // uses a regex to essentially kill the as-sortable directives
+                // before we compile the template
+                // TODO: this is obviously not two-way databinding compatible as
+                // the template is then rendered once.  There is likely a
+                // better way to do this.
+                tpl = tpl.replace(/as-sortable/g, 'as-sortable-DISABLED');
+                $scope.cannotSort = true;
+              }
+  
+              if('showHeader' in $attrs) {
+                $scope.showHeader = true;
+              }
+              if('allowEmptyKeys' in $attrs) {
+                $scope.allowEmptyKeys = true;
+              }
+  
+              // min/max lengths
+              angular.extend($scope, {
+                keyMinlength: config.keyMinlength || $attrs.keyMinlength,
+                keyMaxlength: config.keyMaxlength || $attrs.keyMaxlength,
+                valueMinlength: config.valueMinlength || $attrs.valueMinlength,
+                valueMaxlength: config.valueMaxlength || $attrs.valueMaxlength,
+                // validation regex
+                keyValidator: config.keyValidator || $attrs.keyValidator,
+                valueValidator: config.valueValidator || $attrs.valueValidator,
+                keyValidatorError: config.keyValidatorError || $attrs.keyValidatorError,
+                valueValidatorError: config.valueValidatorError || $attrs.valueValidatorError,
+                keyRequiredError: config.keyRequiredError || $attrs.keyRequiredError,
+                // validation error tooltip
+                keyValidatorErrorTooltip: config.keyValidatorErrorTooltip || $attrs.keyValidatorErrorTooltip,
+                keyValidatorErrorTooltipIcon: config.keyValidatorErrorTooltipIcon || $attrs.keyValidatorErrorTooltipIcon,
+                valueValidatorErrorTooltip: config.valueValidatorErrorTooltip || $attrs.valueValidatorErrorTooltip,
+                valueValidatorErrorTooltipIcon: config.valueValidatorErrorTooltipIcon || $attrs.valueValidatorErrorTooltipIcon,
+                // placeholders
+                keyPlaceholder: config.keyPlaceholder || $attrs.keyPlaceholder,
+                valuePlaceholder: config.valuePlaceholder || $attrs.valuePlaceholder
+              });
+  
+              // manually compile and append to the DOM
+              $elem.append($compile(tpl)($scope));
+            },
+            controller: [
+              '$scope',
+              '$timeout',
+              function($scope) {
+                var readOnlySome = [];
+                var cannotDeleteSome = [];
+                var unique = counter++;
+  
+                angular.extend($scope, {
+                  unique: unique,
+                  forms: {},
+                  placeholder: newEntry(),
+                  setFocusKeyClass: 'key-value-editor-set-focus-key-' + unique,
+                  setFocusValClass: 'key-value-editor-set-focus-value-' + unique,
+                  uniqueForKey: uniqueForKey,
+                  uniqueForValue: uniqueForValue,
+                  dragControlListeners: {
+                      // only allow sorting within the parent instance
+                      accept: function (sourceItemHandleScope, destSortableScope) {
+                        return sourceItemHandleScope.itemScope.sortableScope.$id === destSortableScope.$id;
+                      },
+                      orderChanged: function() {
+                        $scope.forms.keyValueEditor.$setDirty();
+                      }
+                  },
+                  deleteEntry: function(start, deleteCount) {
+                    $scope.entries.splice(start, deleteCount);
+                    // if the link is used, add a new empty entry to ensure the inputs do not all disappear
+                    if(!$scope.entries.length && $scope.addRowLink) {
+                      addEntry($scope.entries);
+                    }
+                    $scope.forms.keyValueEditor.$setDirty();
+                  },
+                  isReadonlySome: function(name) {
+                    return contains(readOnlySome, name);
+                  },
+                  cannotDeleteSome: function(name) {
+                    return contains(cannotDeleteSome, name);
+                  },
+                  onFocusLastKey: function() {
+                    addEntry($scope.entries);
+                    setFocusOn('.'+ $scope.setFocusKeyClass);
+                    $timeout(function() {
+                      $scope.placeholder.name = '';
+                    },timeoutDelay);
+                  },
+                  onFocusLastValue: function() {
+                    addEntry($scope.entries);
+                    setFocusOn('.'+ $scope.setFocusValClass);
+                    $timeout(function() {
+                      $scope.placeholder.value = '';
+                    },timeoutDelay);
+                  },
+                  onAddRow: function() {
+                    addEntry($scope.entries);
+                    setFocusOn('.'+ $scope.setFocusKeyClass);
+                  }
+                });
+  
+                // Issue #78 todo:
+                // https://github.com/openshift/angular-key-value-editor/issues/78
+                // cannotDelete and isReadonly are boolean or list values.
+                // if boolean, they apply to all.
+                // if arrays, they apply to the items passed.
+                // GOTCHA:
+                // we suppport:
+                //   <key-value-editor is-readonly cannot-delete>
+                // and:
+                //   <key-value-editor is-readonly="['foo']" cannot-delete="['foo','bar']">
+                // changing the is-readonly and cannot-delete to a list and then
+                // setting the list to undefined/null will not:
+                //   cannotDeleteAny = false;
+                // why?
+                //   we assume the presence of is-readonly similar to disabled and other html
+                //   attributes that are 'truthy' though they have no actual value.
+                // workaround?
+                //   potentially using ng-attr-cannot-delete=false?
+                $scope.$watch('cannotDelete', function(newVal) {
+                  if(angular.isArray(newVal)) {
+                    $scope.cannotDeleteAny = false;
+                    cannotDeleteSome = newVal;
+                  }
+                });
+                $scope.$watch('isReadonly', function(newVal) {
+                  if(angular.isArray(newVal)) {
+                    $scope.isReadonlyAny = false;
+                    readOnlySome = newVal;
+                  }
+                });
+  
+                // watching the attribute allows both:
+                // <key-value-editor add-row-link>
+                // <key-value-editor add-row-link="Add a pair">
+                $scope.$watch('addRowLink', function(newVal) {
+                  if(angular.isDefined(newVal)) {
+                    $scope.addRowLink = newVal || 'Add row';
+                    if($scope.entries && !$scope.entries.length) {
+                      addEntry($scope.entries);
+                    }
+                  }
+                });
+  
+                // ensures we always have at least one set of inputs
+                $scope.$watch('entries', function(newVal) {
+                  // entries MUST be an array. if we get an empty array,
+                  // we add an empty entry to ensure the inputs snow.
+                  // NOTE: entries must be an array, with a .push() method
+                  // else addEntry() will fail.
+                  if(newVal && !newVal.length) {
+                    addEntry($scope.entries);
+                  }
+                });
+  
+              }
+            ]
+          };
+        }]);
+  
+  })();
+  
+  (function() {
+    'use strict';
+    angular
+      .module('key-value-editor')
+      .provider('keyValueEditorConfig', [
+        function() {
+          var defaults = {
+            keyMinlength: '',                                        // min character length, falsy by default
+            keyMaxlength: '',                                        // max character length, falsy by default
+            valueMinlength: '',                                      // min character length, falsy by default
+            valueMaxlength: '',                                      // max character length, falsy by default
+            keyValidator: '[a-zA-Z0-9-_]+',                          // alphanumeric, with dash & underscores
+            valueValidator: '',                                      // values have no default validation
+            keyValidatorError: 'Validation error',                   // default error message string
+            keyValidatorErrorTooltip: undefined,                     // default error message tooltip string
+            keyValidatorErrorTooltipIcon: 'pficon pficon-help',      // default error message tooltip icon
+            valueValidatorError: 'Validation error',                 // default error message string
+            valueValidatorErrorTooltip: undefined,                   // default error message tooltip string
+            valueValidatorErrorTooltipIcon: 'pficon pficon-help',    // default error message tooltip icon
+            keyPlaceholder: '',
+            valuePlaceholder: '',
+            keyRequiredError: 'Key is required'
+          };
+  
+          // set a new default key value pair, or pass an object to replace
+          // multiple keys.
+          // example 1:
+          //  keyValueEditorConfigProvider.set('keyValidator', '\S*') // no white space
+          // example 2:
+          //  keyValueEditorConfigProvider.set({
+          //      keyValidator: '[a-zA-Z0-9]+',  // alphanumberic,
+          //      keyValidatorError: 'key must be alphanumeric only'
+          //  });
+          this.set = function(key, value) {
+            if(angular.isObject(key)) {
+              angular.extend(defaults, key);
+            } else {
+              defaults[key] = value;
+            }
+          };
+  
+          this.$get = [
+            function() {
+              return defaults;
+            }
+          ];
+        }
+      ]);
+  })();
+  
+  (function() {
+    'use strict';
+  
+    // simple set of utils to share
+    angular
+      .module('key-value-editor')
+      .factory('keyValueEditorUtils', [
+        function() {
+  
+          var noop = function() {};
+  
+          // simple reduce fn
+          var reduce = function(arr, fn, memo) {
+            var length = (arr && arr.length) || 0;
+            for(var i = 0; i < length; i++) {
+              memo = fn(memo, arr[i], i, arr);
+            }
+            return memo;
+          };
+  
+          var each = function(arr, fn) {
+            var length = (arr && arr.length) || 0;
+            for(var i = 0; i < length; i++) {
+              fn(arr[i], i, arr);
+            }
+          };
+  
+          var map = function(arr, fn) {
+            var length = (arr && arr.length) || 0;
+            var list = [];
+            for(var i = 0; i < length; i++) {
+              list.push(fn(arr[i], i, arr));
+            }
+            return list;
+          };
+  
+          // expects a flat array, removes empty arrays.
+          // is used to eliminate extra empty pairs generated by user
+          var compact = function(list) {
+              return reduce(
+                      list,
+                      function(memo, next) {
+                        if(next) {
+                          memo.push(next);
+                        }
+                        return memo;
+                      },
+                      []);
+          };
+  
+          var contains = function(list, item) {
+            return list.indexOf(item) !== -1;
+          };
+  
+          var last = function(entries) {
+            return entries && entries[entries.length - 1];
+          };
+          var first = function(entries) {
+            return entries && entries[0];
+          };
+          // this is a minimal get w/o deep paths
+          var get = function(obj, prop) {
+            return obj && obj[prop];
+          };
+  
+          // these keys are for kve and, if this function is used, will be removed.
+          var toClean = [
+            'valueAlt',
+            'isReadOnly',
+            'isReadonlyKey',
+            'cannotDelete',
+            'keyValidator',
+            'valueValidator',
+            'keyValidatorError',
+            'valueValidatorError',
+            'keyIcon',
+            'keyIconTooltip',
+            'valueIcon',
+            'valueIconTooltip',
+            'keyValidatorErrorTooltip',
+            'keyValidatorErrorTooltipIcon',
+            'valueValidatorErrorTooltip',
+            'valueValidatorErrorTooltipIcon'
+          ];
+          var cleanEntry = function(entry) {
+            each(toClean, function(key) {
+              delete entry[key];
+            });
+            return entry;
+          };
+  
+          var cleanEntries = function(entries) {
+            return map(entries, cleanEntry);
+          };
+  
+          // cleans each entry of kve known keys and
+          // drops any entry that has neither a key nor a value
+          // NOTE: if the input validator fails to pass, then an
+          // entry will not have a value and will be excluded. This
+          // is not the fault of this function.
+          var compactEntries = function(entries) {
+            return compact(
+                    map(
+                      entries,
+                      function(entry) {
+                        entry = cleanEntry(entry);
+                        return entry.name || entry.value ? entry : undefined;
+                      }));
+          };
+  
+          // returns an object of key:value pairs, last one in will win:
+          // {
+          //  foo: 'bar',
+          //  baz: 'bam'
+          // }
+          var mapEntries = function(entries) {
+            return reduce(
+                    compactEntries(entries),
+                    function(result, next) {
+                      result[next.name] = next.value;
+                      return result;
+                    }, {});
+          };
+  
+          return {
+            noop: noop,
+            each: each,
+            reduce: reduce,
+            compact: compact,
+            contains: contains,
+            first: first,
+            last: last,
+            get: get,
+            cleanEntry: cleanEntry,
+            cleanEntries: cleanEntries,
+            compactEntries: compactEntries,
+            mapEntries: mapEntries
+          };
+        }
+      ]);
+  })();
+angular.module("key-value-editor").run(["$templateCache", function($templateCache) {$templateCache.put("key-value-editor.html","<ng-form name=\"forms.keyValueEditor\" novalidate ng-if=\"entries\">\n  <div class=\"key-value-editor\" ng-model=\"entries\" as-sortable=\"dragControlListeners\">\n\n    <div\n      ng-if=\"showHeader\"\n      class=\"key-value-editor-entry\">\n      <div class=\"form-group key-value-editor-header key-header\">\n        <div class=\"input-group\">\n          <span class=\"help-block\">{{keyPlaceholder}}</span>\n        </div>\n      </div>\n      <div class=\"form-group key-value-editor-header value-header\">\n        <div class=\"input-group\">\n          <span class=\"help-block\">{{valuePlaceholder}}</span>\n        </div>\n      </div>\n    </div>\n\n    <div\n      class=\"key-value-editor-entry\"\n      ng-class-odd=\"\'odd\'\"\n      ng-class-even=\"\'even\'\"\n      ng-repeat=\"entry in entries\"\n      >\n      <!-- The name/key block -->\n\n      <div\n        class=\"form-group key-value-editor-input\"\n        ng-class=\"{ \'has-error\' :  (forms.keyValueEditor[uniqueForKey(unique, $index)].$invalid) }\">\n\n        <label for=\"uniqueForKey(unique, $index)\" class=\"sr-only\">{{keyPlaceholder}}</label>\n\n        <!-- name/key has icon -->\n        <div class=\"input-group\" ng-if=\"entry.keyIcon\">\n          <span class=\"input-group-addon\">\n            <span\n              class=\"{{entry.keyIcon}}\"\n              aria-hidden=\"true\"\n              data-toggle=\"tooltip\"\n              data-placement=\"top\"\n              data-original-title=\"{{entry.keyIconTooltip || keyIconTooltip}}\"\n              title=\"{{entry.keyIconTooltip || keyIconTooltip}}\"></span>\n          </span>\n\n          <input\n            type=\"text\"\n            class=\"form-control\"\n            ng-class=\"{ \'{{setFocusKeyClass}}\' : $last  }\"\n            id=\"{{uniqueForKey(unique, $index)}}\"\n            name=\"{{uniqueForKey(unique, $index)}}\"\n            ng-attr-placeholder=\"{{ (!isReadonlyAny) && keyPlaceholder || \'\'}}\"\n            ng-minlength=\"{{keyMinlength}}\"\n            maxlength=\"{{keyMaxlength}}\"\n            ng-model=\"entry.name\"\n            ng-readonly=\"isReadonlyAny || isReadonlySome(entry.name) || entry.isReadonlyKey || entry.isReadonly\"\n            ng-pattern=\"validation.key\"\n            ng-value\n            ng-required=\"!allowEmptyKeys && entry.value\"\n            ng-attr-key-value-editor-focus=\"{{grabFocus && $last}}\">\n        </div>\n\n        <!-- name/key has no icon -->\n        <input\n          ng-if=\"(!entry.keyIcon)\"\n          type=\"text\"\n          class=\"form-control\"\n          ng-class=\"{ \'{{setFocusKeyClass}}\' : $last  }\"\n          id=\"{{uniqueForKey(unique, $index)}}\"\n          name=\"{{uniqueForKey(unique, $index)}}\"\n          ng-attr-placeholder=\"{{ (!isReadonlyAny) && keyPlaceholder || \'\'}}\"\n          ng-minlength=\"{{keyMinlength}}\"\n          maxlength=\"{{keyMaxlength}}\"\n          ng-model=\"entry.name\"\n          ng-readonly=\"isReadonlyAny || isReadonlySome(entry.name) || entry.isReadonlyKey || entry.isReadonly\"\n          ng-pattern=\"validation.key\"\n          ng-value\n          ng-required=\"!allowEmptyKeys && entry.value\"\n          ng-attr-key-value-editor-focus=\"{{grabFocus && $last}}\">\n        <!-- name/key help block -->\n        <span\n          class=\"help-block key-validation-error\"\n          ng-show=\"(forms.keyValueEditor[uniqueForKey(unique, $index)].$error.pattern)\">\n          <span class=\"validation-text\">{{ entry.keyValidatorError || keyValidatorError }}</span>\n          <span ng-if=\"entry.keyValidatorErrorTooltip || keyValidatorErrorTooltip\" class=\"help action-inline\">\n            <a\n              aria-hidden=\"true\"\n              data-toggle=\"tooltip\"\n              data-placement=\"top\"\n              data-original-title=\"{{entry.keyValidatorErrorTooltip || keyValidatorErrorTooltip}}\"\n              title=\"{{entry.keyValidatorErrorTooltip || keyValidatorErrorTooltip}}\">\n              <i class=\"{{entry.keyValidatorErrorTooltipIcon || keyValidatorErrorTooltipIcon}}\"></i>\n            </a>\n          </span>\n        </span>\n        <span\n          class=\"help-block key-min-length\"\n          ng-show=\"(forms.keyValueEditor[uniqueForKey(unique, $index)].$error.minlength)\">\n          <span class=\"validation-text\">Minimum character count is {{keyMinlength}}</span>\n        </span>\n\n        <span\n          class=\"help-block key-validation-error\"\n          ng-show=\"(forms.keyValueEditor[uniqueForKey(unique, $index)].$error.required)\">\n          <span class=\"validation-text\">{{keyRequiredError}}</span>\n        </span>\n      </div>\n      <!-- the value block -->\n      <div\n        class=\"form-group key-value-editor-input\"\n        ng-class=\"forms.keyValueEditor[uniqueForValue(unique, $index)].$invalid ? \'has-error\' : \'\'\">\n\n        <label for=\"uniqueForValue(unique, $index)\" class=\"sr-only\">{{valuePlaceholder}}</label>\n\n        <!-- value has icon -->\n        <div\n          class=\"input-group\"\n          ng-if=\"entry.valueIcon\">\n          <span class=\"input-group-addon\">\n            <span\n              class=\"{{entry.valueIcon}}\"\n              aria-hidden=\"true\"\n              data-toggle=\"tooltip\"\n              data-placement=\"top\"\n              data-original-title=\"{{entry.valueIconTooltip || valueIconTooltip}}\"\n              title=\"{{entry.valueIconTooltip || valueIconTooltip}}\"></span>\n          </span>\n          <!-- valueAlt when value is not present or is on a separate object key such as valueFrom: { something: \'else\' } -->\n          <input\n            ng-if=\"entry.valueAlt\"\n            type=\"text\"\n            class=\"form-control\"\n            ng-class=\"{ \'{{setFocusValClass}}\' : $last  }\"\n            id=\"{{uniqueForValue(unique, $index)}}\"\n            name=\"{{uniqueForValue(unique, $index)}}\"\n            ng-attr-placeholder=\"{{ (!isReadonlyAny) && valuePlaceholder || \'\'}}\"\n            ng-model=\"entry.valueAlt\"\n            readonly>\n          <!-- default value display -->\n          <input\n            ng-if=\"(!entry.valueAlt)\"\n            type=\"text\"\n            class=\"form-control\"\n            ng-class=\"{ \'{{setFocusValClass}}\' : $last  }\"\n            id=\"{{uniqueForValue(unique, $index)}}\"\n            name=\"{{uniqueForValue(unique, $index)}}\"\n            ng-attr-placeholder=\"{{ (!isReadonlyAny) && valuePlaceholder || \'\'}}\"\n            ng-minlength=\"{{valueMinlength}}\"\n            maxlength=\"{{valueMaxlength}}\"\n            ng-model=\"entry.value\"\n            ng-readonly=\"isReadonlyAny || isReadonlySome(entry.name) || entry.isReadonly\"\n            ng-pattern=\"validation.val\"\n            ng-required=\"!allowEmptyKeys && entry.value\">\n        </div>\n\n        <!-- value has no icon -->\n        <div ng-if=\"(!entry.valueIcon)\">\n          <!-- valueAlt when value is not present or is on a separate object key such as valueFrom: { something: \'else\' } -->\n          <input\n            ng-if=\"entry.valueAlt\"\n            type=\"text\"\n            class=\"form-control\"\n            ng-class=\"{ \'{{setFocusValClass}}\' : $last  }\"\n            id=\"{{uniqueForValue(unique, $index)}}\"\n            name=\"{{uniqueForValue(unique, $index)}}\"\n            ng-attr-placeholder=\"{{ (!isReadonlyAny) && valuePlaceholder || \'\'}}\"\n            ng-model=\"entry.valueAlt\"\n            readonly>\n\n          <!-- default value display -->\n          <input\n            ng-if=\"(!entry.valueAlt)\"\n            type=\"text\"\n            class=\"form-control\"\n            ng-class=\"{ \'{{setFocusValClass}}\' : $last  }\"\n            id=\"{{uniqueForValue(unique, $index)}}\"\n            name=\"{{uniqueForValue(unique, $index)}}\"\n            ng-attr-placeholder=\"{{ (!isReadonlyAny) && valuePlaceholder || \'\'}}\"\n            ng-minlength=\"{{valueMinlength}}\"\n            maxlength=\"{{valueMaxlength}}\"\n            ng-model=\"entry.value\"\n            ng-readonly=\"isReadonlyAny || isReadonlySome(entry.name) || entry.isReadonly\"\n            ng-pattern=\"validation.val\"\n            ng-required=\"!allowEmptyKeys && entry.value\">\n        </div>\n\n        <!-- value help block -->\n        <span\n          class=\"help-block value-validation-error\"\n          ng-show=\"(forms.keyValueEditor[uniqueForValue(unique, $index)].$error.pattern)\">\n          <span class=\"validation-text\">{{ entry.valueValidatorError || valueValidatorError}}</span>\n          <span ng-if=\"entry.valueValidatorErrorTooltip || valueValidatorErrorTooltip\" class=\"help action-inline\">\n            <a\n              aria-hidden=\"true\"\n              data-toggle=\"tooltip\"\n              data-placement=\"top\"\n              data-original-title=\"{{entry.valueValidatorErrorTooltip || valueValidatorErrorTooltip}}\"\n              title=\"{{entry.valueValidatorErrorTooltip || valueValidatorErrorTooltip}}\">\n              <i class=\"{{entry.valueValidatorErrorTooltipIcon || valueValidatorErrorTooltipIcon}}\"></i>\n            </a>\n          </span>\n        </span>\n        <span\n          class=\"help-block value-min-length\"\n          ng-show=\"(forms.keyValueEditor[uniqueForValue(unique, $index)].$error.minlength)\">\n          <span class=\"validation-text\">Minimum character count is {{valueMinlength}}</span>\n        </span>\n      </div>\n      <div class=\"key-value-editor-buttons\">\n        <span\n          ng-if=\"(!cannotSort) && (entries.length > 1)\"\n          class=\"fa fa-bars sort-row\"\n          role=\"button\"\n          aria-label=\"Move row\"\n          aria-grabbed=\"false\"\n          ></span>\n        <a\n          href=\"\"\n          class=\"pficon pficon-close delete-row\"\n          role=\"button\"\n          aria-label=\"Delete row\"\n          ng-hide=\"cannotDeleteAny || cannotDeleteSome(entry.name) || entry.cannotDelete\"\n          ng-click=\"deleteEntry($index, 1)\"></a>\n      </div>\n    </div>\n\n    <div\n      class=\"key-value-editor-entry form-group\"\n      ng-if=\"(!cannotAdd) && addRowLink\">\n      <a\n        href=\"\"\n        class=\"add-row-link\"\n        role=\"button\"\n        aria-label=\"Add row\"\n        ng-click=\"onAddRow()\">{{ addRowLink }}</a>\n    </div>\n\n    <!-- the last one, placeholder -->\n    <div\n      class=\"key-value-editor-entry\"\n      ng-if=\"!cannotAdd && (!addRowLink)\">\n      <div\n        class=\"form-group key-value-editor-input\">\n        <input\n          type=\"text\"\n          class=\"form-control add-row-input\"\n          placeholder=\"{{keyPlaceholder}}\"\n          ng-model=\"placeholder.name\"\n          ng-focus=\"onFocusLastKey()\">\n      </div>\n      <div\n        class=\"form-group key-value-editor-input\">\n        <input\n          type=\"text\"\n          class=\"form-control add-row-input\"\n          placeholder=\"{{valuePlaceholder}}\"\n          ng-model=\"placeholder.value\"\n          ng-focus=\"onFocusLastValue()\">\n      </div>\n    </div>\n  </div>\n\n</ng-form>\n");}]);
+/*
+ ng-sortable v1.3.8
+ The MIT License (MIT)
+
+ Copyright (c) 2014 Muhammed Ashik
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+
+/*jshint indent: 2 */
+/*global angular: false */
+
+(function () {
+    'use strict';
+    angular.module('as.sortable', [])
+      .constant('sortableConfig', {
+        itemClass: 'as-sortable-item',
+        handleClass: 'as-sortable-item-handle',
+        placeHolderClass: 'as-sortable-placeholder',
+        dragClass: 'as-sortable-drag',
+        hiddenClass: 'as-sortable-hidden',
+        dragging: 'as-sortable-dragging'
+      });
+  }());
+  
+  /*jshint indent: 2 */
+  /*global angular: false */
+  
+  (function () {
+    'use strict';
+  
+    var mainModule = angular.module('as.sortable');
+  
+    /**
+     * Helper factory for sortable.
+     */
+    mainModule.factory('$helper', ['$document', '$window',
+      function ($document, $window) {
+        return {
+  
+          /**
+           * Get the height of an element.
+           *
+           * @param {Object} element Angular element.
+           * @returns {String} Height
+           */
+          height: function (element) {
+            return element[0].getBoundingClientRect().height;
+          },
+  
+          /**
+           * Get the width of an element.
+           *
+           * @param {Object} element Angular element.
+           * @returns {String} Width
+           */
+          width: function (element) {
+            return element[0].getBoundingClientRect().width;
+          },
+  
+          /**
+           * Get the offset values of an element.
+           *
+           * @param {Object} element Angular element.
+           * @param {Object} [scrollableContainer] Scrollable container object for calculating relative top & left (optional, defaults to Document)
+           * @returns {Object} Object with properties width, height, top and left
+           */
+          offset: function (element, scrollableContainer) {
+            var boundingClientRect = element[0].getBoundingClientRect();
+            if (!scrollableContainer) {
+              scrollableContainer = $document[0].documentElement;
+            }
+  
+            return {
+              width: boundingClientRect.width || element.prop('offsetWidth'),
+              height: boundingClientRect.height || element.prop('offsetHeight'),
+              top: boundingClientRect.top + ($window.pageYOffset || scrollableContainer.scrollTop - scrollableContainer.offsetTop),
+              left: boundingClientRect.left + ($window.pageXOffset || scrollableContainer.scrollLeft - scrollableContainer.offsetLeft)
+            };
+          },
+  
+          /**
+           * get the event object for touch.
+           *
+           * @param  {Object} event the touch event
+           * @return {Object} the touch event object.
+           */
+          eventObj: function (event) {
+            var obj = event;
+            if (event.targetTouches !== undefined) {
+              obj = event.targetTouches.item(0);
+            } else if (event.originalEvent !== undefined && event.originalEvent.targetTouches !== undefined) {
+              obj = event.originalEvent.targetTouches.item(0);
+            }
+            return obj;
+          },
+  
+          /**
+           * Checks whether the touch is valid and multiple.
+           *
+           * @param event the event object.
+           * @returns {boolean} true if touch is multiple.
+           */
+          isTouchInvalid: function (event) {
+  
+            var touchInvalid = false;
+            if (event.touches !== undefined && event.touches.length > 1) {
+              touchInvalid = true;
+            } else if (event.originalEvent !== undefined &&
+              event.originalEvent.touches !== undefined && event.originalEvent.touches.length > 1) {
+              touchInvalid = true;
+            }
+            return touchInvalid;
+          },
+  
+          /**
+           * Get the start position of the target element according to the provided event properties.
+           *
+           * @param {Object} event Event
+           * @param {Object} target Target element
+           * @param {Object} [scrollableContainer] (optional) Scrollable container object
+           * @returns {Object} Object with properties offsetX, offsetY.
+           */
+          positionStarted: function (event, target, scrollableContainer) {
+            var pos = {};
+            pos.offsetX = event.pageX - this.offset(target, scrollableContainer).left;
+            pos.offsetY = event.pageY - this.offset(target, scrollableContainer).top;
+            pos.startX = pos.lastX = event.pageX;
+            pos.startY = pos.lastY = event.pageY;
+            pos.nowX = pos.nowY = pos.distX = pos.distY = pos.dirAx = 0;
+            pos.dirX = pos.dirY = pos.lastDirX = pos.lastDirY = pos.distAxX = pos.distAxY = 0;
+            return pos;
+          },
+  
+          /**
+           * Calculates the event position and sets the direction
+           * properties.
+           *
+           * @param pos the current position of the element.
+           * @param event the move event.
+           */
+          calculatePosition: function (pos, event) {
+            // mouse position last events
+            pos.lastX = pos.nowX;
+            pos.lastY = pos.nowY;
+  
+            // mouse position this events
+            pos.nowX = event.pageX;
+            pos.nowY = event.pageY;
+  
+            // distance mouse moved between events
+            pos.distX = pos.nowX - pos.lastX;
+            pos.distY = pos.nowY - pos.lastY;
+  
+            // direction mouse was moving
+            pos.lastDirX = pos.dirX;
+            pos.lastDirY = pos.dirY;
+  
+            // direction mouse is now moving (on both axis)
+            pos.dirX = pos.distX === 0 ? 0 : pos.distX > 0 ? 1 : -1;
+            pos.dirY = pos.distY === 0 ? 0 : pos.distY > 0 ? 1 : -1;
+  
+            // axis mouse is now moving on
+            var newAx = Math.abs(pos.distX) > Math.abs(pos.distY) ? 1 : 0;
+  
+            // calc distance moved on this axis (and direction)
+            if (pos.dirAx !== newAx) {
+              pos.distAxX = 0;
+              pos.distAxY = 0;
+            } else {
+              pos.distAxX += Math.abs(pos.distX);
+              if (pos.dirX !== 0 && pos.dirX !== pos.lastDirX) {
+                pos.distAxX = 0;
+              }
+  
+              pos.distAxY += Math.abs(pos.distY);
+              if (pos.dirY !== 0 && pos.dirY !== pos.lastDirY) {
+                pos.distAxY = 0;
+              }
+            }
+            pos.dirAx = newAx;
+          },
+  
+          /**
+           * Move the position by applying style.
+           *
+           * @param event the event object
+           * @param element - the dom element
+           * @param pos - current position
+           * @param container - the bounding container.
+           * @param containerPositioning - absolute or relative positioning.
+           * @param {Object} [scrollableContainer] (optional) Scrollable container object
+           */
+          movePosition: function (event, element, pos, container, containerPositioning, scrollableContainer) {
+            var bounds;
+            var useRelative = (containerPositioning === 'relative');
+  
+            element.x = event.pageX - pos.offsetX;
+            element.y = event.pageY - pos.offsetY;
+  
+            if (container) {
+              bounds = this.offset(container, scrollableContainer);
+  
+              if (useRelative) {
+                // reduce positioning by bounds
+                element.x -= bounds.left;
+                element.y -= bounds.top;
+  
+                // reset bounds
+                bounds.left = 0;
+                bounds.top = 0;
+              }
+  
+              if (element.x < bounds.left) {
+                element.x = bounds.left;
+              } else if (element.x >= bounds.width + bounds.left - this.offset(element).width) {
+                element.x = bounds.width + bounds.left - this.offset(element).width;
+              }
+              if (element.y < bounds.top) {
+                element.y = bounds.top;
+              } else if (element.y >= bounds.height + bounds.top - this.offset(element).height) {
+                element.y = bounds.height + bounds.top - this.offset(element).height;
+              }
+            }
+  
+            element.css({
+              'left': element.x + 'px',
+              'top': element.y + 'px'
+            });
+  
+            this.calculatePosition(pos, event);
+          },
+  
+          /**
+           * The drag item info and functions.
+           * retains the item info before and after move.
+           * holds source item and target scope.
+           *
+           * @param item - the drag item
+           * @returns {{index: *, parent: *, source: *,
+                   *          sourceInfo: {index: *, itemScope: (*|.dragItem.sourceInfo.itemScope|$scope.itemScope|itemScope), sortableScope: *},
+                   *         moveTo: moveTo, isSameParent: isSameParent, isOrderChanged: isOrderChanged, eventArgs: eventArgs, apply: apply}}
+           */
+          dragItem: function (item) {
+  
+            return {
+              index: item.index(),
+              parent: item.sortableScope,
+              source: item,
+              targetElement: null,
+              targetElementOffset: null,
+              sourceInfo: {
+                index: item.index(),
+                itemScope: item.itemScope,
+                sortableScope: item.sortableScope
+              },
+              canMove: function(itemPosition, targetElement, targetElementOffset) {
+                // return true if targetElement has been changed since last call
+                if (this.targetElement !== targetElement) {
+                  this.targetElement = targetElement;
+                  this.targetElementOffset = targetElementOffset;
+                  return true;
+                }
+                // return true if mouse is moving in the last moving direction of targetElement
+                if (itemPosition.dirX * (targetElementOffset.left - this.targetElementOffset.left) > 0 ||
+                    itemPosition.dirY * (targetElementOffset.top - this.targetElementOffset.top) > 0) {
+                  this.targetElementOffset = targetElementOffset;
+                  return true;
+                }
+                // return false otherwise
+                return false;
+              },
+              moveTo: function (parent, index) {
+                // move the item to a new position
+                this.parent = parent;
+                // if the source item is in the same parent, the target index is after the source index and we're not cloning
+                if (this.isSameParent() && this.source.index() < index && !this.sourceInfo.sortableScope.cloning) {
+                  index = index - 1;
+                }
+                this.index = index;
+              },
+              isSameParent: function () {
+                return this.parent.element === this.sourceInfo.sortableScope.element;
+              },
+              isOrderChanged: function () {
+                return this.index !== this.sourceInfo.index;
+              },
+              eventArgs: function () {
+                return {
+                  source: this.sourceInfo,
+                  dest: {
+                    index: this.index,
+                    sortableScope: this.parent
+                  }
+                };
+              },
+              apply: function () {
+                if (!this.sourceInfo.sortableScope.cloning) {
+                  // if not cloning, remove the item from the source model.
+                  this.sourceInfo.sortableScope.removeItem(this.sourceInfo.index);
+  
+                  // if the dragged item is not already there, insert the item. This avoids ng-repeat dupes error
+                  if (this.parent.options.allowDuplicates || this.parent.modelValue.indexOf(this.source.modelValue) < 0) {
+                    this.parent.insertItem(this.index, this.source.modelValue);
+                  }
+                } else if (!this.parent.options.clone) { // prevent drop inside sortables that specify options.clone = true
+                  // clone the model value as well
+                  this.parent.insertItem(this.index, angular.copy(this.source.modelValue));
+                }
+              }
+            };
+          },
+  
+          /**
+           * Check the drag is not allowed for the element.
+           *
+           * @param element - the element to check
+           * @returns {boolean} - true if drag is not allowed.
+           */
+          noDrag: function (element) {
+            return element.attr('no-drag') !== undefined || element.attr('data-no-drag') !== undefined;
+          },
+  
+          /**
+           * Helper function to find the first ancestor with a given selector
+           * @param el - angular element to start looking at
+           * @param selector - selector to find the parent
+           * @returns {Object} - Angular element of the ancestor or body if not found
+           * @private
+           */
+          findAncestor: function (el, selector) {
+            el = el[0];
+            var matches = Element.matches || Element.prototype.mozMatchesSelector || Element.prototype.msMatchesSelector || Element.prototype.oMatchesSelector || Element.prototype.webkitMatchesSelector;
+            while ((el = el.parentElement) && !matches.call(el, selector)) {
+            }
+            return el ? angular.element(el) : angular.element(document.body);
+          }
+        };
+      }
+    ]);
+  
+  }());
+  
+  /*jshint undef: false, unused: false, indent: 2*/
+  /*global angular: false */
+  
+  (function () {
+  
+    'use strict';
+    var mainModule = angular.module('as.sortable');
+  
+    /**
+     * Controller for Sortable.
+     * @param $scope - the sortable scope.
+     */
+    mainModule.controller('as.sortable.sortableController', ['$scope', function ($scope) {
+  
+      this.scope = $scope;
+  
+      $scope.modelValue = null; // sortable list.
+      $scope.callbacks = null;
+      $scope.type = 'sortable';
+      $scope.options = {
+        longTouch: false
+      };
+      $scope.isDisabled = false;
+  
+      /**
+       * Inserts the item in to the sortable list.
+       *
+       * @param index - the item index.
+       * @param itemData - the item model data.
+       */
+      $scope.insertItem = function (index, itemData) {
+        if ($scope.options.allowDuplicates) {
+          $scope.modelValue.splice(index, 0, angular.copy(itemData));
+        } else {
+          $scope.modelValue.splice(index, 0, itemData);
+        }
+      };
+  
+      /**
+       * Removes the item from the sortable list.
+       *
+       * @param index - index to be removed.
+       * @returns {*} - removed item.
+       */
+      $scope.removeItem = function (index) {
+        var removedItem = null;
+        if (index > -1) {
+          removedItem = $scope.modelValue.splice(index, 1)[0];
+        }
+        return removedItem;
+      };
+  
+      /**
+       * Checks whether the sortable list is empty.
+       *
+       * @returns {null|*|$scope.modelValue|boolean}
+       */
+      $scope.isEmpty = function () {
+        return ($scope.modelValue && $scope.modelValue.length === 0);
+      };
+  
+      /**
+       * Wrapper for the accept callback delegates to callback.
+       *
+       * @param sourceItemHandleScope - drag item handle scope.
+       * @param destScope - sortable target scope.
+       * @param destItemScope - sortable destination item scope.
+       * @returns {*|boolean} - true if drop is allowed for the drag item in drop target.
+       */
+      $scope.accept = function (sourceItemHandleScope, destScope, destItemScope) {
+        return $scope.callbacks.accept(sourceItemHandleScope, destScope, destItemScope);
+      };
+  
+    }]);
+  
+    /**
+     * Sortable directive - defines callbacks.
+     * Parent directive for draggable and sortable items.
+     * Sets modelValue, callbacks, element in scope.
+     * sortOptions also includes a longTouch option which activates longTouch when set to true (default is false).
+     */
+    mainModule.directive('asSortable',
+      function () {
+        return {
+          require: 'ngModel', // get a hold of NgModelController
+          restrict: 'A',
+          scope: true,
+          controller: 'as.sortable.sortableController',
+          link: function (scope, element, attrs, ngModelController) {
+  
+            var ngModel, callbacks;
+  
+            ngModel = ngModelController;
+  
+            if (!ngModel) {
+              return; // do nothing if no ng-model
+            }
+  
+            // Set the model value in to scope.
+            ngModel.$render = function () {
+              scope.modelValue = ngModel.$modelValue;
+            };
+            //set the element in scope to be accessed by its sub scope.
+            scope.element = element;
+            element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
+  
+            callbacks = {accept: null, orderChanged: null, itemMoved: null, dragStart: null, dragMove:null, dragCancel: null, dragEnd: null};
+  
+            /**
+             * Invoked to decide whether to allow drop.
+             *
+             * @param sourceItemHandleScope - the drag item handle scope.
+             * @param destSortableScope - the drop target sortable scope.
+             * @param destItemScope - the drop target item scope.
+             * @returns {boolean} - true if allowed for drop.
+             */
+            callbacks.accept = function (sourceItemHandleScope, destSortableScope, destItemScope) {
+              return true;
+            };
+  
+            /**
+             * Invoked when order of a drag item is changed.
+             *
+             * @param event - the event object.
+             */
+            callbacks.orderChanged = function (event) {
+            };
+  
+            /**
+             * Invoked when the item is moved to other sortable.
+             *
+             * @param event - the event object.
+             */
+            callbacks.itemMoved = function (event) {
+            };
+  
+            /**
+             * Invoked when the drag started successfully.
+             *
+             * @param event - the event object.
+             */
+            callbacks.dragStart = function (event) {
+            };
+  
+            /**
+             * Invoked when the drag move.
+             *
+             * @param itemPosition - the item position.
+             * @param containment - the containment element.
+             * @param eventObj - the event object.
+            */
+            callbacks.dragMove = angular.noop;
+  
+            /**
+             * Invoked when the drag cancelled.
+             *
+             * @param event - the event object.
+             */
+            callbacks.dragCancel = function (event) {
+            };
+  
+            /**
+             * Invoked when the drag stopped.
+             *
+             * @param event - the event object.
+             */
+            callbacks.dragEnd = function (event) {
+            };
+  
+            //Set the sortOptions callbacks else set it to default.
+            scope.$watch(attrs.asSortable, function (newVal, oldVal) {
+              angular.forEach(newVal, function (value, key) {
+                if (callbacks[key]) {
+                  if (typeof value === 'function') {
+                    callbacks[key] = value;
+                  }
+                } else {
+                  scope.options[key] = value;
+                }
+              });
+              scope.callbacks = callbacks;
+            }, true);
+  
+            // Set isDisabled if attr is set, if undefined isDisabled = false
+            if (angular.isDefined(attrs.isDisabled)) {
+              scope.$watch(attrs.isDisabled, function (newVal, oldVal) {
+                if (!angular.isUndefined(newVal)) {
+                  scope.isDisabled = newVal;
+                }
+              }, true);
+            }
+          }
+        };
+      });
+  
+  }());
+  
+  /*jshint indent: 2 */
+  /*global angular: false */
+  
+  (function () {
+  
+    'use strict';
+    var mainModule = angular.module('as.sortable');
+  
+    /**
+     * Controller for sortableItemHandle
+     *
+     * @param $scope - item handle scope.
+     */
+    mainModule.controller('as.sortable.sortableItemHandleController', ['$scope', function ($scope) {
+  
+      this.scope = $scope;
+  
+      $scope.itemScope = null;
+      $scope.type = 'handle';
+    }]);
+  
+    //Check if a node is parent to another node
+    function isParent(possibleParent, elem) {
+      if(!elem || elem.nodeName === 'HTML') {
+        return false;
+      }
+  
+      if(elem.parentNode === possibleParent) {
+        return true;
+      }
+  
+      return isParent(possibleParent, elem.parentNode);
+    }
+  
+    /**
+     * Directive for sortable item handle.
+     */
+    mainModule.directive('asSortableItemHandle', ['sortableConfig', '$helper', '$window', '$document', '$timeout',
+      function (sortableConfig, $helper, $window, $document, $timeout) {
+        return {
+          require: '^asSortableItem',
+          scope: true,
+          restrict: 'A',
+          controller: 'as.sortable.sortableItemHandleController',
+          link: function (scope, element, attrs, itemController) {
+  
+            var dragElement, //drag item element.
+              placeHolder, //place holder class element.
+              placeElement,//hidden place element.
+              itemPosition, //drag item element position.
+              dragItemInfo, //drag item data.
+              containment,//the drag container.
+              containerPositioning, // absolute or relative positioning.
+              dragListen,// drag listen event.
+              scrollableContainer, //the scrollable container
+              dragStart,// drag start event.
+              dragMove,//drag move event.
+              dragEnd,//drag end event.
+              dragCancel,//drag cancel event.
+              isDraggable,//is element draggable.
+              placeHolderIndex,//placeholder index in items elements.
+              bindDrag,//bind drag events.
+              unbindDrag,//unbind drag events.
+              bindEvents,//bind the drag events.
+              unBindEvents,//unbind the drag events.
+              hasTouch,// has touch support.
+              isIOS,// is iOS device.
+              longTouchStart, // long touch start event
+              longTouchCancel, // cancel long touch
+              longTouchTimer, // timer promise for the long touch on iOS devices
+              dragHandled, //drag handled.
+              createPlaceholder,//create place holder.
+              isPlaceHolderPresent,//is placeholder present.
+              isDisabled = false, // drag enabled
+              escapeListen, // escape listen event
+              isLongTouch = false; //long touch disabled.
+  
+            hasTouch = 'ontouchstart' in $window;
+            isIOS = /iPad|iPhone|iPod/.test($window.navigator.userAgent) && !$window.MSStream;
+  
+            if (sortableConfig.handleClass) {
+              element.addClass(sortableConfig.handleClass);
+            }
+  
+            scope.itemScope = itemController.scope;
+            element.data('_scope', scope); // #144, work with angular debugInfoEnabled(false)
+  
+            scope.$watchGroup(['sortableScope.isDisabled', 'sortableScope.options.longTouch'],
+                function (newValues) {
+              if (isDisabled !== newValues[0]) {
+                isDisabled = newValues[0];
+                if (isDisabled) {
+                  unbindDrag();
+                } else {
+                  bindDrag();
+                }
+              } else if (isLongTouch !== newValues[1]) {
+                isLongTouch = newValues[1];
+                unbindDrag();
+                bindDrag();
+              } else {
+                bindDrag();
+              }
+            });
+  
+            scope.$on('$destroy', function () {
+              angular.element($document[0].body).unbind('keydown', escapeListen);
+            });
+  
+            createPlaceholder = function (itemScope) {
+              if (typeof scope.sortableScope.options.placeholder === 'function') {
+                return angular.element(scope.sortableScope.options.placeholder(itemScope));
+              } else if (typeof scope.sortableScope.options.placeholder === 'string') {
+                return angular.element(scope.sortableScope.options.placeholder);
+              } else {
+                return angular.element($document[0].createElement(itemScope.element.prop('tagName')));
+              }
+            };
+  
+            /**
+             * Listens for a 10px movement before
+             * dragStart is called to allow for
+             * a click event on the element.
+             *
+             * @param event - the event object.
+             */
+            dragListen = function (event) {
+  
+              var unbindMoveListen = function () {
+                angular.element($document).unbind('mousemove', moveListen);
+                angular.element($document).unbind('touchmove', moveListen);
+                element.unbind('mouseup', unbindMoveListen);
+                element.unbind('touchend', unbindMoveListen);
+                element.unbind('touchcancel', unbindMoveListen);
+              };
+  
+              var startPosition;
+              var moveListen = function (e) {
+                e.preventDefault();
+                var eventObj = $helper.eventObj(e);
+                if (!startPosition) {
+                  startPosition = { clientX: eventObj.clientX, clientY: eventObj.clientY };
+                }
+                if (Math.abs(eventObj.clientX - startPosition.clientX) + Math.abs(eventObj.clientY - startPosition.clientY) > 10) {
+                  unbindMoveListen();
+                  dragStart(event);
+                }
+              };
+  
+              angular.element($document).bind('mousemove', moveListen);
+              angular.element($document).bind('touchmove', moveListen);
+              element.bind('mouseup', unbindMoveListen);
+              element.bind('touchend', unbindMoveListen);
+              element.bind('touchcancel', unbindMoveListen);
+              event.stopPropagation();
+            };
+  
+            /**
+             * Triggered when drag event starts.
+             *
+             * @param event the event object.
+             */
+            dragStart = function (event) {
+  
+              var eventObj, tagName;
+  
+              if (!hasTouch && (event.button === 2 || event.which === 3)) {
+                // disable right click
+                return;
+              }
+              if (hasTouch && $helper.isTouchInvalid(event)) {
+                return;
+              }
+              if (dragHandled || !isDraggable(event)) {
+                // event has already fired in other scope.
+                return;
+              }
+              // Set the flag to prevent other items from inheriting the drag event
+              dragHandled = true;
+              event.preventDefault();
+              eventObj = $helper.eventObj(event);
+              scope.sortableScope = scope.sortableScope || scope.itemScope.sortableScope; //isolate directive scope issue.
+              scope.callbacks = scope.callbacks || scope.itemScope.callbacks; //isolate directive scope issue.
+  
+              if (scope.itemScope.sortableScope.options.clone || (scope.itemScope.sortableScope.options.ctrlClone && event.ctrlKey)) {
+                  // Clone option is true
+                  // or Ctrl clone option is true & the ctrl key was pressed when the user innitiated drag
+                scope.itemScope.sortableScope.cloning = true;
+              } else {
+                scope.itemScope.sortableScope.cloning = false;
+              }
+  
+              // (optional) Scrollable container as reference for top & left offset calculations, defaults to Document
+              scrollableContainer = angular.element($document[0].querySelector(scope.sortableScope.options.scrollableContainer)).length > 0 ?
+                $document[0].querySelector(scope.sortableScope.options.scrollableContainer) : $document[0].documentElement;
+  
+              containment = (scope.sortableScope.options.containment)? $helper.findAncestor(element, scope.sortableScope.options.containment):angular.element($document[0].body);
+              //capture mouse move on containment.
+              containment.css('cursor', 'move');
+              containment.css('cursor', '-webkit-grabbing');
+              containment.css('cursor', '-moz-grabbing');
+              containment.addClass('as-sortable-un-selectable');
+  
+              // container positioning
+              containerPositioning = scope.sortableScope.options.containerPositioning || 'absolute';
+  
+              dragItemInfo = $helper.dragItem(scope);
+              tagName = scope.itemScope.element.prop('tagName');
+  
+              dragElement = angular.element($document[0].createElement(scope.sortableScope.element.prop('tagName')))
+                .addClass(scope.sortableScope.element.attr('class')).addClass(sortableConfig.dragClass);
+              dragElement.css('width', $helper.width(scope.itemScope.element) + 'px');
+              dragElement.css('height', $helper.height(scope.itemScope.element) + 'px');
+  
+              placeHolder = createPlaceholder(scope.itemScope)
+                .addClass(sortableConfig.placeHolderClass).addClass(scope.sortableScope.options.additionalPlaceholderClass);
+              placeHolder.css('width', $helper.width(scope.itemScope.element) + 'px');
+              placeHolder.css('height', $helper.height(scope.itemScope.element) + 'px');
+  
+              placeElement = angular.element($document[0].createElement(tagName));
+              if (sortableConfig.hiddenClass) {
+                placeElement.addClass(sortableConfig.hiddenClass);
+              }
+  
+              itemPosition = $helper.positionStarted(eventObj, scope.itemScope.element, scrollableContainer);
+  
+              // fill the immediate vacuum.
+              if (!scope.itemScope.sortableScope.options.clone) {
+                scope.itemScope.element.after(placeHolder);
+              }
+  
+              if (scope.itemScope.sortableScope.cloning) {
+                // clone option is enabled or triggered, so clone the element.
+                dragElement.append(scope.itemScope.element.clone());
+              }
+              else {
+                // add hidden placeholder element in original position.
+                scope.itemScope.element.after(placeElement);
+                // not cloning, so use the original element.
+                dragElement.append(scope.itemScope.element);
+              }
+  
+              containment.append(dragElement);
+              $helper.movePosition(eventObj, dragElement, itemPosition, containment, containerPositioning, scrollableContainer);
+  
+              scope.sortableScope.$apply(function () {
+                scope.callbacks.dragStart(dragItemInfo.eventArgs());
+              });
+              bindEvents();
+            };
+  
+            /**
+             * Allow Drag if it is a proper item-handle element.
+             *
+             * @param event - the event object.
+             * @return boolean - true if element is draggable.
+             */
+            isDraggable = function (event) {
+  
+              var elementClicked, sourceScope, isDraggable;
+  
+              elementClicked = angular.element(event.target);
+  
+              // look for the handle on the current scope or parent scopes
+              sourceScope = fetchScope(elementClicked);
+  
+              isDraggable = (sourceScope && sourceScope.type === 'handle');
+  
+              //If a 'no-drag' element inside item-handle if any.
+              while (isDraggable && elementClicked[0] !== element[0]) {
+                if ($helper.noDrag(elementClicked)) {
+                  isDraggable = false;
+                }
+                elementClicked = elementClicked.parent();
+              }
+              return isDraggable;
+            };
+  
+            /**
+             * Inserts the placeHolder in to the targetScope.
+             *
+             * @param targetElement the target element
+             * @param targetScope the target scope
+             */
+            function insertBefore(targetElement, targetScope) {
+              // Ensure the placeholder is visible in the target (unless it's a table row)
+              if (placeHolder.css('display') !== 'table-row') {
+                placeHolder.css('display', 'block');
+              }
+              if (!targetScope.sortableScope.options.clone) {
+                targetElement[0].parentNode.insertBefore(placeHolder[0], targetElement[0]);
+                dragItemInfo.moveTo(targetScope.sortableScope, targetScope.index());
+              }
+            }
+  
+            /**
+             * Inserts the placeHolder next to the targetScope.
+             *
+             * @param targetElement the target element
+             * @param targetScope the target scope
+             */
+            function insertAfter(targetElement, targetScope) {
+              // Ensure the placeholder is visible in the target (unless it's a table row)
+              if (placeHolder.css('display') !== 'table-row') {
+                placeHolder.css('display', 'block');
+              }
+              if (!targetScope.sortableScope.options.clone) {
+                targetElement.after(placeHolder);
+                dragItemInfo.moveTo(targetScope.sortableScope, targetScope.index() + 1);
+              }
+            }
+  
+            /**
+             * Triggered when drag is moving.
+             *
+             * @param event - the event object.
+             */
+            dragMove = function (event) {
+  
+              var eventObj, targetX, targetY, targetScope, targetElement;
+  
+              if (hasTouch && $helper.isTouchInvalid(event)) {
+                return;
+              }
+              // Ignore event if not handled
+              if (!dragHandled) {
+                return;
+              }
+              if (dragElement) {
+  
+                event.preventDefault();
+  
+                eventObj = $helper.eventObj(event);
+  
+                // checking if dragMove callback exists, to prevent application
+                // rerenderings on each mouse move event
+                if (scope.callbacks.dragMove !== angular.noop) {
+                  scope.sortableScope.$apply(function () {
+                    scope.callbacks.dragMove(itemPosition, containment, eventObj);
+                  });
+                }
+  
+                targetX = eventObj.pageX - $document[0].documentElement.scrollLeft;
+                targetY = eventObj.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
+  
+                //IE fixes: hide show element, call element from point twice to return pick correct element.
+                dragElement.addClass(sortableConfig.hiddenClass);
+                targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
+                dragElement.removeClass(sortableConfig.hiddenClass);
+  
+                $helper.movePosition(eventObj, dragElement, itemPosition, containment, containerPositioning, scrollableContainer);
+  
+                //Set Class as dragging starts
+                dragElement.addClass(sortableConfig.dragging);
+  
+                targetScope = fetchScope(targetElement);
+  
+                if (!targetScope || !targetScope.type) {
+                  return;
+                }
+                if (targetScope.type === 'handle') {
+                  targetScope = targetScope.itemScope;
+                }
+                if (targetScope.type !== 'item' && targetScope.type !== 'sortable') {
+                  return;
+                }
+  
+                if (targetScope.type === 'item' && targetScope.accept(scope, targetScope.sortableScope, targetScope)) {
+                  // decide where to insert placeholder based on target element and current placeholder if is present
+                  targetElement = targetScope.element;
+  
+                  // Fix #241 Drag and drop have trembling with blocks of different size
+                  var targetElementOffset = $helper.offset(targetElement, scrollableContainer);
+                  if (!dragItemInfo.canMove(itemPosition, targetElement, targetElementOffset)) {
+                    return;
+                  }
+  
+                  var placeholderIndex = placeHolderIndex(targetScope.sortableScope.element);
+                  if (placeholderIndex < 0) {
+                    insertBefore(targetElement, targetScope);
+                  } else {
+                    if (placeholderIndex <= targetScope.index()) {
+                      insertAfter(targetElement, targetScope);
+                    } else {
+                      insertBefore(targetElement, targetScope);
+                    }
+                  }
+                }
+  
+                if (targetScope.type === 'sortable') {//sortable scope.
+                  if (targetScope.accept(scope, targetScope) &&
+                    !isParent(targetScope.element[0], targetElement[0])) {
+                    //moving over sortable bucket. not over item.
+                    if (!isPlaceHolderPresent(targetElement) && !targetScope.options.clone) {
+                      targetElement[0].appendChild(placeHolder[0]);
+                      dragItemInfo.moveTo(targetScope, targetScope.modelValue.length);
+                    }
+                  }
+                }
+              }
+            };
+  
+  
+            /**
+             * Fetch scope from element or parents
+             * @param  {object} element Source element
+             * @return {object}         Scope, or null if not found
+             */
+            function fetchScope(element) {
+              var scope;
+              while (!scope && element.length) {
+                scope = element.data('_scope');
+                if (!scope) {
+                  element = element.parent();
+                }
+              }
+              return scope;
+            }
+  
+  
+            /**
+             * Get position of place holder among item elements in itemScope.
+             * @param targetElement the target element to check with.
+             * @returns {*} -1 if placeholder is not present, index if yes.
+             */
+            placeHolderIndex = function (targetElement) {
+              var itemElements, i;
+              // targetElement is placeHolder itself, return index 0
+              if (targetElement.hasClass(sortableConfig.placeHolderClass)){
+                return 0;
+              }
+              // find index in target children
+              itemElements = targetElement.children();
+              for (i = 0; i < itemElements.length; i += 1) {
+                //TODO may not be accurate when elements contain other siblings than item elements
+                //solve by adding 1 to model index of previous item element
+                if (angular.element(itemElements[i]).hasClass(sortableConfig.placeHolderClass)) {
+                  return i;
+                }
+              }
+              return -1;
+            };
+  
+  
+            /**
+             * Check there is no place holder placed by itemScope.
+             * @param targetElement the target element to check with.
+             * @returns {*} true if place holder present.
+             */
+            isPlaceHolderPresent = function (targetElement) {
+              return placeHolderIndex(targetElement) >= 0;
+            };
+  
+            /**
+             * Rollback the drag data changes.
+             */
+  
+            function rollbackDragChanges() {
+              if (!scope.itemScope.sortableScope.cloning) {
+                placeElement.replaceWith(scope.itemScope.element);
+              }
+              placeHolder.remove();
+              dragElement.remove();
+              dragElement = null;
+              dragHandled = false;
+              containment.css('cursor', '');
+              containment.removeClass('as-sortable-un-selectable');
+            }
+  
+            /**
+             * triggered while drag ends.
+             *
+             * @param event - the event object.
+             */
+            dragEnd = function (event) {
+              // Ignore event if not handled
+              if (!dragHandled) {
+                return;
+              }
+              event.preventDefault();
+              if (dragElement) {
+                //rollback all the changes.
+                rollbackDragChanges();
+                // update model data
+                dragItemInfo.apply();
+                scope.sortableScope.$apply(function () {
+                  if (dragItemInfo.isSameParent()) {
+                    if (dragItemInfo.isOrderChanged()) {
+                      scope.callbacks.orderChanged(dragItemInfo.eventArgs());
+                    }
+                  } else {
+                    scope.callbacks.itemMoved(dragItemInfo.eventArgs());
+                  }
+                });
+                scope.sortableScope.$apply(function () {
+                  scope.callbacks.dragEnd(dragItemInfo.eventArgs());
+                });
+                dragItemInfo = null;
+              }
+              unBindEvents();
+            };
+  
+            /**
+             * triggered while drag is cancelled.
+             *
+             * @param event - the event object.
+             */
+            dragCancel = function (event) {
+              // Ignore event if not handled
+              if (!dragHandled) {
+                return;
+              }
+              event.preventDefault();
+  
+              if (dragElement) {
+                //rollback all the changes.
+                rollbackDragChanges();
+                scope.sortableScope.$apply(function () {
+                  scope.callbacks.dragCancel(dragItemInfo.eventArgs());
+                });
+                dragItemInfo = null;
+              }
+              unBindEvents();
+            };
+  
+            /**
+             * Binds the drag start events.
+             */
+            bindDrag = function () {
+              if (hasTouch) {
+                if (isLongTouch) {
+                  if (isIOS) {
+                    element.bind('touchstart', longTouchStart);
+                    element.bind('touchend', longTouchCancel);
+                    element.bind('touchmove', longTouchCancel);
+                  } else {
+                    element.bind('contextmenu', dragListen);
+                  }
+                } else {
+                  element.bind('touchstart', dragListen);
+                }
+              }
+              element.bind('mousedown', dragListen);
+            };
+  
+            /**
+             * Unbinds the drag start events.
+             */
+            unbindDrag = function () {
+              element.unbind('touchstart', longTouchStart);
+              element.unbind('touchend', longTouchCancel);
+              element.unbind('touchmove', longTouchCancel);
+              element.unbind('contextmenu', dragListen);
+              element.unbind('touchstart', dragListen);
+              element.unbind('mousedown', dragListen);
+            };
+  
+            /**
+             * starts a timer to detect long touch on iOS devices. If touch held for more than 500ms,
+             * it would be considered as long touch.
+             *
+             * @param event - the event object.
+             */
+            longTouchStart = function(event) {
+              longTouchTimer = $timeout(function() {
+                dragListen(event);
+              }, 500);
+            };
+  
+            /**
+             * cancel the long touch and its timer.
+             */
+            longTouchCancel = function() {
+              $timeout.cancel(longTouchTimer);
+            };
+  
+            //bind drag start events.
+            //put in a watcher since this method is now depending on the longtouch option from sortable.sortOptions
+            //bindDrag();
+  
+            //Cancel drag on escape press.
+            escapeListen = function (event) {
+              if (event.keyCode === 27) {
+                dragCancel(event);
+              }
+            };
+            angular.element($document[0].body).bind('keydown', escapeListen);
+  
+            /**
+             * Binds the events based on the actions.
+             */
+            bindEvents = function () {
+              angular.element($document).bind('touchmove', dragMove);
+              angular.element($document).bind('touchend', dragEnd);
+              angular.element($document).bind('touchcancel', dragCancel);
+              angular.element($document).bind('mousemove', dragMove);
+              angular.element($document).bind('mouseup', dragEnd);
+            };
+  
+            /**
+             * Un binds the events for drag support.
+             */
+            unBindEvents = function () {
+              angular.element($document).unbind('touchend', dragEnd);
+              angular.element($document).unbind('touchcancel', dragCancel);
+              angular.element($document).unbind('touchmove', dragMove);
+              angular.element($document).unbind('mouseup', dragEnd);
+              angular.element($document).unbind('mousemove', dragMove);
+            };
+          }
+        };
+      }]);
+  }());
+  
+  /*jshint indent: 2 */
+  /*global angular: false */
+  
+  (function () {
+  
+    'use strict';
+    var mainModule = angular.module('as.sortable');
+  
+    /**
+     * Controller for sortable item.
+     *
+     * @param $scope - drag item scope
+     */
+    mainModule.controller('as.sortable.sortableItemController', ['$scope', function ($scope) {
+  
+      this.scope = $scope;
+  
+      $scope.sortableScope = null;
+      $scope.modelValue = null; // sortable item.
+      $scope.type = 'item';
+  
+      /**
+       * returns the index of the drag item from the sortable list.
+       *
+       * @returns {*} - index value.
+       */
+      $scope.index = function () {
+        return $scope.$index;
+      };
+  
+      /**
+       * Returns the item model data.
+       *
+       * @returns {*} - item model value.
+       */
+      $scope.itemData = function () {
+        return $scope.sortableScope.modelValue[$scope.$index];
+      };
+  
+    }]);
+  
+    /**
+     * sortableItem directive.
+     */
+    mainModule.directive('asSortableItem', ['sortableConfig',
+      function (sortableConfig) {
+        return {
+          require: ['^asSortable', '?ngModel'],
+          restrict: 'A',
+          controller: 'as.sortable.sortableItemController',
+          link: function (scope, element, attrs, ctrl) {
+            var sortableController = ctrl[0];
+            var ngModelController = ctrl[1];
+            if (sortableConfig.itemClass) {
+              element.addClass(sortableConfig.itemClass);
+            }
+            scope.sortableScope = sortableController.scope;
+            if (ngModelController) {
+              ngModelController.$render = function () {
+                scope.modelValue = ngModelController.$modelValue;
+              };
+            } else {
+              scope.modelValue = sortableController.scope.modelValue[scope.$index];
+            }
+            scope.element = element;
+            element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
+          }
+        };
+      }]);
+  
+  }());

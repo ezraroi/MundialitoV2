@@ -1,4 +1,4 @@
-angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
+angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
     'ui.bootstrap.datetimepicker', 'FacebookPluginDirectives', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
     .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
     .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
@@ -132,7 +132,8 @@ angular.module('mundialitoApp', ['security', 'ngSanitize', 'ngRoute', 'ngAnimate
                 redirectTo: '/'
             });
     }])
-    .run(['$rootScope', '$log', 'security', '$route', '$location', function ($rootScope, $log, security, $route, $location) {
+    .run(['$rootScope', '$log', 'security', '$route', '$location', 'GamePluginProvider', 'FootballDataGamePlugin', function ($rootScope, $log, security, $route, $location, GamePluginProvider, FootballDataGamePlugin) {
+        GamePluginProvider.registerFactory(FootballDataGamePlugin);
         security.events.login = function (security, user) {
             $log.log('Current user details: ' + angular.toJson(user));
             $rootScope.mundialitoApp.authenticating = false;
@@ -802,15 +803,37 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider) {
     $scope.game = game;
     $scope.simulatedGame = {};
+    $scope.plugins = {};
     $scope.userBet = userBet;
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
+    $scope.toKeyValue = (object) => {
+        return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
+    };
+    $scope.IntegrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
+
+    GamePluginProvider.getGameDetailsFromAll($scope.game.IntegrationsData).then((results) => {
+        results.forEach((result) => {
+            $scope.plugins[result.property] = { data: result.data, template: result.template };
+        });
+    });
+
+    $scope.fromKeyValue = (array) => {
+        let res = {};
+        array.forEach((item) => {
+            if (item.name !== '') {
+                res[item.name] = item.value;
+            }
+
+        })
+        return res;
+    };
 
     if (!$scope.game.IsOpen) {
-        BetsManager.getGameBets($scope.game.GameId).then(function (data) {
+        BetsManager.getGameBets($scope.game.GameId).then((data) => {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
 
@@ -823,9 +846,9 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 chartArea: { left: 10, top: 20, bottom: 0, height: "100%" },
                 title: 'Bets Distribution'
             };
-            var mark1 = _.filter(data, function (bet) { return bet.HomeScore > bet.AwayScore }).length;
-            var markX = _.filter(data, function (bet) { return bet.HomeScore === bet.AwayScore }).length;
-            var mark2 = _.filter(data, function (bet) { return bet.HomeScore < bet.AwayScore }).length;
+            var mark1 = _.filter(data, function (bet) { return bet.HomeScore > bet.AwayScore; }).length;
+            var markX = _.filter(data, function (bet) { return bet.HomeScore === bet.AwayScore; }).length;
+            var mark2 = _.filter(data, function (bet) { return bet.HomeScore < bet.AwayScore; }).length;
             chart1.data = [
                 ['Game Mark', 'Number Of Users'],
                 ['1', mark1],
@@ -840,6 +863,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         if ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
+        $scope.game.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
         $scope.game.update().success((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
@@ -1271,8 +1295,11 @@ angular.module('mundialitoApp').factory('Alert', ['toaster', '$log', '$rootScope
 angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', 'Alert', '$location', 'Constants', function ($rootScope, $log, Alert, $location, Constants) {
     var ErrorHandler = this;
 
-    ErrorHandler.handle = function (data, status) {
+    ErrorHandler.handle = (data, status, headers, config) => {
         $log.log(data);
+        if (config.ignoreError) {
+            return;
+        }
         if (status === 401) {
             localStorage.removeItem('accessToken');
             sessionStorage.removeItem('accessToken');
@@ -1285,11 +1312,11 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
             title = data.Message;
         }
         if (data.errors) {
-            angular.forEach(data.errors, function (errors) {
-                angular.forEach(errors, function (errors) {
-                    message.push(errors);
+            angular.forEach(data.errors, (errors) => {
+                    angular.forEach(errors, (errors) => {
+                            message.push(errors);
+                        });
                 });
-            });
         }
         if (data.ModelState) {
             angular.forEach(data.ModelState, function (errors) {
@@ -1304,7 +1331,7 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
         }
         if (message.length === 0 && !title) {
             title = "General Error";
-            message.push("Looks like the server is down, please try again in few minutes")
+            message.push("Looks like the server is down, please try again in few minutes");
         }
         Alert.error(message.join('\n'), title);
     }
@@ -2438,3 +2465,85 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
     };
     return usersManager;
 }]);
+
+angular.module('mundialitoApp')
+    .factory('FootballDataGamePlugin', ['$q', '$rootScope', 'GenericProxyService', function ($q, $rootScope, GenericProxyService) {
+        var baseUrl = 'https://api.football-data.org/v4/matches/';
+        const integrationKey = 'football-data'
+
+        function getGameDetails(gameId) {
+            var url = baseUrl + gameId;
+            if ((!$rootScope.mundialitoApp.clientConfig) || (!$rootScope.mundialitoApp.clientConfig['football-data-api-key'])) {
+                return $q.reject('Skipping football-data as no api key provided');
+            }
+            return GenericProxyService.proxyRequest('GET', url, undefined, {
+                'X-Auth-Token': $rootScope.mundialitoApp.clientConfig['football-data-api-key']
+            }).then((response) => {
+                return {
+                    data: response,
+                    property: integrationKey,
+                    template: 'App/General/Plugins/FootballDataGameTemplate.html'
+                };
+            }).catch((error) => {
+                return $q.reject(error);
+            });
+        }
+
+        return {
+            getGameDetails: getGameDetails,
+            integrationKey: integrationKey
+        };
+    }]);
+
+angular.module('mundialitoApp')
+    .factory('GamePluginProvider', ['$q', '$log', function ($q, $log) {
+        var factories = [];
+
+        function getGameDetailsFromAll(integrationData) {
+            let relevantPlugins = [];
+            if (integrationData !== null) {
+                relevantPlugins = _.filter(factories, (plugin) => { return integrationData[plugin.integrationKey] !== undefined;});    
+            }
+            var promises = relevantPlugins.map((factory) => factory.getGameDetails(integrationData[factory.integrationKey]));
+            return $q.all(promises).then((results) => {
+                return results;
+            }).catch((e) => { 
+                $log.warn('Error fetching game details: ' + e);
+                return $q.reject(e)
+            });
+        }
+
+        return {
+            getGameDetailsFromAll: getGameDetailsFromAll,
+            registerFactory: (factory) => {
+                factories.push(factory);
+            }
+        };
+    }]);
+
+angular.module('mundialitoApp')
+    .factory('GenericProxyService', ['$http', '$q', function($http, $q) {
+        var baseUrl = 'api/genericproxy/';  // Proxy server URL
+
+        function proxyRequest(method, url, data, headers) {
+            var deferred = $q.defer();
+
+            $http({
+                method: method,
+                url: baseUrl + url,
+                data: data,
+                headers: headers,
+                ignoreError: true
+            }).then((response) => {
+                deferred.resolve(response.data);
+            }).catch((error) => {
+                deferred.reject(error);
+            });
+
+            return deferred.promise;
+        }
+
+        return {
+            proxyRequest: proxyRequest
+        };
+    }]);

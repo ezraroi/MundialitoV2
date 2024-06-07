@@ -31,6 +31,7 @@ public class GameViewModel
         {
             GameStatsPage = null;
         }
+        IntegrationsData = game.IntegrationsData;
     }
 
     [JsonPropertyName("GameId")]
@@ -86,6 +87,9 @@ public class GameViewModel
 
     [JsonPropertyName("GameStatsPage")]
     public string? GameStatsPage { get; set; }
+
+    [JsonPropertyName("IntegrationsData")]
+    public Dictionary<string, string>? IntegrationsData { get; set; }
 
 }
 
@@ -159,6 +163,9 @@ public class NewGameModel
 
     [JsonPropertyName("IsPendingUpdate")]
     public bool IsPendingUpdate { get; set; }
+
+    [JsonPropertyName("IntegrationsData")]
+    public Dictionary<string, string>? IntegrationsData { get; set; }
 }
 
 public class PutGameModel
@@ -175,6 +182,7 @@ public class PutGameModel
         AwayScore = game.AwayScore;
         CornersMark = game.CornersMark;
         CardsMark = game.CardsMark;
+        IntegrationsData = game.IntegrationsData;
     }
 
     [JsonPropertyName("Date")]
@@ -191,6 +199,9 @@ public class PutGameModel
 
     [JsonPropertyName("CardsMark")]
     public string? CardsMark { get; set; }
+
+    [JsonPropertyName("IntegrationsData")]
+    public Dictionary<string, string>? IntegrationsData { get; set; }
 
 }
 

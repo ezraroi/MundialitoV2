@@ -15,7 +15,11 @@ gulp.task('build-css-space-lab', () => {
         "Client/css/select2-bootstrap.min.css",
         "Client/css/ui-grid.min.css",
         "Client/css/toaster.min.css",
-        "Client/css/site.css"
+        "Client/css/site.css",
+        "Client/css/angular-key-value-editor.css",
+        "Client/css/ng-sortable.css",
+        "Client/css/ng-sortable.style.css"
+        
     ])
         .pipe(concat('app-space-lab.css'))
         .pipe(cleanCss())
@@ -34,7 +38,10 @@ gulp.task('build-css-cerulean', () => {
         "Client/css/select2-bootstrap.min.css",
         "Client/css/ui-grid.min.css",
         "Client/css/toaster.min.css",
-        "Client/css/site.css"
+        "Client/css/site.css",
+        "Client/css/angular-key-value-editor.css",
+        "Client/css/ng-sortable.css",
+        "Client/css/ng-sortable.style.css"
     ])
         .pipe(concat('app-cerulean.css'))
         .pipe(cleanCss())
@@ -68,7 +75,11 @@ gulp.task('compress-lib', function () {
         "Client/lib/ng-google-chart.js",
         "Client/lib/angular-cache.min.js",
         "Client/lib/toaster.min.js",
-        "Client/lib/angular-busy.min.js"
+        "Client/lib/angular-busy.min.js",
+        "Client/lib/angular-key-value-editor.js",
+        "Client/lib/compiled-templates.js",
+        "Client/lib/ng-sortable.js"
+        
     ])
         .pipe(concat('lib.js'))
         .pipe(minify())
@@ -86,9 +97,8 @@ gulp.task('compress-app', function () {
         .pipe(gulp.dest('wwwroot/js'))
 });
 
-
 gulp.task('copy-html', function() {
-    return gulp.src('Client/src/*/*.html')
+    return gulp.src('Client/src/**/*.html')
       .pipe(gulp.dest('wwwroot/App'));
   });
 
