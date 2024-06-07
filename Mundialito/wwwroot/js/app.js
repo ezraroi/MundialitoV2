@@ -2474,6 +2474,10 @@ angular.module('mundialitoApp')
 
         function getGameDetails(gameId) {
             var url = baseUrl + gameId;
+            if ((!$rootScope.mundialitoApp.clientConfig) || (!$rootScope.mundialitoApp.clientConfig['football-data-api-key'])) {
+                return $q.reject('Skipping football-data as no api key provided');
+            }
+            $rootScope.mundialitoApp.clientConfig['football-data-api-key']
             return GenericProxyService.proxyRequest('GET', url, undefined, {
                 'X-Auth-Token': $rootScope.mundialitoApp.clientConfig['football-data-api-key']
             }).then((response) => {
@@ -2506,7 +2510,7 @@ angular.module('mundialitoApp')
             return $q.all(promises).then((results) => {
                 return results;
             }).catch((e) => { 
-                $log.error('Error fetching game details: ' + e);
+                $log.warn('Error fetching game details: ' + e);
                 return $q.reject(e)
             });
         }

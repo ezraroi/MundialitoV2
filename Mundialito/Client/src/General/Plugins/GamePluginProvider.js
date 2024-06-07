@@ -11,7 +11,7 @@ angular.module('mundialitoApp')
             return $q.all(promises).then((results) => {
                 return results;
             }).catch((e) => { 
-                $log.error('Error fetching game details: ' + e);
+                $log.warn('Error fetching game details: ' + e);
                 return $q.reject(e)
             });
         }
