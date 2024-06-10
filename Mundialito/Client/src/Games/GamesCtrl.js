@@ -23,17 +23,15 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
         });
     };
 
-    $scope.isPendingUpdate = function() {
-        return function(item) {
-            return item.IsPendingUpdate;
-        };
+    $scope.isPendingUpdate = function(item) {
+        return item.IsPendingUpdate;
     };
 
     $scope.updateGame = function(game) {
         if  ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        game.update().success(function (data) {
+        game.update().then((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
         });

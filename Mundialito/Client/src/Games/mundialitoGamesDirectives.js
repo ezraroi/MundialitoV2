@@ -1,30 +1,32 @@
 ﻿'use strict';
-angular.module('mundialitoApp').directive('mundialitoGames',['Alert', function (Alert) {
+angular.module('mundialitoApp').directive('mundialitoGames', ['Alert', function (Alert) {
     return {
         restrict: 'E',
         scope: {
             games: '=info',
             gamesType: '=filter',
-            showOnly : '=',
+            showOnly: '=',
             onAdd: '&'
         },
         templateUrl: 'App/Games/gamesTemplate.html',
-        link : function($scope) {
-            $scope.deleteGame = function(game) {
-                var scope = game;
-                game.delete().success(function() {
-                    Alert.success('Game was deleted successfully');
-                    $scope.games.splice($scope.games.indexOf(scope),1);
-                });
-            }
-            $scope.matchGameType = function(gameType) {
-                return function(item) {
-                    if ((!gameType) || (gameType === "All")) {
-                        return true;
-                    }
-                    return item.IsOpen;
+        link: ($scope) => {
+            $scope.allGames = $scope.games;
+            $scope.$watch('gamesType', function(newValue) {
+                if ((newValue) && (newValue !== "All")) {
+                    $scope.games = $scope.games.filter((game) => {
+                        return game.IsOpen;
+                    });
+                } else {
+                    $scope.games = $scope.allGames;
                 }
-            }
+            });
+            $scope.deleteGame = (game) => {
+                var scope = game;
+                game.delete().then(() => {
+                    Alert.success('Game was deleted successfully');
+                    $scope.games.splice($scope.games.indexOf(scope), 1);
+                });
+            };
         }
     };
 }]);

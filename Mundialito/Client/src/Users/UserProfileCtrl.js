@@ -38,7 +38,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
             $log.debug('UserProfileCtrl: hasGeneralBet = ' + answer);
             if (answer === true) {
                 GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then((generalBet) => {
-                    $log.debug('UserProfileCtrl: got user general bet - ' + angular.toJson(generalBet));
+                    $log.info('UserProfileCtrl: got user general bet - ' + angular.toJson(generalBet));
                     $scope.generalBet = generalBet;
                 });
             }

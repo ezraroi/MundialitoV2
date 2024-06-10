@@ -19,7 +19,7 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             $log.debug('TeamsManager: will fetch team ' + teamId + ' from local pool');
             var instance = this._pool[teamId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('TeamsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
+                $log.debug('TeamsManager: Instance was loaded at ' + instanceLoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
@@ -28,12 +28,12 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             var scope = this;
             $log.debug('TeamsManager: will fetch team ' + teamId + ' from server');
             $http.get("api/teams/" + teamId, { tracker: 'getTeam'})
-                .success(function(teamData) {
-                    var team = scope._retrieveInstance(teamData.TeamId, teamData);
+                .then((teamData) => {
+                    var team = scope._retrieveInstance(teamData.data.TeamId, teamData.data);
                     deferred.resolve(team);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
         },
 
@@ -69,12 +69,12 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             var scope = this;
             $log.debug('TeamsManager: will add new team - ' + angular.toJson(teamData));
             $http.post("api/teams", teamData, {  tracker: 'addTeam'})
-                .success(function(data) {
-                    var team = scope._retrieveInstance(data.TeamId, data);
+                .then((data) => {
+                    var team = scope._retrieveInstance(data.data.TeamId, data.data);
                     deferred.resolve(team);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
@@ -100,17 +100,16 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             var scope = this;
             $log.debug('TeamsManager: will fetch all teams from server');
             $http.get("api/teams", { tracker: 'getTeams', cache: true })
-                .success(function(teamsArray) {
+                .then((teamsArray) => {
                     var teams = [];
-                    teamsArray.forEach(function(teamData) {
+                    teamsArray.data.forEach((teamData) => {
                         var team = scope._retrieveInstance(teamData.TeamId, teamData);
                         teams.push(team);
                     });
-
                     deferred.resolve(teams);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },

@@ -35,16 +35,16 @@ angular.module('mundialitoApp').factory('PlayersManager', ['$http', '$q', 'Playe
             var scope = this;
             $log.debug('PlayersManager: will fetch all players from server');
             $http.get("api/players", { tracker: 'getPlayers', cache: true })
-                .success(function (playersArray) {
+                .then((playersArray) => {
                     var players = [];
-                    playersArray.forEach(function (playerData) {
+                    playersArray.data.forEach((playerData) => {
                         var player = scope._retrieveInstance(playerData.PlayerId, playerData);
                         players.push(player);
                     });
                     deferred.resolve(players);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             playersPromise = deferred.promise;
             return deferred.promise;

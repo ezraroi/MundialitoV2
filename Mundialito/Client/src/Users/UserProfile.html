@@ -132,19 +132,18 @@
                     <div class="form-group">
                         <label class="col-md-3 col-xs-6 control-label">Winning Team</label>
                         <div class="col-md-4 col-xs-6">
-                            <select ui-select2="{allowClear: false}" class="form-control"
+                            <select ui-select2="{allowClear: false}" class="form-control" name="team" id="team"
                                 ng-model="generalBet.WinningTeamId" ng-readonly="isGeneralBetReadOnly()" required>
-                                <option ng-repeat="team in teams" value="{{team.TeamId}}">{{team.Name}}</option>
+                                <option ng-repeat="team in teams" ng-value="team.TeamId">{{team.Name}}</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="goldenBootPlayer" class="col-md-3 col-xs-6 control-label">Golden Boot Player</label>
                         <div class="col-md-4 col-xs-6">
-                            <select ui-select2="{allowClear: false}" class="form-control"
+                            <select ui-select2="{allowClear: false}" class="form-control" name="player" id="player"
                                 ng-model="generalBet.GoldenBootPlayerId" ng-readonly="isGeneralBetReadOnly()" required>
-                                <option ng-repeat="player in players" value="{{player.PlayerId}}">{{player.Name}}
-                                </option>
+                                <option ng-repeat="player in players" ng-value="player.PlayerId">{{player.Name}}</option>
                             </select>
                         </div>
                     </div>

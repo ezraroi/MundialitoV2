@@ -5,6 +5,7 @@ angular.module('mundialitoApp').controller('TeamsCtrl', ['$scope', '$log', 'Team
     $scope.newTeam = null;
 
     $scope.addNewTeam = function () {
+        $('.selectpicker').selectpicker('refresh');
         $scope.newTeam = TeamsManager.getEmptyTeamObject();
     };
 
@@ -18,9 +19,9 @@ angular.module('mundialitoApp').controller('TeamsCtrl', ['$scope', '$log', 'Team
 
     $scope.deleteTeam = function(team) {
         var scope = team;
-        team.delete().success(function() {
+        team.delete().then(() => {
             Alert.success('Team was deleted successfully');
-            $scope.teams.splice($scope.teams.indexOf(scope),1);
+            $scope.teams.splice($scope.teams.indexOf(scope), 1);
         })
     };
 

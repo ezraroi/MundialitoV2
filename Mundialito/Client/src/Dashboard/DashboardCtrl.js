@@ -101,9 +101,11 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.users = users;
         });
 
-        $scope.isOpenForBetting = () => (item) => item.IsOpen;
-        $scope.isPendingUpdate = () => (item) => item.IsPendingUpdate;
-        $scope.isDecided = () => (item) => !item.IsOpen && !item.IsPendingUpdate;
+        $scope.isOpenForBetting =(item) => item.IsOpen;
+        $scope.isPendingUpdate = (item) => item.IsPendingUpdate;
+        $scope.isDecided = function (item) {
+            return !item.IsOpen && !item.IsPendingUpdate;
+        };
         $scope.isGameBet = (game) => (item) => item.Game.GameId === game.GameId;
         $scope.hasBets = (game) => _.filter($scope.pendingUpdateGamesFolloweesBets, (bet) => bet.Game.GameId === game.GameId).length > 0
 

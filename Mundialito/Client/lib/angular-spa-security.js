@@ -182,8 +182,8 @@
 			//Check for access token and get user info
 			if (accessToken()) {
 				accessToken(accessToken());
-				return Api.getUserInfo(accessToken()).success((user) => {
-					Security.user = user;
+				return Api.getUserInfo(accessToken()).then((user) => {
+					Security.user = user.data;
 					if (securityProvider.events.reloadUser) securityProvider.events.reloadUser(Security, user); // Your Register events
 				});
 			}
@@ -237,8 +237,8 @@
 			Api.register(data).success(function () {
 				if (securityProvider.events.register) securityProvider.events.register(Security); // Your Register events
 				if (securityProvider.registerThenLogin) {
-					Security.login(data).then(function (user) {
-						deferred.resolve(user);
+					Security.login(data).then((user) => {
+						deferred.resolve(user.data);
 					}, function (errorData) {
 						deferred.reject(errorData);
 					});

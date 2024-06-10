@@ -60,9 +60,9 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             delete game.Stadium.Games;
         }
         $scope.game.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
-        $scope.game.update().success((data) => {
+        $scope.game.update().then((res) => {
             Alert.success('Game was updated successfully');
-            GamesManager.setGame(data);
+            GamesManager.setGame(res.data);
         }).catch((err) => {
             Alert.error('Failed to update game, please try again');
             $log.error('Error updating game', err);
@@ -71,10 +71,10 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().success((data) => {
+            $scope.userBet.update().then((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
-            }).error((err) => {
+            }).catch((err) => {
                 Alert.error('Failed to update bet, please try again');
                 $log.error('Error updating bet', err);
             });

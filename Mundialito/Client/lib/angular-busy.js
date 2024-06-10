@@ -55,7 +55,7 @@ angular.module('cgBusy').directive('cgBusy', ['promiseTracker', '$compile', '$te
 
 	            var indicatorTemplateName = options.template ? options.template : cgBusyTemplateName;
 
-	            $http.get(indicatorTemplateName, { cache: $templateCache }).success(function (indicatorTemplate) {
+	            $http.get(indicatorTemplateName, { cache: $templateCache }).then(function (indicatorTemplate) {
 
 	                options.backdrop = typeof options.backdrop === 'undefined' ? true : options.backdrop;
 	                var backdrop = options.backdrop ? '<div class="cg-busy cg-busy-backdrop"></div>' : '';
@@ -71,7 +71,7 @@ angular.module('cgBusy').directive('cgBusy', ['promiseTracker', '$compile', '$te
 						.css('bottom', 0);
 	                element.append(templateElement);
 
-	            }).error(function (data) {
+	            }).catch(function (data) {
 	                throw new Error('Template specified for cgBusy (' + options.template + ') could not be loaded. ' + data);
 	            });
 	        }
