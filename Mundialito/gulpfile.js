@@ -3,50 +3,31 @@ const concat = require('gulp-concat');
 const cleanCss = require('gulp-minify-css');
 const minify = require('gulp-minify');
 
+const allCss = [
+    "Client/css/angular-busy.min.css",
+    "Client/css/angular-key-value-editor.css",
+    "Client/css/bootstrap.css",
+    "Client/css/datetimepicker.css",
+    "Client/css/font-awesome.css",
+    "Client/css/flag-css.css",
+    "Client/css/select_.css",
+    // "Client/css/select2.css",
+    // "Client/css/select2-bootstrap.min.css",
+    "Client/css/ui-grid.css",
+    "Client/css/toaster.css",
+    "Client/css/site.css",
+    "Client/css/ng-sortable.css",
+    "Client/css/ng-sortable.style.css"  
+];
 gulp.task('build-css-space-lab', () => {
-    return gulp.src([
-        "Client/css/bootstrap.css",
-        "Client/css/bootstrap-spacelab.min.css",
-        "Client/css/datetimepicker.css",
-        "Client/css/font-awesome.min.css",
-        "Client/css/flag-css.css",
-        "Client/css/angular-busy.min.css",
-        "Client/css/select_.css",
-        // "Client/css/select2.css",
-        // "Client/css/select2-bootstrap.min.css",
-        "Client/css/ui-grid.min.css",
-        "Client/css/toaster.min.css",
-        "Client/css/site.css",
-        "Client/css/angular-key-value-editor.css",
-        "Client/css/ng-sortable.css",
-        "Client/css/angular-csp.css",
-        "Client/css/ng-sortable.style.css"
-        
-    ])
+    return gulp.src(allCss.concat(['Client/css/bootstrap-spacelab.min.css']))
         .pipe(concat('app-space-lab.css'))
         .pipe(cleanCss())
         .pipe(gulp.dest('wwwroot/css'));
 });
 
 gulp.task('build-css-cerulean', () => {
-    return gulp.src([
-        "Client/css/bootstrap.css",
-        "Client/css/bootstrap-cerulean.min.css",
-        "Client/css/datetimepicker.css",
-        "Client/css/font-awesome.min.css",
-        "Client/css/flag-css.css",
-        "Client/css/angular-busy.min.css",
-        "Client/css/select_.css",
-        // "Client/css/select2.css",
-        // "Client/css/select2-bootstrap.min.css",
-        "Client/css/ui-grid.min.css",
-        "Client/css/toaster.min.css",
-        "Client/css/site.css",
-        "Client/css/angular-key-value-editor.css",
-        "Client/css/ng-sortable.css",
-        "Client/css/angular-csp.css",
-        "Client/css/ng-sortable.style.css"
-    ])
+    return gulp.src(allCss.concat(['Client/css/bootstrap-cerulean.min.css']))
         .pipe(concat('app-cerulean.css'))
         .pipe(cleanCss())
         .pipe(gulp.dest('wwwroot/css'));
@@ -54,6 +35,7 @@ gulp.task('build-css-cerulean', () => {
 
 gulp.task('compress-lib', function () {
     return gulp.src([
+        "Client/lib/moment.js",
         "Client/lib/jquery.js",
         "Client/lib/angular.js",
         "Client/lib/angular-animate.js",
@@ -68,12 +50,10 @@ gulp.task('compress-lib', function () {
         "Client/lib/angular-ui/ui-bootstrap-tpls.min.js",
         "Client/lib/autofields-bootstrap.min.js",
         "Client/lib/autofields.min.js",
-        "Client/lib/moment.min.js",
         "Client/lib/angular-spa-security.js",
         "Client/lib/promise-tracker.min.js",
         "Client/lib/datetimepicker.js",
-        "Client/lib/facebookPluginDirectives.min.js",
-        "Client/lib/underscore.min.js",
+        "Client/lib/underscore.js",
         "Client/lib/d3.min.js",
         "Client/lib/line-chart.min.js",
         "Client/lib/ui-grid.js",
@@ -104,8 +84,13 @@ gulp.task('compress-app', function () {
 });
 
 gulp.task('copy-html', function() {
-    return gulp.src('Client/src/**/*.html')
+    return gulp.src(['Client/src/**/*.html'])
       .pipe(gulp.dest('wwwroot/App'));
   });
 
-gulp.task('default', gulp.series(['build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html']));
+  gulp.task('copy-templates', function() {
+    return gulp.src(['Client/resources/**/*.html'])
+      .pipe(gulp.dest('wwwroot/'));
+  });
+
+gulp.task('default', gulp.series(['build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates']));
