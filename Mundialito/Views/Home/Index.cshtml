@@ -34,100 +34,105 @@
 </head>
 
 <body>
-    <!-- App Loading message -->
-    <toaster-container toaster-options="{'time-out': 2500, 'close-button': true}"></toaster-container>
-    <div class="loading" ng-show="mundialitoApp.loading || mundialitoApp.authenticating">
-        <div class="text-center">
-            <h3><i class="fa fa-spin fa-spinner fa-lg"></i> Loading @Model.ApplicationName</h3>
-        </div>
-    </div>
-    <!-- End of App Loading message -->
-    <!-- Main Content -->
-    <div class="body-content ng-cloak" ng-hide="mundialitoApp.loading || mundialitoApp.authenticating"
-        ng-init='mundialitoApp.appName="@Model.ApplicationName"; mundialitoApp.clientConfig=@Json.Serialize(@Model.ClientConfig); mundialitoApp.protect=@Json.Serialize(Model.PrivateKeyProtection)'>
-        <!-- Fixed navbar -->
-        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy" style="color: #FFD43B;"></i>
-                        @Model.ApplicationName</a>
-                </div>
-                <div ng-if="security.user" class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li active-nav><a href="/"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
-                        <li active-nav><a href="/bets_center" class="hidden-xs"><i class="fa fa-money"></i> Bets
-                                Center</a></li>
-                        <li active-nav><a href="/games"><i class="fa-solid fa-futbol"></i> Games</a></li>
-                        <li active-nav><a href="/teams"><i class="fa-solid fa-users"></i> Teams</a></li>
-                        <li active-nav><a href="/stadiums"><i class="fa-solid fa-home"></i> Stadiums</a></li>
-                        <li active-nav access-level="Admin" class="hidden-xs"><a href="/manage_users"><i
-                                    class="fa-solid fa-tasks"></i> Admin Panel</a></li>
-                    </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li uib-dropdown on-toggle="toggled(open)">
-                            <a href="#" uib-dropdown-toggle id="userDropdown"><i class="fa-solid fa-user"></i>
-                                {{security.user.Username}} <b class="caret"></b></a>
-                            <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="userDropdown">
-                                <li><a href="/users/{{security.user.Username}}"><span class="fa-solid fa-book"></span>
-                                        Profile</a></li>
-                                <li><a href="/manage"><span class="fa-solid fa-cog"></span> Account</a></li>
-                                <li><a href="#" ng-click="security.logout()"><span class="fa-solid fa-power-off"></span>
-                                        Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
+    <div class="container body-content">
+        <!-- App Loading message -->
+        <toaster-container toaster-options="{'time-out': 2500, 'close-button': true}"></toaster-container>
+        <div class="loading" ng-show="mundialitoApp.loading || mundialitoApp.authenticating">
+            <div class="text-center">
+                <h3><i class="fa fa-spin fa-spinner fa-lg"></i> Loading @Model.ApplicationName</h3>
             </div>
         </div>
-        <!-- End of Fixed navbar -->
-        <div class="container" ng-hide="mundialitoApp.message != null">
-            <section id="body" ng-view ng-animate="enter"></section>
-            <footer>
+        <!-- End of App Loading message -->
+        <!-- Main Content -->
+        <div class="body-content ng-cloak" ng-hide="mundialitoApp.loading || mundialitoApp.authenticating"
+            ng-init='mundialitoApp.appName="@Model.ApplicationName"; mundialitoApp.clientConfig=@Json.Serialize(@Model.ClientConfig); mundialitoApp.protect=@Json.Serialize(Model.PrivateKeyProtection)'>
+            <!-- Fixed navbar -->
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
                 <div class="container">
-                    <div class="row">
-                        <div class="col-md-4 col-xs-6">
-                            <span>&copy; @DateTime.Now.Year - @Model.ApplicationName</span>
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse"
+                            data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy" style="color: #FFD43B;"></i>
+                            @Model.ApplicationName</a>
+                    </div>
+                    <div ng-if="security.user" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li active-nav><a href="/"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
+                            <li active-nav><a href="/bets_center" class="hidden-xs"><i class="fa fa-money"></i> Bets
+                                    Center</a></li>
+                            <li active-nav><a href="/games"><i class="fa-solid fa-futbol"></i> Games</a></li>
+                            <li active-nav><a href="/teams"><i class="fa-solid fa-users"></i> Teams</a></li>
+                            <li active-nav><a href="/stadiums"><i class="fa-solid fa-home"></i> Stadiums</a></li>
+                            <li active-nav access-level="Admin" class="hidden-xs"><a href="/manage_users"><i
+                                        class="fa-solid fa-tasks"></i> Admin Panel</a></li>
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li uib-dropdown on-toggle="toggled(open)">
+                                <a href="#" uib-dropdown-toggle id="userDropdown"><i class="fa-solid fa-user"></i>
+                                    {{security.user.Username}} <b class="caret"></b></a>
+                                <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="userDropdown">
+                                    <li><a href="/users/{{security.user.Username}}"><span
+                                                class="fa-solid fa-book"></span>
+                                            Profile</a></li>
+                                    <li><a href="/manage"><span class="fa-solid fa-cog"></span> Account</a></li>
+                                    <li><a href="#" ng-click="security.logout()"><span
+                                                class="fa-solid fa-power-off"></span>
+                                            Logout</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- End of Fixed navbar -->
+            <div class="container" ng-hide="mundialitoApp.message != null">
+                <section id="body" ng-view ng-animate="enter"></section>
+                <footer>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-4 col-xs-6">
+                                <span>&copy; @DateTime.Now.Year - @Model.ApplicationName</span>
+                            </div>
+                            <div class="col-md-4 text-center hidden-xs">
+                                <a href="https://github.com/ezraroi/MundialitoV2" target="_self">Mundilaito at <i
+                                        class="<i class=" fa-brands fa-github"></i> GitHub</a>
+                            </div>
+                            <div class="col-md-4 col-xs-6">
+                                <span class="pull-right"><a href="/swagger/index.html" target="_self">Mundialito REST
+                                        API</a></span>
+                            </div>
                         </div>
-                        <div class="col-md-4 text-center hidden-xs">
-                            <a href="https://github.com/ezraroi/MundialitoV2" target="_self">Mundilaito at <i
-                                    class="<i class="fa-brands fa-github"></i> GitHub</a>
-                        </div>
-                        <div class="col-md-4 col-xs-6">
-                            <span class="pull-right"><a href="/swagger/index.html" target="_self">Mundialito REST
-                                    API</a></span>
+                    </div>
+                </footer>
+            </div>
+            <!-- Content Loading message -->
+            <div class="ng-cloak" ng-show="mundialitoApp.message">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" style="margin-top: 10px;">
+                        <h4 class="text-center"><i class="fa fa-spin fa-spinner fa-lg"></i> <span
+                                ng-bind="mundialitoApp.message"></span></h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-5 col-xs-6 col-xs-offset-3">
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100"
+                                aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
                         </div>
                     </div>
                 </div>
-            </footer>
-        </div>
-        <!-- Content Loading message -->
-        <div class="ng-cloak" ng-show="mundialitoApp.message">
-            <div class="row">
-                <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3" style="margin-top: 10px;">
-                    <h4 class="text-center"><i class="fa fa-spin fa-spinner fa-lg"></i> <span
-                            ng-bind="mundialitoApp.message"></span></h4>
-                </div>
             </div>
-            <div class="row">
-                <div class="col-md-2 col-md-offset-5 col-xs-6 col-xs-offset-3">
-                    <div class="progress progress-striped active">
-                        <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100"
-                            aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                    </div>
-                </div>
-            </div>
+            <!-- End of Content Loading message -->
         </div>
-        <!-- End of Content Loading message -->
+        <!-- End of Main Content -->
+        <script src="lib/lib.js"></script>
+        <script src="js/app.js"></script>
     </div>
-    <!-- End of Main Content -->
-    <script src="lib/lib.js"></script>
-    <script src="js/app.js"></script>
 </body>
 
 </html>
