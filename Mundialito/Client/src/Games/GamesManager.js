@@ -32,11 +32,11 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch game ' + gameId + ' from server');
             $http.get('api/games/' + gameId, { tracker: 'getGame'})
-                .success(function(gameData) {
-                    var game = scope._retrieveInstance(gameData.GameId, gameData);
+                .then((gameData) => {
+                    var game = scope._retrieveInstance(gameData.data.GameId, gameData.data);
                     deferred.resolve(game);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
         },
@@ -70,11 +70,11 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             }
             var scope = this;
             $log.debug('GamesManager: will add new game - ' + angular.toJson(gameData));
-            $http.post("api/games", gameData, { tracker: 'addGame' }).success(function(data) {
-                var game = scope._retrieveInstance(data.GameId, data);
+            $http.post("api/games", gameData, { tracker: 'addGame' }).then((data) => {
+                var game = scope._retrieveInstance(data.data.GameId, data.data);
                 deferred.resolve(game);
             })
-            .error(function() {
+            .catch(function() {
                 deferred.reject();
             });
             return deferred.promise;
@@ -104,16 +104,16 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all games from server');
             $http.get('api/games', { tracker: 'getGames'})
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
 
                     deferred.resolve(games);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
             gamesPromise = deferred.promise;
@@ -129,16 +129,16 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all open games from server');
             $http.get('api/games/open', { tracker: 'getOpenGames'})
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
 
                     deferred.resolve(games);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
             openGamesPromise = deferred.promise;
@@ -151,17 +151,17 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all games of team ' + teamId + '  from server');
             $http.get('api/teams/' + teamId + '/games', { tracker: 'getTeamGames'})
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
 
                     deferred.resolve(games);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         } ,
@@ -172,17 +172,16 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all games in stadium ' + stadiumId + '  from server');
             $http.get('api/games/Stadium/' + stadiumId, { tracker: 'getStadiumGames'})
-                .success(function(gamesArray) {
+                .then(function(gamesArray) {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
-
                     deferred.resolve(games);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         } ,
@@ -191,15 +190,15 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var deferred = $q.defer();
             $log.debug('GamesManager: will simulate game ' + gameId);
             $http.post('api/games/' + gameId + '/simulate', gameResulst, { tracker: 'simulateGame'})
-                .success((usersArray) => {
+                .then((usersArray) => {
                     var users = [];
-                    usersArray.forEach((userData) => {
+                    usersArray.data.forEach((userData) => {
                         users.push(new User(userData));
                     });
                     deferred.resolve(users);
                 })
-                .error(() => {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
 

@@ -3,15 +3,15 @@ angular.module('mundialitoApp').controller('StadiumCtrl', ['$scope', '$log', 'St
     $scope.stadium = stadium;
     $scope.showEditForm = false;
 
-    GamesManager.getStadiumGames($scope.stadium.StadiumId).then(function(data) {
+    GamesManager.getStadiumGames($scope.stadium.StadiumId).then((data) => {
         $log.debug('StadiumCtrl: Got games of stadium');
         $scope.games = data;
     });
 
-    $scope.updateStadium = function() {
-        $scope.stadium.update().success(function() {
+    $scope.updateStadium = () => {
+        $scope.stadium.update().then(() => {
             Alert.success('Stadium was updated successfully');
-        })
+        });
     };
 
     $scope.schema =  StadiumsManager.getStaidumSchema();

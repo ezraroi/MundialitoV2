@@ -31,12 +31,12 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var scope = this;
             $log.debug('UsersManager: will fetch user ' + username + ' from server');
             $http.get('api/users/' + username, { tracker: 'getUser' })
-                .success(function (userData) {
-                    var user = scope._retrieveInstance(userData.Username, userData);
+                .then((userData) => {
+                    var user = scope._retrieveInstance(userData.data.Username, userData.data);
                     deferred.resolve(user);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
         },
 
@@ -60,11 +60,11 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var deferred = $q.defer();
             $log.debug('UsersManager: will generate private key for ' + email);
             $http.get('api/users/generateprivatekey/' + encodeURIComponent(email) + '/', { tracker: 'generatePrivateKey' })
-                .success(function (answer) {
-                    deferred.resolve(answer);
+                .then((answer) => {
+                    deferred.resolve(answer.data);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
@@ -73,7 +73,7 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var scope = this;
             $log.debug('UsersManager: will fetch table from server');
             return $http.get('api/users/table', { tracker: 'getUsers' })
-                .then(function (usersArray) {
+                .then((usersArray) => {
                     var users = [];
                     usersArray.data.forEach((userData) => {
                         var user = scope._retrieveInstance(userData.Username, userData);
@@ -115,17 +115,17 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var scope = this;
             $log.debug('UsersManager: will fetch all users from server');
             $http.get('api/users', { tracker: 'getUsers' })
-                .success(function (usersArray) {
+                .then((usersArray) => {
                     var users = [];
-                    usersArray.forEach(function (userData) {
+                    usersArray.data.forEach(function (userData) {
                         var user = scope._retrieveInstance(userData.Username, userData);
                         users.push(user);
                     });
 
                     deferred.resolve(users);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             usersPromise = deferred.promise;
             return deferred.promise;

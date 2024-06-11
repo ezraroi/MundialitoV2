@@ -29,11 +29,11 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch bet ' + betId + ' from server');
             $http.get('api/bets/' + betId, { tracker: 'getBet' })
-                .success(function(betData) {
-                    var bet = scope._retrieveInstance(betData.BetId, betData);
+                .then((betData) => {
+                    var bet = scope._retrieveInstance(betData.data.BetId, betData.data);
                     deferred.resolve(bet);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
         },
@@ -44,11 +44,11 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var deferred = $q.defer();
             var scope = this;
             $log.debug('BetsManager: will add new bet - ' + angular.toJson(betData));
-            $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).success(function(data) {
-                var bet = scope._retrieveInstance(data.BetId, data);
+            $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).then((data) => {
+                var bet = scope._retrieveInstance(data.data.BetId, data.data);
                 GamesManager.clearGamesCache();
                 deferred.resolve(bet);
-            }).error(function (err) {
+            }).catch((err) => {
                 $log.error('Failed to add bet');
                 deferred.reject(err);
             });
@@ -76,16 +76,16 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch all bets of game ' + gameId + ' from server');
             $http.get('api/games/' + gameId + '/bets', { tracker: 'getGameBets' })
-                .success(function(betsArray) {
+                .then((betsArray) => {
                     var bets = [];
-                    betsArray.forEach(function(betData) {
+                    betsArray.data.forEach((betData) => {
                         var bet = scope._retrieveInstance(betData.BetId, betData);
                         bets.push(bet);
                     });
 
                     deferred.resolve(bets);
                 })
-                .error(function() {
+                .catch(function() {
                     deferred.reject();
                 });
             return deferred.promise;
@@ -96,16 +96,16 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch user ' + username +' bets from server');
             $http.get('api/bets/user/' + username, { tracker: 'getUserBets' })
-                .success(function(betsArray) {
+                .then((betsArray) => {
                     var bets = [];
-                    betsArray.forEach(function(betData) {
+                    betsArray.data.forEach((betData) => {
                         var bet = scope._retrieveInstance(betData.BetId, betData);
                         bets.push(bet);
                     });
 
                     deferred.resolve(bets);
                 })
-                .error(function() {
+                .catch(function() {
                     deferred.reject();
                 });
             return deferred.promise;
@@ -116,15 +116,14 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch user bet of game ' + gameId + ' from server');
             $http.get('api/games/' + gameId + '/mybet', { tracker: 'getUserBetOnGame' })
-                .success(function(betData) {
-                    if (betData.BetId != -1)
-                    {
-                        var bet = scope._retrieveInstance(betData.BetId, betData);
+                .then((betData) => {
+                    if (betData.data.BetId != -1) {
+                        var bet = scope._retrieveInstance(betData.data.BetId, betData.data);
                         deferred.resolve(bet);
                     }
-                    deferred.resolve(betData);
+                    deferred.resolve(betData.data);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
             return deferred.promise;

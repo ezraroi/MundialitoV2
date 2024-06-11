@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider, keyValueEditorUtils) {
     $scope.game = game;
     $scope.simulatedGame = {};
     $scope.plugins = {};
@@ -9,24 +9,13 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
-    $scope.IntegrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
+    $scope.integrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
 
     GamePluginProvider.getGameDetailsFromAll($scope.game.IntegrationsData).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });
     });
-
-    $scope.fromKeyValue = (array) => {
-        let res = {};
-        array.forEach((item) => {
-            if (item.name !== '') {
-                res[item.name] = item.value;
-            }
-
-        })
-        return res;
-    };
 
     if (!$scope.game.IsOpen) {
         BetsManager.getGameBets($scope.game.GameId).then((data) => {
@@ -59,10 +48,10 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         if ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        $scope.game.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
-        $scope.game.update().success((data) => {
+        $scope.game.IntegrationsData = keyValueEditorUtils.mapEntries(keyValueEditorUtils.compactEntries($scope.integrationsData));
+        $scope.game.update().then((res) => {
             Alert.success('Game was updated successfully');
-            GamesManager.setGame(data);
+            GamesManager.setGame(res.data);
         }).catch((err) => {
             Alert.error('Failed to update game, please try again');
             $log.error('Error updating game', err);
@@ -71,10 +60,10 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().success((data) => {
+            $scope.userBet.update().then((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
-            }).error((err) => {
+            }).catch((err) => {
                 Alert.error('Failed to update bet, please try again');
                 $log.error('Error updating bet', err);
             });

@@ -1,5 +1,5 @@
-angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select2',
-    'ui.bootstrap.datetimepicker', 'FacebookPluginDirectives', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
+angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select',
+    'ui.bootstrap.datetimepicker', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
     .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
     .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
         $locationProvider.html5Mode(true);
@@ -437,7 +437,7 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
     $scope.updateBet = function(gameId) {
         if ($scope.bets[gameId].BetId !== -1) {
             $log.debug('BetsCenterCtrl: Will update bet');
-            $scope.bets[gameId].update().success(function(data) {
+            $scope.bets[gameId].update().then((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
             }).catch(function () {
@@ -499,7 +499,7 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             $log.debug('BetsManager: will fetch bet ' + betId + ' from local pool');
             var instance = this._pool[betId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('BetsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('BetsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
@@ -508,11 +508,11 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch bet ' + betId + ' from server');
             $http.get('api/bets/' + betId, { tracker: 'getBet' })
-                .success(function(betData) {
-                    var bet = scope._retrieveInstance(betData.BetId, betData);
+                .then((betData) => {
+                    var bet = scope._retrieveInstance(betData.data.BetId, betData.data);
                     deferred.resolve(bet);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
         },
@@ -523,11 +523,11 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var deferred = $q.defer();
             var scope = this;
             $log.debug('BetsManager: will add new bet - ' + angular.toJson(betData));
-            $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).success(function(data) {
-                var bet = scope._retrieveInstance(data.BetId, data);
+            $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).then((data) => {
+                var bet = scope._retrieveInstance(data.data.BetId, data.data);
                 GamesManager.clearGamesCache();
                 deferred.resolve(bet);
-            }).error(function (err) {
+            }).catch((err) => {
                 $log.error('Failed to add bet');
                 deferred.reject(err);
             });
@@ -555,16 +555,16 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch all bets of game ' + gameId + ' from server');
             $http.get('api/games/' + gameId + '/bets', { tracker: 'getGameBets' })
-                .success(function(betsArray) {
+                .then((betsArray) => {
                     var bets = [];
-                    betsArray.forEach(function(betData) {
+                    betsArray.data.forEach((betData) => {
                         var bet = scope._retrieveInstance(betData.BetId, betData);
                         bets.push(bet);
                     });
 
                     deferred.resolve(bets);
                 })
-                .error(function() {
+                .catch(function() {
                     deferred.reject();
                 });
             return deferred.promise;
@@ -575,16 +575,16 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch user ' + username +' bets from server');
             $http.get('api/bets/user/' + username, { tracker: 'getUserBets' })
-                .success(function(betsArray) {
+                .then((betsArray) => {
                     var bets = [];
-                    betsArray.forEach(function(betData) {
+                    betsArray.data.forEach((betData) => {
                         var bet = scope._retrieveInstance(betData.BetId, betData);
                         bets.push(bet);
                     });
 
                     deferred.resolve(bets);
                 })
-                .error(function() {
+                .catch(function() {
                     deferred.reject();
                 });
             return deferred.promise;
@@ -595,15 +595,14 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             var scope = this;
             $log.debug('BetsManager: will fetch user bet of game ' + gameId + ' from server');
             $http.get('api/games/' + gameId + '/mybet', { tracker: 'getUserBetOnGame' })
-                .success(function(betData) {
-                    if (betData.BetId != -1)
-                    {
-                        var bet = scope._retrieveInstance(betData.BetId, betData);
+                .then((betData) => {
+                    if (betData.data.BetId != -1) {
+                        var bet = scope._retrieveInstance(betData.data.BetId, betData.data);
                         deferred.resolve(bet);
                     }
-                    deferred.resolve(betData);
+                    deferred.resolve(betData.data);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
             return deferred.promise;
@@ -729,9 +728,11 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.users = users;
         });
 
-        $scope.isOpenForBetting = () => (item) => item.IsOpen;
-        $scope.isPendingUpdate = () => (item) => item.IsPendingUpdate;
-        $scope.isDecided = () => (item) => !item.IsOpen && !item.IsPendingUpdate;
+        $scope.isOpenForBetting =(item) => item.IsOpen;
+        $scope.isPendingUpdate = (item) => item.IsPendingUpdate;
+        $scope.isDecided = function (item) {
+            return !item.IsOpen && !item.IsPendingUpdate;
+        };
         $scope.isGameBet = (game) => (item) => item.Game.GameId === game.GameId;
         $scope.hasBets = (game) => _.filter($scope.pendingUpdateGamesFolloweesBets, (bet) => bet.Game.GameId === game.GameId).length > 0
 
@@ -803,7 +804,7 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider, keyValueEditorUtils) {
     $scope.game = game;
     $scope.simulatedGame = {};
     $scope.plugins = {};
@@ -813,24 +814,13 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
-    $scope.IntegrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
+    $scope.integrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
 
     GamePluginProvider.getGameDetailsFromAll($scope.game.IntegrationsData).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });
     });
-
-    $scope.fromKeyValue = (array) => {
-        let res = {};
-        array.forEach((item) => {
-            if (item.name !== '') {
-                res[item.name] = item.value;
-            }
-
-        })
-        return res;
-    };
 
     if (!$scope.game.IsOpen) {
         BetsManager.getGameBets($scope.game.GameId).then((data) => {
@@ -863,10 +853,10 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         if ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        $scope.game.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
-        $scope.game.update().success((data) => {
+        $scope.game.IntegrationsData = keyValueEditorUtils.mapEntries(keyValueEditorUtils.compactEntries($scope.integrationsData));
+        $scope.game.update().then((res) => {
             Alert.success('Game was updated successfully');
-            GamesManager.setGame(data);
+            GamesManager.setGame(res.data);
         }).catch((err) => {
             Alert.error('Failed to update game, please try again');
             $log.error('Error updating game', err);
@@ -875,10 +865,10 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().success((data) => {
+            $scope.userBet.update().then((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
-            }).error((err) => {
+            }).catch((err) => {
                 Alert.error('Failed to update bet, please try again');
                 $log.error('Error updating bet', err);
             });
@@ -997,17 +987,15 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
         });
     };
 
-    $scope.isPendingUpdate = function() {
-        return function(item) {
-            return item.IsPendingUpdate;
-        };
+    $scope.isPendingUpdate = function(item) {
+        return item.IsPendingUpdate;
     };
 
     $scope.updateGame = function(game) {
         if  ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        game.update().success(function (data) {
+        game.update().then((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
         });
@@ -1038,7 +1026,7 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             $log.debug('GamesManager: will fetch game ' + gameId + ' from local pool');
             var instance = this._pool[gameId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('GamesManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('GamesManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
@@ -1047,11 +1035,11 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch game ' + gameId + ' from server');
             $http.get('api/games/' + gameId, { tracker: 'getGame'})
-                .success(function(gameData) {
-                    var game = scope._retrieveInstance(gameData.GameId, gameData);
+                .then((gameData) => {
+                    var game = scope._retrieveInstance(gameData.data.GameId, gameData.data);
                     deferred.resolve(game);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
         },
@@ -1085,11 +1073,11 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             }
             var scope = this;
             $log.debug('GamesManager: will add new game - ' + angular.toJson(gameData));
-            $http.post("api/games", gameData, { tracker: 'addGame' }).success(function(data) {
-                var game = scope._retrieveInstance(data.GameId, data);
+            $http.post("api/games", gameData, { tracker: 'addGame' }).then((data) => {
+                var game = scope._retrieveInstance(data.data.GameId, data.data);
                 deferred.resolve(game);
             })
-            .error(function() {
+            .catch(function() {
                 deferred.reject();
             });
             return deferred.promise;
@@ -1119,16 +1107,16 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all games from server');
             $http.get('api/games', { tracker: 'getGames'})
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
 
                     deferred.resolve(games);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
             gamesPromise = deferred.promise;
@@ -1144,16 +1132,16 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all open games from server');
             $http.get('api/games/open', { tracker: 'getOpenGames'})
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
 
                     deferred.resolve(games);
                 })
-                .error(function() {
+                .catch(() => {
                     deferred.reject();
                 });
             openGamesPromise = deferred.promise;
@@ -1166,17 +1154,17 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all games of team ' + teamId + '  from server');
             $http.get('api/teams/' + teamId + '/games', { tracker: 'getTeamGames'})
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
 
                     deferred.resolve(games);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         } ,
@@ -1187,17 +1175,16 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var scope = this;
             $log.debug('GamesManager: will fetch all games in stadium ' + stadiumId + '  from server');
             $http.get('api/games/Stadium/' + stadiumId, { tracker: 'getStadiumGames'})
-                .success(function(gamesArray) {
+                .then(function(gamesArray) {
                     var games = [];
-                    gamesArray.forEach(function(gameData) {
+                    gamesArray.data.forEach((gameData) => {
                         var game = scope._retrieveInstance(gameData.GameId, gameData);
                         games.push(game);
                     });
-
                     deferred.resolve(games);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         } ,
@@ -1206,15 +1193,15 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
             var deferred = $q.defer();
             $log.debug('GamesManager: will simulate game ' + gameId);
             $http.post('api/games/' + gameId + '/simulate', gameResulst, { tracker: 'simulateGame'})
-                .success((usersArray) => {
+                .then((usersArray) => {
                     var users = [];
-                    usersArray.forEach((userData) => {
+                    usersArray.data.forEach((userData) => {
                         users.push(new User(userData));
                     });
                     deferred.resolve(users);
                 })
-                .error(() => {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
 
@@ -1238,32 +1225,34 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
 }]);
 
 'use strict';
-angular.module('mundialitoApp').directive('mundialitoGames',['Alert', function (Alert) {
+angular.module('mundialitoApp').directive('mundialitoGames', ['Alert', function (Alert) {
     return {
         restrict: 'E',
         scope: {
             games: '=info',
             gamesType: '=filter',
-            showOnly : '=',
+            showOnly: '=',
             onAdd: '&'
         },
         templateUrl: 'App/Games/gamesTemplate.html',
-        link : function($scope) {
-            $scope.deleteGame = function(game) {
-                var scope = game;
-                game.delete().success(function() {
-                    Alert.success('Game was deleted successfully');
-                    $scope.games.splice($scope.games.indexOf(scope),1);
-                });
-            }
-            $scope.matchGameType = function(gameType) {
-                return function(item) {
-                    if ((!gameType) || (gameType === "All")) {
-                        return true;
-                    }
-                    return item.IsOpen;
+        link: ($scope) => {
+            $scope.allGames = $scope.games;
+            $scope.$watch('gamesType', function(newValue) {
+                if ((newValue) && (newValue !== "All")) {
+                    $scope.games = $scope.games.filter((game) => {
+                        return game.IsOpen;
+                    });
+                } else {
+                    $scope.games = $scope.allGames;
                 }
-            }
+            });
+            $scope.deleteGame = (game) => {
+                var scope = game;
+                game.delete().then(() => {
+                    Alert.success('Game was deleted successfully');
+                    $scope.games.splice($scope.games.indexOf(scope), 1);
+                });
+            };
         }
     };
 }]);
@@ -1493,10 +1482,10 @@ angular.module('mundialitoApp').factory('GeneralBet', ['$http','$log', function(
 }]);
 
 'use strict';
-angular.module('mundialitoApp').factory('GeneralBetsManager', ['$http', '$q', 'GeneralBet','$log','MundialitoUtils', function($http,$q,GeneralBet,$log,MundialitoUtils) {
+angular.module('mundialitoApp').factory('GeneralBetsManager', ['$http', '$q', 'GeneralBet', '$log', 'MundialitoUtils', function ($http, $q, GeneralBet, $log, MundialitoUtils) {
     var generalBetsManager = {
         _pool: {},
-        _retrieveInstance: function(betId, betData) {
+        _retrieveInstance: function (betId, betData) {
             var instance = this._pool[betId];
 
             if (instance) {
@@ -1510,46 +1499,45 @@ angular.module('mundialitoApp').factory('GeneralBetsManager', ['$http', '$q', 'G
             instance.LoadTime = new Date();
             return instance;
         },
-        _search: function(betId) {
+        _search: function (betId) {
             $log.debug('GeneralBetsManager: will fetch bet ' + betId + ' from local pool');
             var instance = this._pool[betId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('GeneralBetsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('GeneralBetsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
         },
-        _load: function(betId, deferred) {
+        _load: function (betId, deferred) {
             var scope = this;
             $log.debug('GeneralBetsManager: will fetch bet ' + betId + ' from server');
             $http.get('api/generalbets/' + betId, { tracker: 'getGeneralBet' })
-                .success(function(betData) {
-                    var bet = scope._retrieveInstance(betData.GeneralBetId, betData);
+                .then((betData) => {
+                    var bet = scope._retrieveInstance(betData.data.GeneralBetId, betData.data);
                     deferred.resolve(bet);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
         },
 
         /* Public Methods */
         /* Use this function in order to add a new general bet */
-        addGeneralBet: function(betData) {
+        addGeneralBet: function (betData) {
             var deferred = $q.defer();
             var scope = this;
             $log.debug('GeneralBetsManager: will add new bet - ' + angular.toJson(betData));
-            $http.post('api/generalbets/', betData, { tracker: 'addGeneralBet' }).success(function(data) {
-                var bet = scope._retrieveInstance(data.GeneralBetId, data);
+            $http.post('api/generalbets/', betData, { tracker: 'addGeneralBet' }).then((data) => {
+                var bet = scope._retrieveInstance(data.data.GeneralBetId, data.data);
                 deferred.resolve(bet);
-            })
-                .error(function() {
-                    deferred.reject();
-                });
+            }).catch((e) => {
+                deferred.reject(e);
+            });
             return deferred.promise;
         },
 
         /* Use this function in order to get a general bet instance by it's id */
-        getGeneralBet: function(betId,fresh) {
+        getGeneralBet: function (betId, fresh) {
             var deferred = $q.defer();
             var bet = undefined;
             if ((!angular.isDefined(fresh) || (!fresh))) {
@@ -1564,77 +1552,77 @@ angular.module('mundialitoApp').factory('GeneralBetsManager', ['$http', '$q', 'G
         },
 
         /* Use this function in order to get instances of all the general bets */
-        loadAllGeneralBets: function() {
+        loadAllGeneralBets: function () {
             var deferred = $q.defer();
             var scope = this;
             $log.debug('GeneralBetsManager: will fetch all general bets from server');
             $http.get('api/generalbets', { tracker: 'getGeneralBets' })
-                .success(function(gamesArray) {
+                .then((gamesArray) => {
                     var generalBets = [];
-                    gamesArray.forEach(function(betData) {
+                    gamesArray.data.forEach((betData) => {
                         var bet = scope._retrieveInstance(betData.GeneralBetId, betData);
                         generalBets.push(bet);
                     });
 
                     deferred.resolve(generalBets);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
 
-        hasGeneralBet : function(username) {
+        hasGeneralBet: function (username) {
             var deferred = $q.defer();
             $log.debug('GeneralBetsManager: will check if user ' + username + ' has general bets');
             $http.get('api/generalbets/has-bet/' + username, { tracker: 'getUserGeneralBet' })
-                .success(function(answer) {
-                    deferred.resolve(answer);
+                .then((answer) => {
+                    deferred.resolve(answer.data);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
 
-        canSubmtiGeneralBet : function() {
+        canSubmtiGeneralBet: function () {
             var deferred = $q.defer();
             $log.debug('GeneralBetsManager: will check if user general bets are closed');
             $http.get('api/generalbets/cansubmitbets/', { tracker: 'getCanSubmitGeneralBets' })
-                .success(function(answer) {
-                    deferred.resolve(answer);
+                .then((answer) => {
+                    deferred.resolve(answer.data);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
 
         /* Use this function in order to get a general bet instance by it's owner username */
-        getUserGeneralBet: function(username) {
+        getUserGeneralBet: function (username) {
             var deferred = $q.defer();
             var scope = this;
-            $log.debug('GeneralBetsManager: will fetch user ' + username +  ' general bet from server');
+            $log.debug('GeneralBetsManager: will fetch user ' + username + ' general bet from server');
             $http.get('api/generalbets/user/' + username, { tracker: 'getUserGeneralBet' })
-                .success(function(betData) {
-                    var bet = scope._retrieveInstance(betData.GeneralBetId, betData);
+                .then((betData) => {
+                    var bet = scope._retrieveInstance(betData.data.GeneralBetId, betData.data);
                     deferred.resolve(bet);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
 
         /*  This function is useful when we got somehow the bet data and we wish to store it or update the pool and get a general bet instance in return */
-        setGeneralBet: function(betData) {
+        setGeneralBet: function (betData) {
             $log.debug('GeneralBetsManager: will set bet ' + betData.GeneralBetId + ' to -' + angular.toJson(betData));
             var scope = this;
             var bet = this._search(betData.GeneralBetId);
             if (bet) {
                 bet.setData(betData);
             } else {
-                bet = scope._retrieveInstance(betData.GeneralBetId,betData);
+                bet = scope._retrieveInstance(betData.GeneralBetId, betData);
             }
             return bet;
         }
@@ -1696,16 +1684,16 @@ angular.module('mundialitoApp').factory('PlayersManager', ['$http', '$q', 'Playe
             var scope = this;
             $log.debug('PlayersManager: will fetch all players from server');
             $http.get("api/players", { tracker: 'getPlayers', cache: true })
-                .success(function (playersArray) {
+                .then((playersArray) => {
                     var players = [];
-                    playersArray.forEach(function (playerData) {
+                    playersArray.data.forEach((playerData) => {
                         var player = scope._retrieveInstance(playerData.PlayerId, playerData);
                         players.push(player);
                     });
                     deferred.resolve(players);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             playersPromise = deferred.promise;
             return deferred.promise;
@@ -1753,15 +1741,15 @@ angular.module('mundialitoApp').controller('StadiumCtrl', ['$scope', '$log', 'St
     $scope.stadium = stadium;
     $scope.showEditForm = false;
 
-    GamesManager.getStadiumGames($scope.stadium.StadiumId).then(function(data) {
+    GamesManager.getStadiumGames($scope.stadium.StadiumId).then((data) => {
         $log.debug('StadiumCtrl: Got games of stadium');
         $scope.games = data;
     });
 
-    $scope.updateStadium = function() {
-        $scope.stadium.update().success(function() {
+    $scope.updateStadium = () => {
+        $scope.stadium.update().then(() => {
             Alert.success('Stadium was updated successfully');
-        })
+        });
     };
 
     $scope.schema =  StadiumsManager.getStaidumSchema();
@@ -1777,7 +1765,7 @@ angular.module('mundialitoApp').controller('StadiumsCtrl', ['$scope', '$log', 'S
     };
 
     $scope.saveNewStadium = function() {
-        StadiumsManager.addStadium($scope.newStadium).then(function(data) {
+        StadiumsManager.addStadium($scope.newStadium).then((data) => {
             Alert.success('Stadium was added successfully');
             $scope.newStadium = null;
             $scope.stadiums.push(data);
@@ -1786,9 +1774,9 @@ angular.module('mundialitoApp').controller('StadiumsCtrl', ['$scope', '$log', 'S
 
     $scope.deleteStadium = function(stadium) {
         var scope = stadium;
-        stadium.delete().success(function() {
+        stadium.delete().then(() => {
             Alert.success('Stadium was deleted successfully');
-            $scope.stadiums.splice($scope.stadiums.indexOf(scope),1);
+            $scope.stadiums.splice($scope.stadiums.indexOf(scope), 1);
         })
     };
 
@@ -1799,7 +1787,7 @@ angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stad
     var stadiumsPromise = undefined;
     var stadiumsManager = {
         _pool: {},
-        _retrieveInstance: function(stadiumId, stadiumData) {
+        _retrieveInstance: function (stadiumId, stadiumData) {
             var instance = this._pool[stadiumId];
 
             if (instance) {
@@ -1813,31 +1801,31 @@ angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stad
             instance.LoadTime = new Date();
             return instance;
         },
-        _search: function(stadiumId) {
+        _search: function (stadiumId) {
             $log.debug('StadiumsManager: will fetch stadium ' + stadiumId + ' from local pool');
             var instance = this._pool[stadiumId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('StadiumsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('StadiumsManager: Instance was loaded at ' + instance.LoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
         },
-        _load: function(stadiumId, deferred) {
+        _load: function (stadiumId, deferred) {
             var scope = this;
             $log.debug('StadiumsManager: will fetch stadium ' + stadiumId + ' from server');
             $http.get('api/stadiums/' + stadiumId, { tracker: 'getStadium' })
-                .success(function(stadiumData) {
-                    var stadium = scope._retrieveInstance(stadiumData.StadiumId, stadiumData);
+                .then((stadiumData) => {
+                    var stadium = scope._retrieveInstance(stadiumData.data.StadiumId, stadiumData.data);
                     deferred.resolve(stadium);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
         },
 
         /* Public Methods */
 
-        getStaidumSchema: function() {
+        getStaidumSchema: function () {
             return [
                 { property: 'Name', label: 'Name', type: 'text', attr: { required: true } },
                 { property: 'City', label: 'City', type: 'text', attr: { required: true } },
@@ -1846,7 +1834,7 @@ angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stad
         },
 
         /* Use this function in order to get a new empty stadium data object */
-        getEmptyStadiumObject: function() {
+        getEmptyStadiumObject: function () {
             return {
                 HomeTeam: '',
                 AwayTeam: ''
@@ -1854,22 +1842,21 @@ angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stad
         },
 
         /* Use this function in order to add a new stadium */
-        addStadium: function(stadiumData) {
+        addStadium: function (stadiumData) {
             var deferred = $q.defer();
             var scope = this;
             $log.debug('StadiumsManager: will add new stadium - ' + angular.toJson(stadiumData));
-            $http.post("api/stadiums", stadiumData, { tracker: 'addStadium' }).success(function(data) {
-                var stadium = scope._retrieveInstance(data.StadiumId, data);
+            $http.post("api/stadiums", stadiumData, { tracker: 'addStadium' }).then((res) => {
+                var stadium = scope._retrieveInstance(res.data.StadiumId, res.data);
                 deferred.resolve(stadium);
-            })
-                .error(function() {
-                    deferred.reject();
-                });
+            }).catch((e) => {
+                deferred.reject(e);
+            });
             return deferred.promise;
         },
 
         /* Use this function in order to get a stadium instance by it's id */
-        getStadium: function(stadiumId,fresh) {
+        getStadium: function (stadiumId, fresh) {
             var deferred = $q.defer();
             var stadium = undefined;
             if ((!angular.isDefined(fresh) || (!fresh))) {
@@ -1892,30 +1879,30 @@ angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stad
             var scope = this;
             $log.debug('StadiumsManager: will fetch all games from server');
             $http.get("api/stadiums", { tracker: 'getStadiums', cache: true })
-                .success(function(stadiumsArray) {
+                .then((stadiumsArray) => {
                     var stadiums = [];
-                    stadiumsArray.forEach(function(stadiumData) {
+                    stadiumsArray.data.forEach((stadiumData) => {
                         var stadium = scope._retrieveInstance(stadiumData.StadiumId, stadiumData);
                         stadiums.push(stadium);
                     });
                     deferred.resolve(stadiums);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             stadiumsPromise = deferred.promise;
             return deferred.promise;
         },
 
         /*  This function is useful when we got somehow the stadium data and we wish to store it or update the pool and get a stadium instance in return */
-        setStadium: function(stadiumData) {
+        setStadium: function (stadiumData) {
             $log.debug('StadiumsManager: will set stadium ' + stadiumData.StadiumId + ' to -' + angular.toJson(stadiumData));
             var scope = this;
             var stadium = this._search(stadiumData.StadiumId);
             if (stadium) {
                 stadium.setData(stadiumData);
             } else {
-                stadium = scope._retrieveInstance(stadiumData.StadiumId,stadiumData);
+                stadium = scope._retrieveInstance(stadiumData.StadiumId, stadiumData);
             }
             return stadium;
         }
@@ -1961,7 +1948,7 @@ angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'Teams
     $scope.showEditForm = false;
 
     $scope.updateTeam = function() {
-        $scope.team.update().success(function(data) {
+        $scope.team.update().then((data) => {
             Alert.success('Team was updated successfully');
             TeamsManager.setTeam(data);
         })
@@ -1977,6 +1964,7 @@ angular.module('mundialitoApp').controller('TeamsCtrl', ['$scope', '$log', 'Team
     $scope.newTeam = null;
 
     $scope.addNewTeam = function () {
+        $('.selectpicker').selectpicker('refresh');
         $scope.newTeam = TeamsManager.getEmptyTeamObject();
     };
 
@@ -1990,9 +1978,9 @@ angular.module('mundialitoApp').controller('TeamsCtrl', ['$scope', '$log', 'Team
 
     $scope.deleteTeam = function(team) {
         var scope = team;
-        team.delete().success(function() {
+        team.delete().then(() => {
             Alert.success('Team was deleted successfully');
-            $scope.teams.splice($scope.teams.indexOf(scope),1);
+            $scope.teams.splice($scope.teams.indexOf(scope), 1);
         })
     };
 
@@ -2019,7 +2007,7 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             $log.debug('TeamsManager: will fetch team ' + teamId + ' from local pool');
             var instance = this._pool[teamId];
             if (angular.isDefined(instance) && MundialitoUtils.shouldRefreshInstance(instance)) {
-                $log.debug('TeamsManager: Instance was loaded at ' + instance,LoadTime + ', will reload it from server');
+                $log.debug('TeamsManager: Instance was loaded at ' + instanceLoadTime + ', will reload it from server');
                 return undefined;
             }
             return instance;
@@ -2028,12 +2016,12 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             var scope = this;
             $log.debug('TeamsManager: will fetch team ' + teamId + ' from server');
             $http.get("api/teams/" + teamId, { tracker: 'getTeam'})
-                .success(function(teamData) {
-                    var team = scope._retrieveInstance(teamData.TeamId, teamData);
+                .then((teamData) => {
+                    var team = scope._retrieveInstance(teamData.data.TeamId, teamData.data);
                     deferred.resolve(team);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
         },
 
@@ -2069,12 +2057,12 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             var scope = this;
             $log.debug('TeamsManager: will add new team - ' + angular.toJson(teamData));
             $http.post("api/teams", teamData, {  tracker: 'addTeam'})
-                .success(function(data) {
-                    var team = scope._retrieveInstance(data.TeamId, data);
+                .then((data) => {
+                    var team = scope._retrieveInstance(data.data.TeamId, data.data);
                     deferred.resolve(team);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
@@ -2100,17 +2088,16 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
             var scope = this;
             $log.debug('TeamsManager: will fetch all teams from server');
             $http.get("api/teams", { tracker: 'getTeams', cache: true })
-                .success(function(teamsArray) {
+                .then((teamsArray) => {
                     var teams = [];
-                    teamsArray.forEach(function(teamData) {
+                    teamsArray.data.forEach((teamData) => {
                         var team = scope._retrieveInstance(teamData.TeamId, teamData);
                         teams.push(team);
                     });
-
                     deferred.resolve(teams);
                 })
-                .error(function() {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
@@ -2150,14 +2137,14 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
 
     $scope.deleteUser = function(user) {
         var scope = user;
-        user.delete().success(function () {
+        user.delete().then(() => {
             Alert.success('User was deleted successfully');
             $scope.users.splice($scope.users.indexOf(scope), 1);
         })
     };
 
     $scope.resolveBet = function(bet) {
-        bet.resolve().success(function() {
+        bet.resolve().then(() => {
             Alert.success('General bet was resolved successfully');
         });
     };
@@ -2171,7 +2158,7 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
     };
 
     $scope.makeAdmin = function(user) {
-        user.makeAdmin().success(function () {
+        user.makeAdmin().then(() => {
             Alert.success('User was is now admin');
             user.IsAdmin = true;
         })
@@ -2250,7 +2237,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
             $log.debug('UserProfileCtrl: hasGeneralBet = ' + answer);
             if (answer === true) {
                 GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then((generalBet) => {
-                    $log.debug('UserProfileCtrl: got user general bet - ' + angular.toJson(generalBet));
+                    $log.info('UserProfileCtrl: got user general bet - ' + angular.toJson(generalBet));
                     $scope.generalBet = generalBet;
                 });
             }
@@ -2349,12 +2336,12 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var scope = this;
             $log.debug('UsersManager: will fetch user ' + username + ' from server');
             $http.get('api/users/' + username, { tracker: 'getUser' })
-                .success(function (userData) {
-                    var user = scope._retrieveInstance(userData.Username, userData);
+                .then((userData) => {
+                    var user = scope._retrieveInstance(userData.data.Username, userData.data);
                     deferred.resolve(user);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
         },
 
@@ -2378,11 +2365,11 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var deferred = $q.defer();
             $log.debug('UsersManager: will generate private key for ' + email);
             $http.get('api/users/generateprivatekey/' + encodeURIComponent(email) + '/', { tracker: 'generatePrivateKey' })
-                .success(function (answer) {
-                    deferred.resolve(answer);
+                .then((answer) => {
+                    deferred.resolve(answer.data);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },
@@ -2391,7 +2378,7 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var scope = this;
             $log.debug('UsersManager: will fetch table from server');
             return $http.get('api/users/table', { tracker: 'getUsers' })
-                .then(function (usersArray) {
+                .then((usersArray) => {
                     var users = [];
                     usersArray.data.forEach((userData) => {
                         var user = scope._retrieveInstance(userData.Username, userData);
@@ -2433,17 +2420,17 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             var scope = this;
             $log.debug('UsersManager: will fetch all users from server');
             $http.get('api/users', { tracker: 'getUsers' })
-                .success(function (usersArray) {
+                .then((usersArray) => {
                     var users = [];
-                    usersArray.forEach(function (userData) {
+                    usersArray.data.forEach(function (userData) {
                         var user = scope._retrieveInstance(userData.Username, userData);
                         users.push(user);
                     });
 
                     deferred.resolve(users);
                 })
-                .error(function () {
-                    deferred.reject();
+                .catch((e) => {
+                    deferred.reject(e);
                 });
             usersPromise = deferred.promise;
             return deferred.promise;

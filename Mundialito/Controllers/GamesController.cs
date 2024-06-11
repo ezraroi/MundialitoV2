@@ -135,7 +135,7 @@ public class GamesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public ActionResult<NewGameModel> PostGame(NewGameModel game)
+    public async Task<ActionResult<NewGameModel>> PostGame(NewGameModel game)
     {
         if (game.AwayTeam.TeamId == game.HomeTeam.TeamId)
         {
@@ -150,8 +150,8 @@ public class GamesController : ControllerBase
             IntegrationsData = game.IntegrationsData
         };
         var res = gamesRepository.InsertGame(newGame);
-        logger.LogInformation("Posting new Game: {0}", game);
         gamesRepository.Save();
+        logger.LogInformation("Posting new Game: {0}", game);
         game.GameId = res.GameId;
         game.IsOpen = true;
         game.IsPendingUpdate = false;
@@ -184,7 +184,8 @@ public class GamesController : ControllerBase
             logger.LogInformation("Will reoslve Game {0} bets", id);
             var bets = betsRepository.GetGameBets(item.GameId);
             betsResolver.ResolveBets(item, bets);
-            if (bets.Count() > 0) {
+            if (bets.Count() > 0)
+            {
                 betsRepository.Save();
             }
         }
@@ -217,7 +218,7 @@ public class GamesController : ControllerBase
         }
     }
 
-    private void AddLog(ActionType actionType, String message)
+    private void AddLog(ActionType actionType, string message)
     {
         try
         {
@@ -230,34 +231,31 @@ public class GamesController : ControllerBase
         }
     }
 
-    private void AddMonkeyBet(Game res)
+    private async void AddMonkeyBet(Game res)
     {
         var monkeyUserName = config.MonkeyUserName;
-        if (!String.IsNullOrEmpty(monkeyUserName))
+        if (!string.IsNullOrEmpty(monkeyUserName))
         {
-            var monkeyUser = userManager.FindByNameAsync(monkeyUserName).ContinueWith(task =>
-                {
-                    if (task.Result == null)
-                    {
-                        logger.LogError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
-                        return;
-                    }
-                    logger.LogInformation("Adding monkey user bet");
-                    var randomResults = new RandomResults();
-                    var result = randomResults.GetRandomResult();
-                    betsRepository.InsertBet(new Bet()
-                    {
-                        GameId = res.GameId,
-                        UserId = task.Result.Id,
-                        HomeScore = result.Key,
-                        AwayScore = result.Value,
-                        CardsMark = randomResults.GetRandomMark(),
-                        CornersMark = randomResults.GetRandomMark()
-                    });
-                    betsRepository.Save();
-                    logger.LogInformation("Monkey bet was saved");
-                }
-            );
+            var monkeyUser = await userManager.FindByNameAsync(monkeyUserName);
+            if (monkeyUser == null)
+            {
+                logger.LogError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
+                return;
+            }
+            logger.LogInformation("Adding monkey user bet");
+            var randomResults = new RandomResults();
+            var result = randomResults.GetRandomResult();
+            betsRepository.InsertBet(new Bet()
+            {
+                GameId = res.GameId,
+                UserId = monkeyUser.Id,
+                HomeScore = result.Key,
+                AwayScore = result.Value,
+                CardsMark = randomResults.GetRandomMark(),
+                CornersMark = randomResults.GetRandomMark()
+            });
+            betsRepository.Save();
+            logger.LogInformation("Monkey bet was saved");
         }
     }
 }
