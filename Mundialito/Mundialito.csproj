@@ -24,5 +24,6 @@
     <PackageReference Include="Azure.Communication.Email" Version="1.0.1"/>
     <PackageReference Include="Azure.ResourceManager.Communication" Version="1.2.0"/>
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4"/>
   </ItemGroup>
 </Project>

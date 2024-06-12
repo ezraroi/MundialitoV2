@@ -19,7 +19,7 @@ public class Config
     public string? LinkAddress { get; set; }
     public string? Theme { get; set; }
     public string FromAddress { get; set; }
-    public bool UseSqlLite {get; set;} = false;
+    public DBTypeEnum DBType {get; set;} = DBTypeEnum.SQLLite;
     public string EmailConnectionString {get; set;}
     public Dictionary<string, string> ClientConfig {get; set;}
 }

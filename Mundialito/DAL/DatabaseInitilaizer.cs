@@ -31,7 +31,7 @@ public class DatabaseInitilaizer
             {
                 logger.LogInformation("No users found. will populate the database");
                 CreateFirstUsers(config, userManager, logger);
-                if (!String.IsNullOrEmpty(config.TournamentDBCreatorName))
+                if (!string.IsNullOrEmpty(config.TournamentDBCreatorName))
                 {
                     Type t = Type.GetType("Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName);
                     ITournamentCreator tournamentCreator = Activator.CreateInstance(t) as ITournamentCreator;
@@ -45,7 +45,8 @@ public class DatabaseInitilaizer
         }
     }
 
-    private static void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
+
+    private static async void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
     {
         var user = new MundialitoUser
         {
@@ -57,7 +58,7 @@ public class DatabaseInitilaizer
         };
         logger.LogInformation("Creating user {0}", user);
         userManager.CreateAsync(user, "123456").Wait();
-        if (!String.IsNullOrEmpty(config.MonkeyUserName))
+        if (!string.IsNullOrEmpty(config.MonkeyUserName))
         {
             var monkey = new MundialitoUser
             {
@@ -102,31 +103,29 @@ public class DatabaseInitilaizer
         stadiumsDic = context.Stadiums.ToDictionary(stadium => stadium.Name, stadium => stadium);
     }
 
-    private async static void SetupGames(MundialitoDbContext context, ITournamentCreator tournamentCreator, Config config, UserManager<MundialitoUser> userManager)
+    private static void SetupGames(MundialitoDbContext context, ITournamentCreator tournamentCreator, Config config, UserManager<MundialitoUser> userManager)
     {
         var games = tournamentCreator.GetGames(stadiumsDic, teamsDic);
-
         games.ForEach(game => context.Games.Add(game));
-
         context.SaveChanges();
-
-        if (!String.IsNullOrEmpty(config.MonkeyUserName))
+        if (!string.IsNullOrEmpty(config.MonkeyUserName))
         {
-            var monkey = await userManager.FindByNameAsync(config.MonkeyUserName);
+            var monkey = context.Users.FirstOrDefault(u => u.UserName == config.MonkeyUserName);
             var randomResults = new RandomResults();
-            context.Games.ToList().ForEach(game =>
+            games.ForEach(game =>
             {
                 var result = randomResults.GetRandomResult();
-                var newBet = new Bet();
-                newBet.UserId = monkey.Id;
-                newBet.GameId = game.GameId;
-                newBet.HomeScore = result.Key;
-                newBet.AwayScore = result.Value;
-                newBet.CardsMark = randomResults.GetRandomMark();
-                newBet.CornersMark = randomResults.GetRandomMark();
+                var newBet = new Bet
+                {
+                    UserId = monkey.Id,
+                    GameId = game.GameId,
+                    HomeScore = result.Key,
+                    AwayScore = result.Value,
+                    CardsMark = randomResults.GetRandomMark(),
+                    CornersMark = randomResults.GetRandomMark()
+                };
                 context.Bets.Add(newBet);
             });
-
             Random rnd = new Random();
             var index = rnd.Next(0, teamsDic.Count);
             int teamId = teamsDic.Values.ElementAt(index).TeamId;
@@ -139,8 +138,7 @@ public class DatabaseInitilaizer
                 WinningTeamId = teamId,
                 User = monkey
             });
-
-            context.SaveChanges();
         }
+        context.SaveChanges();
     }
 }
