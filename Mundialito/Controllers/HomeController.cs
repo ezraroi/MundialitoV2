@@ -15,6 +15,7 @@ public class HomeController : Controller
         _config = config.Value;
     }
     
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Index()
     {
         return View(_config);
