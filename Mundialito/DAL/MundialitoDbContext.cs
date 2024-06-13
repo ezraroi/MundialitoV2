@@ -63,6 +63,13 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
                 v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
             .Metadata.SetValueComparer(dictionaryComparer);
 
+		modelBuilder.Entity<Team>()
+            .Property(t => t.IntegrationsData)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
+            .Metadata.SetValueComparer(dictionaryComparer);
+
 		modelBuilder.Entity<Game>().HasOne(m => m.AwayTeam)
 				.WithMany(t => t.AwayMatches)
 				.HasForeignKey(m => m.AwayTeamId)

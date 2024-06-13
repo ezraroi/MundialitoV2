@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider, keyValueEditorUtils) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils) {
     $scope.game = game;
     $scope.simulatedGame = {};
     $scope.plugins = {};
@@ -11,7 +11,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     };
     $scope.integrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
 
-    GamePluginProvider.getGameDetailsFromAll($scope.game.IntegrationsData).then((results) => {
+    PluginsProvider.getGameDetailsFromAll($scope.game).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });

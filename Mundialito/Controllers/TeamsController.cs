@@ -1,6 +1,4 @@
 ﻿using Mundialito.DAL.Teams;
-using System.Diagnostics;
-using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Mundialito.Models;
@@ -64,6 +62,7 @@ public class TeamsController : ControllerBase
         teamToUpdate.ShortName = team.ShortName;
         teamToUpdate.TournamentTeamId = team.TournamentTeamId;
         teamToUpdate.TeamPage = team.TeamPage;
+        teamToUpdate.IntegrationsData = team.IntegrationsData;
         teamsRepository.Save();
         return team;
     }

@@ -21,7 +21,7 @@ public class TournamentTimesUtils
         }
         else
         {
-            return DateTime.ParseExact(config.TournamentStartDate, "dd/MM/yyyy", null).Subtract(TimeSpan.FromDays(1)).ToUniversalTime();
+            return DateTime.ParseExact(config.TournamentStartDate, "dd/MM/yyyy", null).Subtract(TimeSpan.FromHours(10)).ToUniversalTime();
         }
     }
 

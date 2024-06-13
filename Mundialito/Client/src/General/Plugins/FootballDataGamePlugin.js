@@ -3,8 +3,8 @@ angular.module('mundialitoApp')
         var baseUrl = 'https://api.football-data.org/v4/matches/';
         const integrationKey = 'football-data'
 
-        function getGameDetails(gameId) {
-            var url = baseUrl + gameId;
+        function getGameDetails(game) {
+            var url = baseUrl + game.IntegrationsData[integrationKey];
             if ((!$rootScope.mundialitoApp.clientConfig) || (!$rootScope.mundialitoApp.clientConfig['football-data-api-key'])) {
                 return $q.reject('Skipping football-data as no api key provided');
             }
@@ -13,7 +13,7 @@ angular.module('mundialitoApp')
             }).then((response) => {
                 return {
                     data: response,
-                    property: integrationKey,
+                    property: 'odds',
                     template: 'App/General/Plugins/FootballDataGameTemplate.html'
                 };
             }).catch((error) => {
