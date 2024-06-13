@@ -23,6 +23,10 @@
             <div class="panel-body">
                 <form name="editTeamForm" novalidate>
                     <auto:fields fields="schema" data="team"></auto:fields>
+                    <div class="url form-group">
+                        <label class="control-label" for="integrationsData">Integrations</label>
+                        <key-value-editor entries="IntegrationsData"></key-value-editor>
+                    </div>
                     <button type="button" ng-click="updateTeam()" class="btn btn-primary btn-lg btn-block" ng-disabled="editTeamForm.$invalid" tabindex="100"><i class="fa fa-floppy-o"></i> Save</button>
                 </form>
             </div>
@@ -39,3 +43,4 @@
         </div>
     </div>
 </div>
+<div ng-include="plugins['team-squad'].template"></div>

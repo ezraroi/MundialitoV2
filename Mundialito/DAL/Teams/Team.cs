@@ -42,5 +42,8 @@ public class Team
     [Url]
     [JsonPropertyName("TeamPage")]
     public string? TeamPage { get; set; }
+
+    [JsonPropertyName("IntegrationsData")]
+    public Dictionary<string, string>? IntegrationsData { get; set; }
     
 }

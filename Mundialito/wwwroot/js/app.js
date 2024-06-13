@@ -132,8 +132,9 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                 redirectTo: '/'
             });
     }])
-    .run(['$rootScope', '$log', 'security', '$route', '$location', 'GamePluginProvider', 'FootballDataGamePlugin', function ($rootScope, $log, security, $route, $location, GamePluginProvider, FootballDataGamePlugin) {
-        GamePluginProvider.registerFactory(FootballDataGamePlugin);
+    .run(['$rootScope', '$log', 'security', '$route', '$location', 'PluginsProvider', 'FootballDataGamePlugin', 'FootballDataTeamStatsPlugin', function ($rootScope, $log, security, $route, $location, PluginsProvider, FootballDataGamePlugin, FootballDataTeamStatsPlugin) {
+        PluginsProvider.registerGameFactory(FootballDataGamePlugin);
+        PluginsProvider.registerTeamFactory(FootballDataTeamStatsPlugin);
         security.events.login = function (security, user) {
             $log.log('Current user details: ' + angular.toJson(user));
             $rootScope.mundialitoApp.authenticating = false;
@@ -193,12 +194,12 @@ angular.module('mundialitoApp').constant('Constants',
             columnDefs: [
                 { field: 'Place', displayName: '', resizable: false, maxWidth: 30 },
                 { field: 'Name', displayName: 'Name', resizable: true, minWidth: 150 },
+                { field: 'Points', displayName: 'Points', resizable: true },
                 { field: 'TotalMarks', displayName: 'Total Marks', resizable: true },
                 { field: 'Results', displayName: 'Results', resizable: true },
                 { field: 'Marks', displayName: 'Marks', resizable: true },
                 { field: 'YellowCards', displayName: 'Yellow Cards Marks', resizable: true },
                 { field: 'Corners', displayName: 'Corners Marks', resizable: true },
-                { field: 'Points', displayName: 'Points', resizable: true },
                 { field: 'PlaceDiff', displayName: '', resizable: false, maxWidth: 45, cellTemplate: '<div ng-class="{\'text-success\': COL_FIELD.indexOf(\'+\') !== -1, \'text-danger\': (COL_FIELD.indexOf(\'+\') === -1) && (COL_FIELD !== \'0\')}"><div class="ngCellText">{{::COL_FIELD}}</div></div>' }
             ],
         }
@@ -804,7 +805,7 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'GamePluginProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, GamePluginProvider, keyValueEditorUtils) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils) {
     $scope.game = game;
     $scope.simulatedGame = {};
     $scope.plugins = {};
@@ -816,7 +817,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     };
     $scope.integrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
 
-    GamePluginProvider.getGameDetailsFromAll($scope.game.IntegrationsData).then((results) => {
+    PluginsProvider.getGameDetailsFromAll($scope.game).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });
@@ -1942,16 +1943,37 @@ angular.module('mundialitoApp').factory('Team', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'TeamsManager', 'team', 'games', 'Alert', function ($scope, $log, TeamsManager, team, games, Alert) {
+angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'TeamsManager', 'team', 'games', 'Alert', 'PluginsProvider', function ($scope, $log, TeamsManager, team, games, Alert, PluginsProvider) {
     $scope.team = team;
     $scope.games = games;
+    $scope.plugins = {};
     $scope.showEditForm = false;
+    $scope.toKeyValue = (object) => {
+        return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
+    };
+    $scope.IntegrationsData = $scope.toKeyValue($scope.team.IntegrationsData);
+    $scope.fromKeyValue = (array) => {
+        let res = {};
+        array.forEach((item) => {
+            if (item.name !== '') {
+                res[item.name] = item.value;
+            }
+        })
+        return res;
+    };
 
-    $scope.updateTeam = function() {
+    PluginsProvider.getTeamDetailsFromAll($scope.team).then((results) => {
+        results.forEach((result) => {
+            $scope.plugins[result.property] = { data: result.data, template: result.template };
+        });
+    });
+
+    $scope.updateTeam = () => {
+        $scope.team.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
         $scope.team.update().then((data) => {
             Alert.success('Team was updated successfully');
-            TeamsManager.setTeam(data);
-        })
+            TeamsManager.setTeam(data.data);
+        });
     };
 
     $scope.schema =  TeamsManager.getTeamSchema();
@@ -2458,8 +2480,8 @@ angular.module('mundialitoApp')
         var baseUrl = 'https://api.football-data.org/v4/matches/';
         const integrationKey = 'football-data'
 
-        function getGameDetails(gameId) {
-            var url = baseUrl + gameId;
+        function getGameDetails(game) {
+            var url = baseUrl + game.IntegrationsData[integrationKey];
             if ((!$rootScope.mundialitoApp.clientConfig) || (!$rootScope.mundialitoApp.clientConfig['football-data-api-key'])) {
                 return $q.reject('Skipping football-data as no api key provided');
             }
@@ -2468,7 +2490,7 @@ angular.module('mundialitoApp')
             }).then((response) => {
                 return {
                     data: response,
-                    property: integrationKey,
+                    property: 'odds',
                     template: 'App/General/Plugins/FootballDataGameTemplate.html'
                 };
             }).catch((error) => {
@@ -2483,28 +2505,40 @@ angular.module('mundialitoApp')
     }]);
 
 angular.module('mundialitoApp')
-    .factory('GamePluginProvider', ['$q', '$log', function ($q, $log) {
-        var factories = [];
+    .factory('FootballDataTeamStatsPlugin', ['$q', '$rootScope', 'GenericProxyService', function ($q, $rootScope, GenericProxyService) {
+        var baseUrl = 'https://api.football-data.org/v4/teams/';
+        const integrationKey = 'football-data'
 
-        function getGameDetailsFromAll(integrationData) {
-            let relevantPlugins = [];
-            if (integrationData !== null) {
-                relevantPlugins = _.filter(factories, (plugin) => { return integrationData[plugin.integrationKey] !== undefined;});    
+        function calcAge(dateOfBirth) {
+            return (new Date().getFullYear()) - parseInt(dateOfBirth.substring(0, 4), 10);
+        }
+
+        function getTeamDetails(team) {
+            var url = baseUrl + team.IntegrationsData[integrationKey];
+            if ((!$rootScope.mundialitoApp.clientConfig) || (!$rootScope.mundialitoApp.clientConfig['football-data-api-key'])) {
+                return $q.reject('Skipping football-data as no api key provided');
             }
-            var promises = relevantPlugins.map((factory) => factory.getGameDetails(integrationData[factory.integrationKey]));
-            return $q.all(promises).then((results) => {
-                return results;
-            }).catch((e) => { 
-                $log.warn('Error fetching game details: ' + e);
-                return $q.reject(e)
+            return GenericProxyService.proxyRequest('GET', url, undefined, {
+                'X-Auth-Token': $rootScope.mundialitoApp.clientConfig['football-data-api-key']
+            }).then((response) => {
+                response.coach.age = calcAge(response.coach.dateOfBirth);
+                response.squad.forEach(player => {
+                    player.age = calcAge(player.dateOfBirth);
+                    player.icon = player.position.toLowerCase() === 'goalkeeper' ? 'goalkeeper' : 'player'
+                });
+                return {
+                    data: response,
+                    property: 'team-squad',
+                    template: 'App/General/Plugins/FootballDataTeamStatsTemplate.html'
+                };
+            }).catch((error) => {
+                return $q.reject(error);
             });
         }
 
         return {
-            getGameDetailsFromAll: getGameDetailsFromAll,
-            registerFactory: (factory) => {
-                factories.push(factory);
-            }
+            getTeamDetails: getTeamDetails,
+            integrationKey: integrationKey
         };
     }]);
 
@@ -2532,5 +2566,51 @@ angular.module('mundialitoApp')
 
         return {
             proxyRequest: proxyRequest
+        };
+    }]);
+
+angular.module('mundialitoApp')
+    .factory('PluginsProvider', ['$q', '$log', function ($q, $log) {
+        var gamesFactories = [];
+        var teamsFactories = [];
+
+
+        function getGameDetailsFromAll(game) {
+            let relevantPlugins = [];
+            if (!!game.IntegrationsData) {
+                relevantPlugins = _.filter(gamesFactories, (plugin) => { return game.IntegrationsData[plugin.integrationKey] !== undefined;});    
+            }
+            var promises = relevantPlugins.map((factory) => factory.getGameDetails(game));
+            return $q.all(promises).then((results) => {
+                return results;
+            }).catch((e) => { 
+                $log.warn('Error fetching game details: ' + e);
+                return $q.reject(e)
+            });
+        }
+
+        function getTeamDetailsFromAll(team) {
+            let relevantPlugins = [];
+            if (!!team.IntegrationsData) {
+                relevantPlugins = _.filter(teamsFactories, (plugin) => { return team.IntegrationsData[plugin.integrationKey] !== undefined;});    
+            }
+            var promises = relevantPlugins.map((factory) => factory.getTeamDetails(team));
+            return $q.all(promises).then((results) => {
+                return results;
+            }).catch((e) => { 
+                $log.warn('Error fetching team details: ' + e);
+                return $q.reject(e)
+            });
+        }
+
+        return {
+            getGameDetailsFromAll: getGameDetailsFromAll,
+            getTeamDetailsFromAll: getTeamDetailsFromAll,
+            registerGameFactory: (factory) => {
+                gamesFactories.push(factory);
+            },
+            registerTeamFactory: (factory) => {
+                teamsFactories.push(factory);
+            }
         };
     }]);

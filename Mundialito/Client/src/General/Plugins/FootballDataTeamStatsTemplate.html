@@ -1,0 +1,29 @@
+<div class="panel panel-default" ng-if="plugins['team-squad'].data">
+    <div class="panel-heading">
+        <h4 class="panel-title">Squad</h4>
+    </div>
+    <div class="panel-body">
+        <div class="media">
+            <div class="media-left">
+                <img class="media-object" src="../../../icons/coach.png" style="height: 64px; width: 64px;"
+                    alt="{{plugins['team-squad'].data.coach.name}}">
+            </div>
+            <div class="media-body">
+                <h4 class="media-heading">Coach: {{plugins['team-squad'].data.coach.name}}</h4>
+                <h5>{{plugins['team-squad'].data.coach.age}}, {{plugins['team-squad'].data.coach.nationality}},
+                    Contract: {{plugins['team-squad'].data.coach.contract.start}} -
+                    {{plugins['team-squad'].data.coach.contract.until}}</h5>
+            </div>
+        </div>
+        <div class="media" ng-repeat="player in plugins['team-squad'].data.squad">
+            <div class="media-left">
+                <img class="media-object" ng-src="../../../icons/{{player.icon}}.png" style="height: 64px; width: 64px;"
+                    alt="{{plugins['team-squad'].data.coach.name}}">
+            </div>
+            <div class="media-body">
+                <h4 class="media-heading">{{player.name}}</h4>
+                <h5><b>{{player.position}}, {{player.age}}</b></h5>
+            </div>
+        </div>
+    </div>
+</div>
