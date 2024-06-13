@@ -91,9 +91,4 @@ gulp.task('copy-templates', function () {
         .pipe(gulp.dest('wwwroot/'));
 });
 
-gulp.task('copy-icons', function() {
-    return gulp.src(['Client/icons/*.png'])
-      .pipe(gulp.dest('wwwroot/icons'));
-  });
-
-gulp.task('default', gulp.series(['build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates', 'copy-icons']));
+gulp.task('default', gulp.series(['build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates']));
