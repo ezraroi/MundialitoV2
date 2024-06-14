@@ -14,13 +14,11 @@ const allCss = [
     "Client/css/brands.css",
     "Client/css/flag-css.css",
     "Client/css/select_.css",
-    // "Client/css/select2.css",
-    // "Client/css/select2-bootstrap.min.css",
     "Client/css/ui-grid.css",
     "Client/css/toaster.css",
     "Client/css/site.css",
     "Client/css/ng-sortable.css",
-    "Client/css/ng-sortable.style.css"  
+    "Client/css/ng-sortable.style.css"
 ];
 gulp.task('build-css-space-lab', () => {
     return gulp.src(allCss.concat(['Client/css/bootstrap-spacelab.min.css']))
@@ -46,8 +44,6 @@ gulp.task('compress-lib', function () {
         "Client/lib/angular-resource.js",
         "Client/lib/angular-route.js",
         "Client/lib/select_.js",
-        // "Client/lib/select.js",
-        // "Client/lib/select2.js",
         "Client/lib/bootstrap.js",
         "Client/lib/bootstrap-select.min.js",
         "Client/lib/angular-ui/ui-bootstrap-tpls.min.js",
@@ -59,8 +55,7 @@ gulp.task('compress-lib', function () {
         "Client/lib/underscore.js",
         "Client/lib/d3.min.js",
         "Client/lib/line-chart.min.js",
-        "Client/lib/ui-grid.js",
-        // "Client/lib/angular-select2.js",
+        "Client/lib/ui-grid.min.js",
         "Client/lib/ng-google-chart.js",
         "Client/lib/angular-cache.min.js",
         "Client/lib/toaster.min.js",
@@ -68,7 +63,7 @@ gulp.task('compress-lib', function () {
         "Client/lib/angular-key-value-editor.js",
         "Client/lib/compiled-templates.js",
         "Client/lib/ng-sortable.js"
-        
+
     ])
         .pipe(concat('lib.js'))
         .pipe(minify())
@@ -86,14 +81,14 @@ gulp.task('compress-app', function () {
         .pipe(gulp.dest('wwwroot/js'))
 });
 
-gulp.task('copy-html', function() {
+gulp.task('copy-html', function () {
     return gulp.src(['Client/src/**/*.html'])
-      .pipe(gulp.dest('wwwroot/App'));
-  });
+        .pipe(gulp.dest('wwwroot/App'));
+});
 
-  gulp.task('copy-templates', function() {
+gulp.task('copy-templates', function () {
     return gulp.src(['Client/resources/**/*.html'])
-      .pipe(gulp.dest('wwwroot/'));
-  });
+        .pipe(gulp.dest('wwwroot/'));
+});
 
 gulp.task('default', gulp.series(['build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates']));

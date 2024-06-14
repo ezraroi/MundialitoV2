@@ -132,8 +132,9 @@
                 redirectTo: '/'
             });
     }])
-    .run(['$rootScope', '$log', 'security', '$route', '$location', 'GamePluginProvider', 'FootballDataGamePlugin', function ($rootScope, $log, security, $route, $location, GamePluginProvider, FootballDataGamePlugin) {
-        GamePluginProvider.registerFactory(FootballDataGamePlugin);
+    .run(['$rootScope', '$log', 'security', '$route', '$location', 'PluginsProvider', 'FootballDataGamePlugin', 'FootballDataTeamStatsPlugin', function ($rootScope, $log, security, $route, $location, PluginsProvider, FootballDataGamePlugin, FootballDataTeamStatsPlugin) {
+        PluginsProvider.registerGameFactory(FootballDataGamePlugin);
+        PluginsProvider.registerTeamFactory(FootballDataTeamStatsPlugin);
         security.events.login = function (security, user) {
             $log.log('Current user details: ' + angular.toJson(user));
             $rootScope.mundialitoApp.authenticating = false;
