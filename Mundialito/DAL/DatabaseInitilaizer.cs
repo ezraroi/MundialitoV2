@@ -30,7 +30,7 @@ public class DatabaseInitilaizer
             if (context.Users.Count() == 0)
             {
                 logger.LogInformation("No users found. will populate the database");
-                CreateFirstUsers(config, userManager, logger);
+                 CreateFirstUsers(config, userManager, logger);
                 if (!string.IsNullOrEmpty(config.TournamentDBCreatorName))
                 {
                     Type t = Type.GetType("Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName);
@@ -111,34 +111,41 @@ public class DatabaseInitilaizer
         if (!string.IsNullOrEmpty(config.MonkeyUserName))
         {
             var monkey = context.Users.FirstOrDefault(u => u.UserName == config.MonkeyUserName);
-            var randomResults = new RandomResults();
-            games.ForEach(game =>
+            if (monkey != null)
             {
-                var result = randomResults.GetRandomResult();
-                var newBet = new Bet
+                var randomResults = new RandomResults();
+                games.ForEach(game =>
                 {
-                    UserId = monkey.Id,
-                    GameId = game.GameId,
-                    HomeScore = result.Key,
-                    AwayScore = result.Value,
-                    CardsMark = randomResults.GetRandomMark(),
-                    CornersMark = randomResults.GetRandomMark()
-                };
-                context.Bets.Add(newBet);
-            });
-            Random rnd = new Random();
-            var index = rnd.Next(0, teamsDic.Count);
-            int teamId = teamsDic.Values.ElementAt(index).TeamId;
-            index = rnd.Next(0, playersDic.Count);
-            int playerId = playersDic.Values.ElementAt(index).PlayerId;
+                    var result = randomResults.GetRandomResult();
+                    var newBet = new Bet
+                    {
+                        UserId = monkey.Id,
+                        GameId = game.GameId,
+                        HomeScore = result.Key,
+                        AwayScore = result.Value,
+                        CardsMark = randomResults.GetRandomMark(),
+                        CornersMark = randomResults.GetRandomMark()
+                    };
+                    context.Bets.Add(newBet);
+                });
+                Random rnd = new Random();
+                var index = rnd.Next(0, teamsDic.Count);
+                int teamId = teamsDic.Values.ElementAt(index).TeamId;
+                index = rnd.Next(0, playersDic.Count);
+                int playerId = playersDic.Values.ElementAt(index).PlayerId;
 
-            context.GeneralBets.Add(new GeneralBet
+                context.GeneralBets.Add(new GeneralBet
+                {
+                    GoldBootPlayerId = playerId,
+                    WinningTeamId = teamId,
+                    User = monkey
+                });
+                context.SaveChanges();
+            }
+            else
             {
-                GoldBootPlayerId = playerId,
-                WinningTeamId = teamId,
-                User = monkey
-            });
+                return;
+            }
         }
-        context.SaveChanges();
     }
 }
