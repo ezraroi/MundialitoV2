@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Mundialito.Configuration;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
@@ -51,17 +52,17 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				.IsRequired();
 
 		var dictionaryComparer = new ValueComparer<Dictionary<string, string>>(
-            (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
-            c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
-            c => JsonSerializer.Deserialize<Dictionary<string, string>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
-        );
+			(c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
+			c => c == null ? 0 : JsonSerializer.Serialize(c, (JsonSerializerOptions)null).GetHashCode(),
+			c => JsonSerializer.Deserialize<Dictionary<string, string>>(JsonSerializer.Serialize(c, (JsonSerializerOptions)null), (JsonSerializerOptions)null)
+		);
 
-        modelBuilder.Entity<Game>()
-            .Property(g => g.IntegrationsData)
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
-            .Metadata.SetValueComparer(dictionaryComparer);
+		modelBuilder.Entity<Game>()
+			.Property(g => g.IntegrationsData)
+			.HasConversion(
+				v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+				v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
+			.Metadata.SetValueComparer(dictionaryComparer);
 
 		modelBuilder.Entity<Team>()
             .Property(t => t.IntegrationsData)
@@ -104,14 +105,22 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	{
 		if (string.IsNullOrEmpty(_connectionString))
 		{
-			bool sqlLite = appConfig.GetSection("App").GetValue("UseSqlLite", false);
-			if (appConfig.GetSection("App").GetValue("UseSqlLite", false))
+			var db = appConfig.GetSection("App").GetValue<DBTypeEnum>("DBType", DBTypeEnum.SQLLite);
+			switch (db)
 			{
-				options.UseSqlite(appConfig.GetConnectionString("App"));
-			}
-			else
-			{
-				options.UseSqlServer(appConfig.GetConnectionString("App"), b => b.EnableRetryOnFailure());
+				case DBTypeEnum.PostgreSQL:
+					AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+					AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+					options.UseNpgsql(appConfig.GetConnectionString("App"));
+					break;
+				case DBTypeEnum.SQLServer:
+					options.UseSqlServer(appConfig.GetConnectionString("App"), b => b.EnableRetryOnFailure());
+					break;
+				case DBTypeEnum.SQLLite:
+					options.UseSqlite(appConfig.GetConnectionString("App"));
+					break;
+				default:
+					throw new Exception("Unknown DB type");
 			}
 		}
 		else
