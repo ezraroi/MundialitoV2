@@ -409,7 +409,7 @@ public class Euro2024 : ITournamentCreator
     }
     private DateTime GetFixedDate(DateTime date)
     {
-        return date;
+        return date.Subtract(TimeSpan.FromHours(3));
         //  return date.Subtract(TimeSpan.FromDays(56));
         // return date.Se(65);
     }
