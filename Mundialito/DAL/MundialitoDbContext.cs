@@ -59,6 +59,7 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 
 		modelBuilder.Entity<Game>()
 			.Property(g => g.IntegrationsData)
+			.HasColumnType("jsonb")
 			.HasConversion(
 				v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
 				v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
@@ -66,6 +67,7 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 
 		modelBuilder.Entity<Team>()
             .Property(t => t.IntegrationsData)
+			.HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                 v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))

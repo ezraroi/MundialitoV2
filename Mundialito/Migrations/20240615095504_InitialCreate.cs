@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +12,6 @@ namespace Mundialito.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:PostgresExtension:hstore", ",,");
-
             migrationBuilder.CreateTable(
                 name: "ActionLogs",
                 columns: table => new
@@ -115,7 +111,7 @@ namespace Mundialito.Migrations
                     Logo = table.Column<string>(type: "text", nullable: false),
                     ShortName = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
                     TeamPage = table.Column<string>(type: "text", nullable: true),
-                    IntegrationsData = table.Column<Dictionary<string, string>>(type: "hstore", nullable: true)
+                    IntegrationsData = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -290,7 +286,7 @@ namespace Mundialito.Migrations
                     CornersMark = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: true),
                     CardsMark = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: true),
                     StadiumId = table.Column<int>(type: "integer", nullable: false),
-                    IntegrationsData = table.Column<string>(type: "text", nullable: true)
+                    IntegrationsData = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
