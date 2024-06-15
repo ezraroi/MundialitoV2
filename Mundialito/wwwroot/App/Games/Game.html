@@ -91,9 +91,9 @@
                             </select>
                         </div>
                     </div>
-                    <!-- <div class="form-group select"  ng-if="game.IsOpen">
+                    <div class="form-group select"  ng-if="game.IsOpen">
                         <div class="dropdown dropdown1-parent">
-                            <label for="Date">Date & Time</label>
+                            <label class="col-md-3 control-label" for="Date">Date & Time</label>
                             <a class="dropdown-toggle" id="datedropdown" role="button" data-toggle="dropdown" data-target=".dropdown1-parent" href="#">
                                 <div class="input-group">
                                     <input type="text" id="Date" class="form-control" data-ng-model="game.Date"
@@ -109,28 +109,8 @@
                                 </datetimepicker>
                             </ul>
                         </div>
-                    </div> -->
-                    <div class="form-group" ng-if="game.IsOpen">
-                        <div class="dropdown dropdown1-parent">
-                            <label class="col-md-3 control-label" for="Date">Date & Time</label>
-                            <div class="col-md-9">
-                                <a class="dropdown-toggle" id="datedropdown" role="button" data-toggle="dropdown" data-target=".dropdown1-parent" href="#">
-                                    <div class="input-group">
-                                        <input type="text" id="Date" class="form-control" data-ng-model="game.Date"
-                                            required>
-                                        <span class="input-group-addon">
-                                            <i class="fa fa-calendar"></i>
-                                        </span>
-                                    </div>
-                                </a>
-                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                                    <datetimepicker data-ng-model="game.Date"
-                                        data-datetimepicker-config="{ dropdownSelector: '#datedropdown'}">
-                                    </datetimepicker>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
+                    
                     <div class="row">
                         <label class="col-md-3 control-label" for="integrationsData">Integrations</label>
                         <div class="col-md-9">

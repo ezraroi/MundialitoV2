@@ -13,7 +13,7 @@ public class GameViewModel
         GameId = game.GameId;
         HomeTeam = new GameTeamModel(game.HomeTeam);
         AwayTeam = new GameTeamModel(game.AwayTeam);
-        Date = game.Date;
+        Date = game.Date.ToLocalTime();
         HomeScore = game.HomeScore;
         AwayScore = game.AwayScore;
         CornersMark = game.CornersMark;
