@@ -193,6 +193,7 @@ public class BetGame
         HomeTeam = new BetGameTeam(game.HomeTeam);
         AwayTeam = new BetGameTeam(game.AwayTeam);
         IsOpen = game.IsOpen();
+        Date = game.Date.ToLocalTime();
     }
     [JsonPropertyName("GameId")]
     public int GameId { get; set; }
@@ -205,6 +206,10 @@ public class BetGame
 
     [JsonPropertyName("IsOpen")]
     public bool IsOpen { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [JsonPropertyName("Date")]
+    public DateTime Date { get; set; }
 
 }
 
