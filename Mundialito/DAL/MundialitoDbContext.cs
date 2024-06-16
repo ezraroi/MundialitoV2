@@ -79,6 +79,10 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				.OnDelete(DeleteBehavior.NoAction)
 				.IsRequired();
 
+		modelBuilder.Entity<Bet>()
+            .HasIndex(b => new { b.UserId, b.GameId })
+            .IsUnique();
+
 		modelBuilder.Entity<UserFollow>()
 					.HasKey(uf => new { uf.FollowerId, uf.FolloweeId });
 		modelBuilder.Entity<UserFollow>()
