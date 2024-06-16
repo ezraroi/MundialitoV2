@@ -46,7 +46,6 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             $log.debug('BetsManager: will add new bet - ' + angular.toJson(betData));
             $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).then((data) => {
                 var bet = scope._retrieveInstance(data.data.BetId, data.data);
-                GamesManager.clearGamesCache();
                 deferred.resolve(bet);
             }).catch((err) => {
                 $log.error('Failed to add bet');

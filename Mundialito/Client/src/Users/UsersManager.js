@@ -1,8 +1,7 @@
 'use strict';
-angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', '$log', 'MundialitoUtils', 'DSCacheFactory', function ($http, $q, User, $log, MundialitoUtils, DSCacheFactory) {
+angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', '$log', 'MundialitoUtils', function ($http, $q, User, $log, MundialitoUtils) {
     var usersPromise = undefined;
     var usersManager = {
-        _cacheManager: DSCacheFactory('UsersManager', { cacheFlushInterval: 1800000 }),
         _pool: {},
         _retrieveInstance: function (username, userData) {
             var instance = this._pool[username];
