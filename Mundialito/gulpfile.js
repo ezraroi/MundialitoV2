@@ -58,7 +58,7 @@ gulp.task('compress-lib', function () {
         "Client/lib/ui-grid.min.js",
         "Client/lib/ng-google-chart.js",
         "Client/lib/angular-cache.min.js",
-        "Client/lib/toaster.min.js",
+        "Client/lib/toaster.js",
         "Client/lib/angular-busy.js",
         "Client/lib/angular-key-value-editor.js",
         "Client/lib/compiled-templates.js",

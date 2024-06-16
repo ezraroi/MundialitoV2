@@ -651,7 +651,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             _.filter($scope.games, (game) => game.IsPendingUpdate).forEach(game => {
                 BetsManager.getGameBets(game.GameId).then((data) => {
                     let followeesBets = _.filter(data, (bet) => { 
-                        return $scope.security.user.Followees.includes(bet.User.Username);
+                        return $scope.security.user.Followees.includes(bet.User.Username) || $scope.security.user.Username === bet.User.Username;
                     });
                     $scope.pendingUpdateGamesFolloweesBets = $scope.pendingUpdateGamesFolloweesBets.concat(followeesBets);
                 });
