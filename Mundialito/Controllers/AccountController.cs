@@ -107,13 +107,12 @@ public class AccountController : ControllerBase
             _logger.LogInformation("{User} wrong password", request.Username);
             return BadRequest(new ErrorMessage { Message = "Bad credentials" });
         }
-        var userInDb = _context.Users.FirstOrDefault(u => u.UserName == request.Username);
+        var userInDb = _context.Users.FirstOrDefault(u => u.UserName == managedUser.UserName);
         if (userInDb is null)
         {
             _logger.LogWarning("{User} was not found in DB", request.Username);
-            return Unauthorized();
+            return Unauthorized(new ErrorMessage{ Message = "User not found in DB" });
         }
-
         var accessToken = _tokenService.CreateToken(userInDb);
         await _context.SaveChangesAsync();
         _logger.LogWarning("{User} logged in", request.Username);
