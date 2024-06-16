@@ -19,7 +19,7 @@ namespace Mundialito.Controllers;
 [Authorize]
 public class BetsController : ControllerBase
 {
-    private const String ObjectType = "Bet";
+    private const string ObjectType = "Bet";
     private readonly IBetsRepository betsRepository;
     private readonly IGamesRepository gamesRepository;
     private readonly IBetValidator betValidator;
@@ -76,13 +76,15 @@ public class BetsController : ControllerBase
         {
             return Unauthorized();
         }
-        var newBet = new Bet();
-        newBet.UserId = user.Id;
-        newBet.GameId = bet.GameId;
-        newBet.HomeScore = bet.HomeScore;
-        newBet.AwayScore = bet.AwayScore;
-        newBet.CardsMark = bet.CardsMark;
-        newBet.CornersMark = bet.CornersMark;
+        var newBet = new Bet
+        {
+            UserId = user.Id,
+            GameId = bet.GameId,
+            HomeScore = bet.HomeScore,
+            AwayScore = bet.AwayScore,
+            CardsMark = bet.CardsMark,
+            CornersMark = bet.CornersMark
+        };
         try
         {
             betValidator.ValidateNewBet(newBet);
@@ -97,9 +99,7 @@ public class BetsController : ControllerBase
         bet.BetId = res.BetId;
         AddLog(ActionType.CREATE, string.Format("Posting new Bet: {0}", res));
         if (ShouldSendMail())
-        {
             SendBetMail(newBet, user);
-        }
         logger.LogInformation("Bet os user {} was saved", user.UserName);
         return Ok(bet);
     }
@@ -125,7 +125,6 @@ public class BetsController : ControllerBase
             betValidator.ValidateUpdateBet(betToUpdate);
         } catch (UnauthorizedAccessException e) {
             return Unauthorized(new ErrorMessage{ Message = e.Message});
-        
         } catch (Exception e) {
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
@@ -133,9 +132,7 @@ public class BetsController : ControllerBase
         betsRepository.Save();
         AddLog(ActionType.UPDATE, string.Format("Updating Bet: {0}", betToUpdate));
         if (ShouldSendMail())
-        {
             SendBetMail(betToUpdate, user);
-        }
         logger.LogInformation("Bet {} of {} was updated", id, user.UserName);
         return Ok(new NewBetModel(id, bet));
     }
@@ -146,9 +143,7 @@ public class BetsController : ControllerBase
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
-        }
         try {
             betValidator.ValidateDeleteBet(id, user.Id);
         } catch (UnauthorizedAccessException e) {
@@ -164,7 +159,7 @@ public class BetsController : ControllerBase
         return Ok();
     }
 
-    private void AddLog(ActionType actionType, String message)
+    private void AddLog(ActionType actionType, string message)
     {
         try
         {
