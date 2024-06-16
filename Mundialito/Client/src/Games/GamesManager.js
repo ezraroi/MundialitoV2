@@ -1,9 +1,8 @@
 'use strict';
-angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'DSCacheFactory', 'User', function ($http, $q, Game, $log, MundialitoUtils, DSCacheFactory, User) {
+angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'User', function ($http, $q, Game, $log, MundialitoUtils, User) {
     var gamesPromise = undefined;
     var openGamesPromise = undefined;
     var gamesManager = {
-        _cacheManager: DSCacheFactory('GamesManager', { cacheFlushInterval : 1800000 }),
         _pool: {},
         _retrieveInstance: function(gameId, gameData) {
             var instance = this._pool[gameId];
@@ -42,10 +41,7 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
         },
 
         /* Public Methods */
-
-        clearGamesCache: function () {
-            this._cacheManager.remove('api/games');
-        },
+        
         /* Use this function in order to get a new empty game data object */
         getEmptyGameObject: function() {
             return {

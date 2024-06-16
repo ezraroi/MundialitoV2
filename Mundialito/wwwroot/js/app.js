@@ -1,5 +1,5 @@
 angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select',
-    'ui.bootstrap.datetimepicker', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'angular-data.DSCacheFactory', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
+    'ui.bootstrap.datetimepicker', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns'])
     .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
     .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
         $locationProvider.html5Mode(true);
@@ -526,7 +526,6 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             $log.debug('BetsManager: will add new bet - ' + angular.toJson(betData));
             $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).then((data) => {
                 var bet = scope._retrieveInstance(data.data.BetId, data.data);
-                GamesManager.clearGamesCache();
                 deferred.resolve(bet);
             }).catch((err) => {
                 $log.error('Failed to add bet');
@@ -1003,11 +1002,10 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
     };
 }]);
 'use strict';
-angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'DSCacheFactory', 'User', function ($http, $q, Game, $log, MundialitoUtils, DSCacheFactory, User) {
+angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', '$log', 'MundialitoUtils', 'User', function ($http, $q, Game, $log, MundialitoUtils, User) {
     var gamesPromise = undefined;
     var openGamesPromise = undefined;
     var gamesManager = {
-        _cacheManager: DSCacheFactory('GamesManager', { cacheFlushInterval : 1800000 }),
         _pool: {},
         _retrieveInstance: function(gameId, gameData) {
             var instance = this._pool[gameId];
@@ -1046,10 +1044,7 @@ angular.module('mundialitoApp').factory('GamesManager', ['$http', '$q', 'Game', 
         },
 
         /* Public Methods */
-
-        clearGamesCache: function () {
-            this._cacheManager.remove('api/games');
-        },
+        
         /* Use this function in order to get a new empty game data object */
         getEmptyGameObject: function() {
             return {
@@ -2326,10 +2321,9 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
 }]);
 
 'use strict';
-angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', '$log', 'MundialitoUtils', 'DSCacheFactory', function ($http, $q, User, $log, MundialitoUtils, DSCacheFactory) {
+angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', '$log', 'MundialitoUtils', function ($http, $q, User, $log, MundialitoUtils) {
     var usersPromise = undefined;
     var usersManager = {
-        _cacheManager: DSCacheFactory('UsersManager', { cacheFlushInterval: 1800000 }),
         _pool: {},
         _retrieveInstance: function (username, userData) {
             var instance = this._pool[username];
