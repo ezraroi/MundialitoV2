@@ -645,12 +645,30 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
 
         GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
+            $scope.resultsDict = {};
             $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
             $scope.pendingUpdateGamesFolloweesBets = [];
             $log.info('DashboardCtrl: followees:' + $scope.security.user.Followees);
             _.filter($scope.games, (game) => game.IsPendingUpdate).forEach(game => {
                 BetsManager.getGameBets(game.GameId).then((data) => {
-                    let followeesBets = _.filter(data, (bet) => { 
+                    $scope.resultsDict[game.GameId] = {
+                        total: data.length,
+                        results: {}
+                    };
+                    data.forEach(bet => {
+                        let result = bet.HomeScore + "-" + bet.AwayScore;
+                        let item = $scope.resultsDict[game.GameId].results[result];
+                        if (item === undefined) {
+                            item = { total: 1 };
+                        } else {
+                            item.total++;
+                        }
+                        $scope.resultsDict[game.GameId].results[result] = item;
+                    })
+                    for (let result in $scope.resultsDict[game.GameId].results) {
+                        $scope.resultsDict[game.GameId].results[result].percent = Math.round(($scope.resultsDict[game.GameId].results[result].total / $scope.resultsDict[game.GameId].total) * 100)
+                    }
+                    let followeesBets = _.filter(data, (bet) => {
                         return $scope.security.user.Followees.includes(bet.User.Username) || $scope.security.user.Username === bet.User.Username;
                     });
                     $scope.pendingUpdateGamesFolloweesBets = $scope.pendingUpdateGamesFolloweesBets.concat(followeesBets);
@@ -728,7 +746,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.users = users;
         });
 
-        $scope.isOpenForBetting =(item) => item.IsOpen;
+        $scope.isOpenForBetting = (item) => item.IsOpen;
         $scope.isPendingUpdate = (item) => item.IsPendingUpdate;
         $scope.isDecided = function (item) {
             return !item.IsOpen && !item.IsPendingUpdate;

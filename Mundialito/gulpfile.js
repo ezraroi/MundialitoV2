@@ -46,7 +46,7 @@ gulp.task('compress-lib', function () {
         "Client/lib/select_.js",
         "Client/lib/bootstrap.js",
         "Client/lib/bootstrap-select.min.js",
-        "Client/lib/angular-ui/ui-bootstrap-tpls.min.js",
+        "Client/lib/ui-bootstrap-tpls.js",
         "Client/lib/autofields-bootstrap.min.js",
         "Client/lib/autofields.min.js",
         "Client/lib/angular-spa-security.js",

@@ -8,8 +8,11 @@
 </div>
 <div class="row">
     <div class="col-md-12 text-center">
-        <img src="/icons/yellowstring.png" style="height: 30px; width: 30px; margin-top: 10px; margin-right: 10px" /><img ng-src="https://img.uefa.com/imgml/flags/50x50/isr.png"> עם ישראל חי <img
-            ng-src="https://img.uefa.com/imgml/flags/50x50/isr.png"><img src="/icons/yellowstring.png" style="height: 30px; width: 30px; margin-top: 10px; margin-left: 10px" />
+        <img src="/icons/yellowstring.png"
+            style="height: 30px; width: 30px; margin-top: 10px; margin-right: 10px" /><img
+            ng-src="https://img.uefa.com/imgml/flags/50x50/isr.png"> עם ישראל חי <img
+            ng-src="https://img.uefa.com/imgml/flags/50x50/isr.png"><img src="/icons/yellowstring.png"
+            style="height: 30px; width: 30px; margin-top: 10px; margin-left: 10px" />
     </div>
 </div>
 <br><br>
@@ -20,7 +23,8 @@
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
                     <div ng-repeat="game in games | filter:isPendingUpdate">
-                        <a class="list-group-item" href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
+                        <a class="list-group-item" href="{{game.getUrl()}}"
+                            tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                             <div class="row">
                                 <div class="col-md-5 col-xs-3">
                                     <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
@@ -43,16 +47,31 @@
                                     <div class="table-responsive">
                                         <table class="table table-striped">
                                             <tbody>
-                                                <tr ng-repeat="bet in pendingUpdateGamesFolloweesBets | filter:isGameBet(game) ">
+                                                <tr
+                                                    ng-repeat="bet in pendingUpdateGamesFolloweesBets | filter:isGameBet(game) ">
                                                     <td>{{::getUserPlace(bet.User)}}</td>
-                                                    <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}} {{::bet.User.LastName}}</a></td>
+                                                    <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
+                                                            {{::bet.User.LastName}}</a></td>
                                                     <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
                                                     <td title="Cards">{{::bet.CardsMark}}</td>
                                                     <td title="Corners">{{::bet.CornersMark}}</td>
-                                                    <td><span class="label label-{{bet.getClass()}}" ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
+                                                    <td><span class="label label-{{bet.getClass()}}"
+                                                            ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                                 </tr>
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row" ng-repeat="(result,total) in resultsDict[game.GameId].results">
+                                        <div class="col-md-1 col-xs-2 text-center">
+                                            <span class="badge">{{result}}</span>
+                                        </div>
+                                        <div class="col-md-11 col-xs-10">
+                                            <uib-progressbar max="100" min="0" value="total.percent" type="info"><span style="color:white; white-space:nowrap;">{{total.total}}</span></uib-progressbar>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -71,8 +90,8 @@
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
                     <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
-                        ng-repeat="game in games | filter:isOpenForBetting | limitTo:10"
-                        href="{{game.getUrl()}}" tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
+                        ng-repeat="game in games | filter:isOpenForBetting | limitTo:10" href="{{game.getUrl()}}"
+                        tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">
                                 <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
