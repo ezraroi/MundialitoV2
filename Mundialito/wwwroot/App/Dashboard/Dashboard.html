@@ -65,14 +65,31 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <div class="row" ng-repeat="(result,total) in resultsDict[game.GameId].results">
-                                        <div class="col-md-1 col-xs-2 text-center">
-                                            <span class="badge">{{result}}</span>
+                                    <uib-accordion close-others="oneAtATime">
+                                        <div uib-accordion-group class="panel-info" is-open="status[result].open"
+                                            ng-repeat="(result,total) in resultsDict[game.GameId].results">
+                                            <uib-accordion-heading>
+                                                <div class="row">
+                                                    <div class="col-md-1 col-xs-2 text-center">
+                                                        <span class="badge">{{result}}</span>
+                                                    </div>
+                                                    <div class="col-md-10 col-xs-9">
+                                                        <uib-progressbar max="100" min="0" value="total.percent"
+                                                            type="info"><span
+                                                                style="color:white; white-space:nowrap;">{{total.total}}</span></uib-progressbar>
+                                                    </div>
+                                                    <div class="col-md-1 col-xs-1">
+                                                        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status[result].open, 'glyphicon-chevron-right': !status[result].open}"></i>
+                                                    </div>
+                                                </div>
+                                            </uib-accordion-heading>
+                                            <div class="list-group">
+                                                <a href="/users/{{::bet.User.Username}}" class="list-group-item" ng-repeat="bet in resultsDict[game.GameId].results[result].bets">
+                                                    {{bet.User.FirstName}} {{bet.User.LastName}}
+                                                </a>
+                                            </div>
                                         </div>
-                                        <div class="col-md-11 col-xs-10">
-                                            <uib-progressbar max="100" min="0" value="total.percent" type="info"><span style="color:white; white-space:nowrap;">{{total.total}}</span></uib-progressbar>
-                                        </div>
-                                    </div>
+                                    </uib-accordion>
                                 </div>
                             </div>
                         </div>
