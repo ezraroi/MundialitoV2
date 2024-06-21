@@ -4,6 +4,8 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.generalBetsAreOpen = false;
         $scope.submittedGeneralBet = true;
         $scope.pendingUpdateGames = false;
+        $scope.oneAtATime = true;
+        $scope.status = {};
 
         $scope.teamsDic = {};
         $scope.playersDic = {};
@@ -26,13 +28,16 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 BetsManager.getGameBets(game.GameId).then((data) => {
                     $scope.resultsDict[game.GameId] = {
                         total: data.length,
+                        bets: data,
                         results: {}
                     };
                     data.forEach(bet => {
                         let result = bet.HomeScore + "-" + bet.AwayScore;
                         let item = $scope.resultsDict[game.GameId].results[result];
                         if (item === undefined) {
-                            item = { total: 1 };
+                            item = { total: 1,
+                                bets: _.filter(data, (bet) => bet.HomeScore + '-' + bet.AwayScore === result)
+                             };
                         } else {
                             item.total++;
                         }
