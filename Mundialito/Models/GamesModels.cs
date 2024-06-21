@@ -166,6 +166,14 @@ public class NewGameModel
 
     [JsonPropertyName("IntegrationsData")]
     public Dictionary<string, string>? IntegrationsData { get; set; }
+    [JsonPropertyName("CloseTime")]
+    public DateTime CloseTime
+    {
+        get
+        {
+            return Date.Subtract(TimeSpan.FromMinutes(30));
+        }
+    }
 }
 
 public class PutGameModel
@@ -230,6 +238,14 @@ public class PutGameModelResult : PutGameModel
 
     [JsonPropertyName("Mark")]
     public string Mark { get; private set; }
+    [JsonPropertyName("CloseTime")]
+    public DateTime CloseTime
+    {
+        get
+        {
+            return Date.Subtract(TimeSpan.FromMinutes(30));
+        }
+    }
 
 }
 
