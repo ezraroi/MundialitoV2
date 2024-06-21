@@ -131,6 +131,24 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 		}
 		else
 		{
+			var db = appConfig.GetSection("App").GetValue<DBTypeEnum>("DBType", DBTypeEnum.SQLLite);
+			switch (db) 
+			{
+				case DBTypeEnum.PostgreSQL:
+					AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+					AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+					options.UseNpgsql(_connectionString);
+					break;
+				case DBTypeEnum.SQLServer:
+					options.UseSqlServer(_connectionString, b => b.EnableRetryOnFailure());
+					break;
+				case DBTypeEnum.SQLLite:
+					options.UseSqlite(appConfig.GetConnectionString("App"));
+					break;
+				default:
+					throw new Exception("Unknown DB type");
+			}
+
 			options.UseSqlServer(_connectionString, b => b.EnableRetryOnFailure());
 		}
 	}
