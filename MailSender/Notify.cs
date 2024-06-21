@@ -26,6 +26,7 @@ namespace Mundialito.Function
             _logger = loggerFactory.CreateLogger<Notify>();
             configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables()
             .Build();
             this.config = configuration.GetSection("App").Get<Config>();
             var connectionString = Environment.GetEnvironmentVariable("ConnectionString"); 
