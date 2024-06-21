@@ -4,11 +4,11 @@
             <div class="col-md-12">
                 <h3>
                     <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
-                        title="{{game.HomeTeam.Name}}"></i> {{game.HomeTeam.Name}} <span
+                        title="{{game.HomeTeam.Name}}"></i> <a href="/teams/{{::game.HomeTeam.TeamId}}">{{game.HomeTeam.Name}}</a> <span
                         ng-if="game.IsBetResolved">{{game.HomeScore}} - {{game.AwayScore}}</span><span
                         ng-if="!game.IsBetResolved"> - </span>
                     <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
-                        title="{{game.AwayTeam.Name}}"></i> {{game.AwayTeam.Name}}
+                        title="{{game.AwayTeam.Name}}"></i> <a href="/teams/{{::game.AwayTeam.TeamId}}">{{game.AwayTeam.Name}}</a>
                 </h3>
                 <h5 ng-if="game.IsBetResolved">
                     <i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i> {{game.CardsMark}}
