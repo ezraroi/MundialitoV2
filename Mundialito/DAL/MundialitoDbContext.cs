@@ -148,8 +148,6 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				default:
 					throw new Exception("Unknown DB type");
 			}
-
-			options.UseSqlServer(_connectionString, b => b.EnableRetryOnFailure());
 		}
 	}
 }
