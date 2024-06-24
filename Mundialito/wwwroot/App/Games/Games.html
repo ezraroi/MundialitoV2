@@ -105,9 +105,9 @@
                                         name="Cards_{{updatedGame.AwayTeam.TeamId}}" ui-select2="{allowClear: false}"
                                         class="form-control" ng-model="updatedGame.CardsMark" required
                                         placeholder="Game Corners Mark">
-                                        <option value="1">1</option>
+                                        <option value="1">{{updatedGame.HomeTeam.ShortName}}</option>
                                         <option value="X">X</option>
-                                        <option value="2">2</option>
+                                        <option value="2">{{updatedGame.AwayTeam.ShortName}}</option>
                                     </select>
                                 </div>
                                 <label class="col-md-1 control-label" for="Corners_{{updatedGame.AwayTeam.TeamId}}">
@@ -118,9 +118,9 @@
                                         name="Corners_{{updatedGame.AwayTeam.TeamId}}" ui-select2="{allowClear: false}"
                                         class="form-control" ng-model="updatedGame.CornersMark" required
                                         placeholder="Game Corners Mark">
-                                        <option value="1">1</option>
+                                        <option value="1">{{updatedGame.HomeTeam.ShortName}}</option>
                                         <option value="X">X</option>
-                                        <option value="2">2</option>
+                                        <option value="2">{{updatedGame.AwayTeam.ShortName}}</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
