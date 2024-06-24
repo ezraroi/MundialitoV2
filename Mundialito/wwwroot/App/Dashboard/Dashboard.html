@@ -48,7 +48,7 @@
                                         <table class="table table-striped">
                                             <tbody>
                                                 <tr
-                                                    ng-repeat="bet in pendingUpdateGamesFolloweesBets | filter:isGameBet(game) ">
+                                                    ng-repeat="bet in pendingUpdateGamesFolloweesBets[game.GameId]">
                                                     <td>{{::getUserPlace(bet.User)}}</td>
                                                     <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                             {{::bet.User.LastName}}</a></td>
@@ -66,25 +66,25 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <uib-accordion close-others="oneAtATime">
-                                        <div uib-accordion-group class="panel-info" is-open="status[result].open"
-                                            ng-repeat="(result,total) in resultsDict[game.GameId].results">
+                                        <div uib-accordion-group class="panel-info" is-open="status[item[0]].open"
+                                            ng-repeat="item in resultsDic[game.GameId]">
                                             <uib-accordion-heading>
                                                 <div class="row">
                                                     <div class="col-md-1 col-xs-2 text-center">
-                                                        <span class="badge">{{result}}</span>
+                                                        <span class="badge">{{item[0]}}</span>
                                                     </div>
                                                     <div class="col-md-10 col-xs-9">
-                                                        <uib-progressbar max="100" min="0" value="total.percent"
+                                                        <uib-progressbar max="100" min="0" value="resultsPercentage[game.GameId][item[0]]"
                                                             type="info"><span
-                                                                style="color:white; white-space:nowrap;">{{total.total}}</span></uib-progressbar>
+                                                                style="color:white; white-space:nowrap;">{{item[1].length}}</span></uib-progressbar>
                                                     </div>
                                                     <div class="col-md-1 col-xs-1">
-                                                        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status[result].open, 'glyphicon-chevron-right': !status[result].open}"></i>
+                                                        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status[item[0]].open, 'glyphicon-chevron-right': !status[item[0]].open}"></i>
                                                     </div>
                                                 </div>
                                             </uib-accordion-heading>
                                             <div class="list-group">
-                                                <a href="/users/{{::bet.User.Username}}" class="list-group-item" ng-repeat="bet in resultsDict[game.GameId].results[result].bets">
+                                                <a href="/users/{{::bet.User.Username}}" class="list-group-item" ng-repeat="bet in item[1]">
                                                     {{bet.User.FirstName}} {{bet.User.LastName}}
                                                 </a>
                                             </div>

@@ -20,36 +20,23 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
 
         GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
-            $scope.resultsDict = {};
+            $scope.resultsDic = {};
+            $scope.resultsPercentage = {};
             $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
-            $scope.pendingUpdateGamesFolloweesBets = [];
+            $scope.pendingUpdateGamesFolloweesBets = {};
             $log.info('DashboardCtrl: followees:' + $scope.security.user.Followees);
             _.filter($scope.games, (game) => game.IsPendingUpdate).forEach(game => {
                 BetsManager.getGameBets(game.GameId).then((data) => {
-                    $scope.resultsDict[game.GameId] = {
-                        total: data.length,
-                        bets: data,
-                        results: {}
-                    };
-                    data.forEach(bet => {
-                        let result = bet.HomeScore + "-" + bet.AwayScore;
-                        let item = $scope.resultsDict[game.GameId].results[result];
-                        if (item === undefined) {
-                            item = { total: 1,
-                                bets: _.filter(data, (bet) => bet.HomeScore + '-' + bet.AwayScore === result)
-                             };
-                        } else {
-                            item.total++;
-                        }
-                        $scope.resultsDict[game.GameId].results[result] = item;
-                    })
-                    for (let result in $scope.resultsDict[game.GameId].results) {
-                        $scope.resultsDict[game.GameId].results[result].percent = Math.round(($scope.resultsDict[game.GameId].results[result].total / $scope.resultsDict[game.GameId].total) * 100)
-                    }
+                    let grouped = _.groupBy(data, (bet) => {return bet.HomeScore + "-" + bet.AwayScore});
+                    $scope.resultsDic[game.GameId] = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+                    $scope.resultsPercentage[game.GameId] = {}
+                    $scope.resultsDic[game.GameId].forEach(resItem => {
+                        $scope.resultsPercentage[game.GameId][resItem[0]] = Math.round((resItem[1].length / data.length) * 100);
+                    });
                     let followeesBets = _.filter(data, (bet) => {
                         return $scope.security.user.Followees.includes(bet.User.Username) || $scope.security.user.Username === bet.User.Username;
                     });
-                    $scope.pendingUpdateGamesFolloweesBets = $scope.pendingUpdateGamesFolloweesBets.concat(followeesBets);
+                    $scope.pendingUpdateGamesFolloweesBets[game.GameId] = followeesBets;
                 });
             });
         });
@@ -119,19 +106,16 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 });
             }
         });
-
         UsersManager.getTable().then((users) => {
             $scope.users = users;
         });
-
         $scope.isOpenForBetting = (item) => item.IsOpen;
         $scope.isPendingUpdate = (item) => item.IsPendingUpdate;
         $scope.isDecided = function (item) {
             return !item.IsOpen && !item.IsPendingUpdate;
         };
         $scope.isGameBet = (game) => (item) => item.Game.GameId === game.GameId;
-        $scope.hasBets = (game) => _.filter($scope.pendingUpdateGamesFolloweesBets, (bet) => bet.Game.GameId === game.GameId).length > 0
-
+        $scope.hasBets = (game) => $scope.pendingUpdateGamesFolloweesBets[game.GameId] !== undefined &&  $scope.pendingUpdateGamesFolloweesBets[game.GameId].length > 0
         $scope.gridOptions = {
             ...Constants.TABLE_GRID_OPTIONS, ...{
                 data: 'users',
