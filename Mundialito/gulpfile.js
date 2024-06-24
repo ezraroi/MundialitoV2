@@ -18,6 +18,7 @@ const allCss = [
     "Client/css/toaster.css",
     "Client/css/site.css",
     "Client/css/ng-sortable.css",
+    "Client/css/angular-bootstrap-toggle.css",
     "Client/css/ng-sortable.style.css"
 ];
 gulp.task('build-css-space-lab', () => {
@@ -62,8 +63,8 @@ gulp.task('compress-lib', function () {
         "Client/lib/angular-busy.js",
         "Client/lib/angular-key-value-editor.js",
         "Client/lib/compiled-templates.js",
-        "Client/lib/ng-sortable.js"
-
+        "Client/lib/ng-sortable.js",
+        "Client/lib/angular-bootstrap-toggle.js"
     ])
         .pipe(concat('lib.js'))
         .pipe(minify())
