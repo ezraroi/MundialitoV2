@@ -8,7 +8,7 @@
                 <h4>{{team.Name}} ({{team.ShortName}})</h4>
                 <h5 ng-show="team.TeamPage !== null"><a target="_blank" ng-href="{{team.TeamPage}}"><i class="fa fa-bar-chart"></i>Team  Statistics</a></h5>
                 <button type="button" class="btn btn-info btn-xs" data-access-level="Admin" ng-click="showEditForm = !showEditForm">
-                    <i class="fa fa-pencil-square-o"></i> <span mundialito-toggle-text true-label="Hide Edit Form" false-label="Edit Team" varieble="showEditForm">Edit Team</span>
+                    <i class="fa fa-pencil-square"></i> <span mundialito-toggle-text true-label="Hide Edit Form" false-label="Edit Team" varieble="showEditForm">Edit Team</span>
                 </button>
             </div>
         </div>
@@ -19,7 +19,7 @@
 <div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="{tracker:'editTeam'}">
     <div class="col-md-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-pencil-square-o"></i> Edit Team Details</div>
+            <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit Team Details</div>
             <div class="panel-body">
                 <form name="editTeamForm" novalidate>
                     <auto:fields fields="schema" data="team"></auto:fields>
@@ -27,7 +27,7 @@
                         <label class="control-label" for="integrationsData">Integrations</label>
                         <key-value-editor entries="IntegrationsData"></key-value-editor>
                     </div>
-                    <button type="button" ng-click="updateTeam()" class="btn btn-primary btn-lg btn-block" ng-disabled="editTeamForm.$invalid" tabindex="100"><i class="fa fa-floppy-o"></i> Save</button>
+                    <button type="button" ng-click="updateTeam()" class="btn btn-primary btn-lg btn-block" ng-disabled="editTeamForm.$invalid" tabindex="100"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </form>
             </div>
         </div>

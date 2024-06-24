@@ -19,7 +19,7 @@
 <div class="row" ng-show="pendingUpdateGames">
     <div class="col-md-12 col-xs-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-clock-o"></i> Pending Update Games</div>
+            <div class="panel-heading"><i class="fa fa-clock"></i> Pending Update Games</div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="{tracker:'getGames'}">
                     <div ng-repeat="game in games | filter:isPendingUpdate">
@@ -53,8 +53,8 @@
                                                     <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                             {{::bet.User.LastName}}</a></td>
                                                     <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                    <td title="Cards">{{::bet.CardsMark}}</td>
-                                                    <td title="Corners">{{::bet.CornersMark}}</td>
+                                                    <td title="Cards"><i class="fa fa-stop" style="color: #ffff00"></i> {{::bet.CardsMark}}</td>
+                                                    <td title="Corners"><i class="fa fa-flag"></i> {{::bet.CornersMark}}</td>
                                                     <td><span class="label label-{{bet.getClass()}}"
                                                             ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                                 </tr>
@@ -63,18 +63,23 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row" style="margin-bottom: 10px">
+                                <div class="col-md-12">
+                                    <toggle ng-model="toggleValue[game.GameId]" size="btn-sm" off-class="btn-success" on-class="btn-info" ng-change="changed(game)" off="<i class='fa fa-bullseye'></i> Result" on="<i class='fa fa-check'></i> Mark"></toggle>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-12">
                                     <uib-accordion close-others="oneAtATime">
                                         <div uib-accordion-group class="panel-info" is-open="status[item[0]].open"
-                                            ng-repeat="item in resultsDic[game.GameId]">
+                                            ng-repeat="item in selectedDic[game.GameId]">
                                             <uib-accordion-heading>
                                                 <div class="row">
                                                     <div class="col-md-1 col-xs-2 text-center">
                                                         <span class="badge">{{item[0]}}</span>
                                                     </div>
                                                     <div class="col-md-10 col-xs-9">
-                                                        <uib-progressbar max="100" min="0" value="resultsPercentage[game.GameId][item[0]]"
+                                                        <uib-progressbar max="100" min="0" value="selectedPercentage[game.GameId][item[0]]"
                                                             type="info"><span
                                                                 style="color:white; white-space:nowrap;">{{item[1].length}}</span></uib-progressbar>
                                                     </div>
@@ -181,7 +186,7 @@
 <div class="row" ng-show="!generalBetsAreOpen">
     <div class="col-md-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-money"></i> General Bets - Team</div>
+            <div class="panel-heading"><i class="fa-solid fa-money-bill"></i> General Bets - Team</div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-12">
@@ -219,7 +224,7 @@
 <div class="row" ng-show="!generalBetsAreOpen">
     <div class="col-md-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-money"></i> General Bets - Golden Boot Player</div>
+            <div class="panel-heading"><i class="fa-solid fa-money-bill"></i> General Bets - Golden Boot Player</div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-12">

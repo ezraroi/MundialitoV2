@@ -74,7 +74,7 @@
 <div class="row" data-access-level="Admin" cg-busy="{tracker:'editGame'}">
     <div class="col-md-12">
         <div class="panel panel-collapse panel-primary">
-            <div class="panel-heading"><i class="fa fa-clock-o"></i> Pending Update Games</div>
+            <div class="panel-heading"><i class="fa fa-clock"></i> Pending Update Games</div>
             <div class="panel-body">
                 <div class="row" ng-repeat="updatedGame in games | filter:isPendingUpdate">
                     <div class="col-md-12">
@@ -111,7 +111,7 @@
                                     </select>
                                 </div>
                                 <label class="col-md-1 control-label" for="Corners_{{updatedGame.AwayTeam.TeamId}}">
-                                    <i class="fa fa-flag-o" tooltip="Corners Mark"></i>
+                                    <i class="fa fa-flag" tooltip="Corners Mark"></i>
                                 </label>
                                 <div class="col-md-1">
                                     <select id="Corners_{{updatedGame.AwayTeam.TeamId}}"

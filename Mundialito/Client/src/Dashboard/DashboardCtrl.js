@@ -6,9 +6,19 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.pendingUpdateGames = false;
         $scope.oneAtATime = true;
         $scope.status = {};
-
         $scope.teamsDic = {};
         $scope.playersDic = {};
+        $scope.toggleValue = {};
+
+        $scope.changed = (game) => {
+            if ($scope.toggleValue[game.GameId]) {
+                $scope.selectedDic[game.GameId] = $scope.marksDic[game.GameId];
+                $scope.selectedPercentage[game.GameId] = $scope.marksPercentage[game.GameId];
+            } else {
+                $scope.selectedDic[game.GameId] = $scope.resultsDic[game.GameId];
+                $scope.selectedPercentage[game.GameId] = $scope.resultsPercentage[game.GameId];
+            }
+        }
 
         for (var i = 0; i < teams.length; i++) {
             $scope.teamsDic[teams[i].TeamId] = teams[i];
@@ -21,22 +31,41 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
             $scope.resultsDic = {};
+            $scope.marksDic = {};
+            $scope.selectedDic = {};
             $scope.resultsPercentage = {};
+            $scope.marksPercentage = {};
+            $scope.selectedPercentage = {};
             $scope.pendingUpdateGames = _.findWhere($scope.games, { IsPendingUpdate: true }) !== undefined;
             $scope.pendingUpdateGamesFolloweesBets = {};
             $log.info('DashboardCtrl: followees:' + $scope.security.user.Followees);
             _.filter($scope.games, (game) => game.IsPendingUpdate).forEach(game => {
                 BetsManager.getGameBets(game.GameId).then((data) => {
-                    let grouped = _.groupBy(data, (bet) => {return bet.HomeScore + "-" + bet.AwayScore});
-                    $scope.resultsDic[game.GameId] = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+                    let resulsGrouped = _.groupBy(data, (bet) => { return bet.HomeScore + "-" + bet.AwayScore });
+                    let marksGrouped = _.groupBy(data, (bet) => {
+                        if (bet.HomeScore === bet.AwayScore) {
+                            return 'X';
+                        }
+                        if (bet.HomeScore > bet.AwayScore) {
+                            return bet.Game.HomeTeam.ShortName;
+                        }
+                        return bet.Game.AwayTeam.ShortName;
+                    });
+                    $scope.resultsDic[game.GameId] = Object.entries(resulsGrouped).sort((a, b) => b[1].length - a[1].length);
+                    $scope.marksDic[game.GameId] = Object.entries(marksGrouped).sort((a, b) => b[1].length - a[1].length);
                     $scope.resultsPercentage[game.GameId] = {}
                     $scope.resultsDic[game.GameId].forEach(resItem => {
                         $scope.resultsPercentage[game.GameId][resItem[0]] = Math.round((resItem[1].length / data.length) * 100);
+                    });
+                    $scope.marksPercentage[game.GameId] = {}
+                    $scope.marksDic[game.GameId].forEach(markItem => {
+                        $scope.marksPercentage[game.GameId][markItem[0]] = Math.round((markItem[1].length / data.length) * 100);
                     });
                     let followeesBets = _.filter(data, (bet) => {
                         return $scope.security.user.Followees.includes(bet.User.Username) || $scope.security.user.Username === bet.User.Username;
                     });
                     $scope.pendingUpdateGamesFolloweesBets[game.GameId] = followeesBets;
+                    $scope.changed(game);
                 });
             });
         });
@@ -115,7 +144,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             return !item.IsOpen && !item.IsPendingUpdate;
         };
         $scope.isGameBet = (game) => (item) => item.Game.GameId === game.GameId;
-        $scope.hasBets = (game) => $scope.pendingUpdateGamesFolloweesBets[game.GameId] !== undefined &&  $scope.pendingUpdateGamesFolloweesBets[game.GameId].length > 0
+        $scope.hasBets = (game) => $scope.pendingUpdateGamesFolloweesBets[game.GameId] !== undefined && $scope.pendingUpdateGamesFolloweesBets[game.GameId].length > 0
         $scope.gridOptions = {
             ...Constants.TABLE_GRID_OPTIONS, ...{
                 data: 'users',
