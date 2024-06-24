@@ -12,7 +12,7 @@
                 </h3>
                 <h5 ng-if="game.IsBetResolved">
                     <i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i> {{game.CardsMark}}
-                    <i class="fa fa-flag-o" tooltip="Corners Mark"></i> {{game.CornersMark}}
+                    <i class="fa fa-flag" tooltip="Corners Mark"></i> {{game.CornersMark}}
                 </h5>
                 <h4>{{game.Stadium.Name}} Stadium</h4>
                 <h4>{{game.Date | date:'dd/MM/yy @ H:mm'}} <small ng-show="game.IsOpen">(<i class="fa fa-clock-o"></i>
@@ -73,9 +73,9 @@
                         <div class="col-md-2">
                             <select id="game_cards" name="game_cards" ui-select2="{allowClear: false}"
                                 class="form-control" ng-model="game.CardsMark" required placeholder="Game Cards Mark">
-                                <option value="1">1</option>
+                                <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
-                                <option value="2">2</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
                     </div>
@@ -85,9 +85,9 @@
                             <select id="game_corners" name="game_corners" ui-select2="{allowClear: false}"
                                 class="form-control" ng-model="game.CornersMark" required
                                 placeholder="Game Corners Mark">
-                                <option value="1">1</option>
+                                <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
-                                <option value="2">2</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
                     </div>
@@ -174,9 +174,9 @@
                             <select id="cards" name="cards" ng-readonly="!game.IsOpen" ui-select2="{allowClear: false}"
                                 class="form-control" ng-model="userBet.CardsMark" required
                                 placeholder="Game Cards Mark">
-                                <option value="1">1</option>
+                                <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
-                                <option value="2">2</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
                         <div class="col-md-7">
@@ -193,9 +193,9 @@
                             <select id="corners" name="corners" ng-readonly="!game.IsOpen"
                                 ui-select2="{allowClear: false}" class="form-control" ng-model="userBet.CornersMark"
                                 required placeholder="Game Corners Mark">
-                                <option value="1">1</option>
+                                <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
-                                <option value="2">2</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
                         <div class="col-md-7">
@@ -236,7 +236,7 @@
                                             <th>Result</th>
                                             <th><i class="fa fa-stop" style="color: #ffff00"
                                                     tooltip="Yellow Cards Mark"></i></th>
-                                            <th><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
+                                            <th><i class="fa fa-flag" tooltip="Corners Mark"></i></th>
                                             <th>Points</th>
                                         </thead>
                                         <tbody>
@@ -270,7 +270,7 @@
                                             <th>Result</th>
                                             <th><i class="fa fa-stop" style="color: #ffff00"
                                                     tooltip="Yellow Cards Mark"></i></th>
-                                            <th><i class="fa fa-flag-o" tooltip="Corners Mark"></i></th>
+                                            <th><i class="fa fa-flag" tooltip="Corners Mark"></i></th>
                                             <th>Points</th>
                                         </thead>
                                         <tbody>
@@ -348,7 +348,7 @@
                                 <th style="cursor: pointer" ng-click="sort('result')">Result</th>
                                 <th style="cursor: pointer" ng-click="sort('cards')"><i class="fa fa-stop"
                                         style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
-                                <th style="cursor: pointer" ng-click="sort('corners')"><i class="fa fa-flag-o"
+                                <th style="cursor: pointer" ng-click="sort('corners')"><i class="fa fa-flag"
                                         tooltip="Corners Mark"></i></th>
                                 <th style="cursor: pointer" ng-click="sort('points')">Points</th>
                             </thead>

@@ -30,16 +30,16 @@
                                     </td>
                                     <td>
                                         <select id="cards" name="cards" ui-select2="{allowClear: false}" class="form-control" ng-model="bets[game.GameId].CardsMark" required>
-                                            <option value="1">1</option>
+                                            <option value="1">{{game.HomeTeam.ShortName}}</option>
                                             <option value="X">X</option>
-                                            <option value="2">2</option>
+                                            <option value="2">{{game.AwayTeam.ShortName}}</option>
                                         </select>
                                     </td>
                                     <td>
                                         <select id="corners" name="corners" ui-select2="{allowClear: false}" class="form-control" ng-model="bets[game.GameId].CornersMark" required>
-                                            <option value="1">1</option>
+                                            <option value="1">{{game.HomeTeam.ShortName}}</option>
                                             <option value="X">X</option>
-                                            <option value="2">2</option>
+                                            <option value="2">{{game.AwayTeam.ShortName}}</option>
                                         </select>
                                     </td>
                                     <td class="text-center">{{game.CloseTime | date:'dd/MM/yy @ H:mm' }}</td>
