@@ -997,6 +997,52 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             .pluck('Username').filter((user) => user !== $scope.security.user.Username).value();
         $scope.neighborsBets = _.filter($scope.gameBets, (bet) => neighbors.includes(bet.User.Username));
     });
+
+    $scope.loadTeamsForm = () => {
+        $scope.teamsForm = {};
+        GamesManager.getTeamGames($scope.game.HomeTeam.TeamId).then((res) => {
+            storeTeamForm(res, $scope.game.HomeTeam.TeamId);
+        }).catch((err) => {
+            Alert.error('Failed to get teams form');
+            $log.error('Failed to get teams form', err);
+        });
+        GamesManager.getTeamGames($scope.game.AwayTeam.TeamId).then((res) => {
+            storeTeamForm(res, $scope.game.AwayTeam.TeamId);
+        }).catch((err) => {
+            Alert.error('Failed to get teams form');
+            $log.error('Failed to get teams form', err);
+        });
+    }
+
+    function storeTeamForm(games, teamId) {
+        const form = _.chain(games).sortBy((game) => new Date(game.Date)).filter((game) => game.IsBetResolved).map((game) => {
+            return getGameMark(game, teamId);
+        }).value();
+        $scope.teamsForm[teamId] = {
+            form : form,
+            games: _.filter(games, (game) => game.IsBetResolved)
+        }
+    }
+
+    function getGameMark(res, teamId) {
+        if (res.HomeTeam.TeamId === teamId) {
+            if (res.HomeScore > res.AwayScore) {
+                return { game : res.GameId, mark : "W" };
+            } else if (res.HomeScore < res.AwayScore) {
+                return { game : res.GameId, mark : "L" };
+            }
+            return { game : res.GameId, mark : "D" };
+        } else {
+            if (res.HomeScore > res.AwayScore) {
+                return { game : res.GameId, mark : "L" };
+            } else if (res.HomeScore < res.AwayScore) {
+                return { game : res.GameId, mark : "W" };
+            }
+            return { game : res.GameId, mark : "D" };
+        }
+    }
+
+    $scope.loadTeamsForm();
 }]);
 'use strict';
 angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesManager','games','teams', 'StadiumsManager' ,'Alert',function ($scope,$log, GamesManager, games, teams, StadiumsManager, Alert) {
