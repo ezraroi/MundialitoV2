@@ -126,7 +126,46 @@
 </div>
 <!-- End of Edit Panel -->
 <div ng-include="plugins['odds'].template"></div>
-<!-- Uer Bet -->
+<!-- Teams Last Games-->
+<div class="row" ng-if="teamsForm">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading" cg-busy="{tracker:'getTeamGames'}">
+                <i class="fa-solid fa-chart-line"></i> Teams Form
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
+                                title=" {{game.HomeTeam.Name}}"></i> {{game.HomeTeam.Name}} <span ng-repeat="mark in teamsForm[game.HomeTeam.TeamId].form"><span ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}" class="label">{{mark.mark}}</span> </span> 
+                            </div>
+                            <div class="panel-body">
+                                <mundialito-games info="teamsForm[game.HomeTeam.TeamId].games" show-only="true"></mundialito-games> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
+                                title=" {{game.AwayTeam.Name}}"></i> {{game.AwayTeam.Name}} <span ng-repeat="mark in teamsForm[game.AwayTeam.TeamId].form"><span ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}" class="label">{{mark.mark}}</span> </span> 
+                            </div>
+                            <div class="panel-body">
+                                <mundialito-games info="teamsForm[game.AwayTeam.TeamId].games" show-only="true"></mundialito-games> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Teams Last Games-->
+<!-- User Bet -->
 <div class="row">
     <div class="col-md-12">
         <div class="panel panel-default">
@@ -179,11 +218,6 @@
                                 <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
-                        <div class="col-md-7">
-                            <span class="help-block"><small><strong>X</strong> - Both teams will have the same number of
-                                    yellow cards, <strong>1</strong> - More yellow cards for {{game.HomeTeam.Name}},
-                                    <strong>2</strong> - More yellow cards for {{game.AwayTeam.Name}}</small></span>
-                        </div>
                     </div>
                     <div class="form-group" ng-class="{'has-error' : corners.$error}">
                         <label class="col-md-3 control-label" for="corners">
@@ -198,11 +232,6 @@
                                 <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
-                        <div class="col-md-7">
-                            <span class="help-block"><small><strong>X</strong> - Both teams will have the same number of
-                                    corners, <strong>1</strong> - More corners for {{game.HomeTeam.Name}},
-                                    <strong>2</strong> - More corners for {{game.AwayTeam.Name}}</small></span>
-                        </div>
                     </div>
                 </form>
                 <div class="col-md-2 col-xs-6 col-xs-offset-6 col-md-offset-10" ng-if="game.IsOpen">
@@ -216,7 +245,7 @@
         </div>
     </div>
 </div>
-<!-- End of Uer Bet -->
+<!-- End of User Bet -->
 <!-- Bets Highlights-->
 <div class="row" ng-if="(!game.IsOpen && usersMap)">
     <div class="col-md-12">
