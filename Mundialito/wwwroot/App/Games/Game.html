@@ -413,9 +413,9 @@
                             <select id="game_cards" name="game_cards" ui-select2="{allowClear: false}"
                                 class="form-control" ng-model="simulatedGame.CardsMark" required
                                 placeholder="Game Cards Mark">
-                                <option value="1">1</option>
+                                <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
-                                <option value="2">2</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
                     </div>
@@ -425,9 +425,9 @@
                             <select id="game_corners" name="game_corners" ui-select2="{allowClear: false}"
                                 class="form-control" ng-model="simulatedGame.CornersMark" required
                                 placeholder="Game Corners Mark">
-                                <option value="1">1</option>
+                                <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
-                                <option value="2">2</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
                             </select>
                         </div>
                     </div>

@@ -135,7 +135,7 @@ public class GamesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<NewGameModel>> PostGame(NewGameModel game)
+    public ActionResult<NewGameModel> PostGame(NewGameModel game)
     {
         if (game.AwayTeam.TeamId == game.HomeTeam.TeamId)
         {
