@@ -127,7 +127,7 @@
 <!-- End of Edit Panel -->
 <div ng-include="plugins['odds'].template"></div>
 <!-- Teams Last Games-->
-<div class="row" ng-if="teamsForm">
+<div class="row" ng-if="teamsForm[game.HomeTeam.TeamId].form.length > 0">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading" cg-busy="{tracker:'getTeamGames'}">
