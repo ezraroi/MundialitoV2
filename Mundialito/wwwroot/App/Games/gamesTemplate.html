@@ -1,6 +1,6 @@
 <div class="row">
     <!-- Normal Panel -->
-    <div class="col-md-11 col-xs-10">
+    <div ng-class="{'col-md-11 col-xs-10': !showOnly, 'col-md-12 col-xs-12': showOnly}">
         <div class="list-group">
             <a href="{{game.getUrl()}}" class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}" ng-repeat="game in games track by game.GameId" title="At {{game.Stadium.Name}} Stadium">
                 <div class="row">
@@ -12,7 +12,7 @@
                             <span class="label label-info"><i class="fa fa-clock"></i> Pending Update</span>
                         </div>
                         <div ng-if="!game.IsOpen && !game.IsPendingUpdate" class="text-center">
-                            {{::game.HomeScore}} - {{::game.AwayScore}} (<span tooltip="Cards Mark">{{::game.CardsMark}}</span>,<span tooltip="Corners Mark">{{::game.CornersMark}}</span>)
+                            {{::game.HomeScore}} - {{::game.AwayScore}} (<i class="fa fa-stop" style="color: #ffff00;"></i> {{::game.CardsMark}}</span>,<i class="fa fa-flag"></i> {{::game.CornersMark}}</span>)
                         </div>
                         <div ng-if="game.IsOpen" class="text-center">-</div>
                     </div>
