@@ -9,8 +9,11 @@ angular.module('mundialitoApp').factory('MundialitoUtils', [ 'Constants', functi
             return ((now - instance.LoadTime.getTime()) > Constants.REFRESH_TIME);
         },
         shortName : (name) => {
-            let temp = name.split(' ')
-            return temp[0].substring(0, 1) + '.' + temp[1].substring(0, 1);
+            if (name.indexOf(' ') !== -1) {
+                let temp = name.split(' ')
+                return temp[0].substring(0, 1) + '.' + temp[1].substring(0, 1);
+            }
+            return name.substring(0, 1);
         }
     };
 
