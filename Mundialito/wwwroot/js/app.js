@@ -639,6 +639,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.teamsDic = {};
         $scope.playersDic = {};
         $scope.toggleValue = {};
+        $scope.players = players;
 
         $scope.changed = (game) => {
             if ($scope.toggleValue[game.GameId]) {

@@ -182,7 +182,6 @@
         </div>
     </div>
 </div>
-
 <div class="row" ng-show="!generalBetsAreOpen">
     <div class="col-md-12">
         <div class="panel panel-info">
@@ -219,6 +218,38 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-md-12">
+                        <i class="fa-solid fa-crown"></i> Golden Boot Players
+                        <div class="pull-right">
+                            <form class="form-inline">
+                                <div class="form-group">
+                                  <label class="sr-only" for="search">Search</label>
+                                  <input type="text" ng-model="searchText" class="form-control" id="search" placeholder="Player">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="list-group" cg-busy="{tracker:'getPlayers'}">
+                            <span class="list-group-item" ng-repeat="player in players | filter:searchText">
+                                {{player.Name}}
+                            </span>
                         </div>
                     </div>
                 </div>
