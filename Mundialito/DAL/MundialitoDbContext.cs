@@ -97,7 +97,6 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 			.HasForeignKey(uf => uf.FolloweeId)
 			.OnDelete(DeleteBehavior.Restrict);
 
-
 		modelBuilder.Entity<IdentityUserLogin<string>>().HasKey(l => l.UserId);
 		modelBuilder.Entity<IdentityRole>().HasKey(r => r.Id);
 		modelBuilder.Entity<IdentityUserRole<string>>().HasKey(r => new { r.RoleId, r.UserId });

@@ -7,6 +7,10 @@ angular.module('mundialitoApp').factory('MundialitoUtils', [ 'Constants', functi
             }
             var now = new Date().getTime();
             return ((now - instance.LoadTime.getTime()) > Constants.REFRESH_TIME);
+        },
+        shortName : (name) => {
+            let temp = name.split(' ')
+            return temp[0].substring(0, 1) + '.' + temp[1].substring(0, 1);
         }
     };
 

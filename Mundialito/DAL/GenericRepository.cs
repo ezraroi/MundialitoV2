@@ -23,14 +23,11 @@ public class GenericRepository<TEntity> : IDisposable where TEntity : class
     public virtual IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null, string includeProperties = "")
     {
         IQueryable<TEntity> query = dbSet;
-
         if (filter != null)
         {
             query = query.Where(filter);
         }
-
         query = includeProperties.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
-
         if (orderBy != null)
         {
             return orderBy(query);

@@ -8,6 +8,7 @@ public class GeneralBetViewModel
 {
     public GeneralBetViewModel(GeneralBet bet, DateTime closeTime)
     {
+        OwnerId = bet.User.Id;
         GeneralBetId = bet.GeneralBetId;
         WinningTeamId = bet.WinningTeamId;
         GoldenBootPlayerId = bet.GoldBootPlayerId;
@@ -21,27 +22,30 @@ public class GeneralBetViewModel
 
     [JsonPropertyName("GeneralBetId")]
     public int GeneralBetId { get; set; }
-
-    [JsonPropertyName("WinningTeamId")]
-    public int WinningTeamId { get; set; }
-
+    
     [JsonPropertyName("OwnerName")]
-    public String OwnerName { get; private set; }
+    public string OwnerName { get; private set; }
 
     [JsonPropertyName("GoldenBootPlayerId")]
     public int GoldenBootPlayerId { get; set; }
 
+    [JsonPropertyName("WinningTeamId")]
+    public int WinningTeamId { get; set; }
+
     [JsonPropertyName("IsResolved")]
-    public Boolean IsResolved { get; set; }
+    public bool IsResolved { get; set; }
 
     [JsonPropertyName("IsClosed")]
-    public Boolean IsClosed { get; private set; }
+    public bool IsClosed { get; private set; }
     
     [JsonPropertyName("Points")]
     public int Points { get; set; }
 
     [JsonPropertyName("CloseTime")]
     public DateTime CloseTime { get; set; }
+
+    [JsonPropertyName("OwnerId")]
+    public string OwnerId { get; set; }
 }
 
 public class NewGeneralBetModel
@@ -53,7 +57,7 @@ public class NewGeneralBetModel
     public int GoldenBootPlayerId { get; set; }
 
     [JsonPropertyName("GeneralBetId")]
-    public int GeneralBetId { get; set; }
+    public int GeneralBetId { get; set; }   
 }
 
 public class UpdateGenralBetModel
@@ -68,8 +72,8 @@ public class UpdateGenralBetModel
 public class ResolveGeneralBetModel
 {
     [JsonPropertyName("PlayerIsRight")]
-    public Boolean PlayerIsRight { get; set; }
+    public bool PlayerIsRight { get; set; }
 
     [JsonPropertyName("TeamIsRight")]
-    public Boolean TeamIsRight { get; set; }
+    public bool TeamIsRight { get; set; }
 }

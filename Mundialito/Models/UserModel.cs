@@ -9,26 +9,12 @@ public class UserModel
     {
         Username = user.UserName;
         Name = string.Format("{0} {1}", user.FirstName, user.LastName);
-        Points = 0;
-        Place = string.Empty;
         Id = user.Id;
         Email = user.Email;
     }
 
-    public UserModel(string id, string username)
-    {
-        Username = username;
-        Id = id;
-    }
-
     [JsonPropertyName("Id")]
     public string Id { get; private set; }
-
-    [JsonPropertyName("Place")]
-    public string Place { get; set; }
-
-    [JsonPropertyName("PlaceDiff")]
-    public string PlaceDiff { get; set; }
 
     [JsonPropertyName("Email")]
     public string Email { get; set; }
@@ -41,6 +27,22 @@ public class UserModel
 
     [JsonPropertyName("Name")]
     public string Name { get; set; }
+    
+}
+
+public class UserWithPointsModel : UserModel
+{
+    public UserWithPointsModel(MundialitoUser user) : base(user)
+    {
+        Points = 0;
+        Place = string.Empty;
+    }
+
+    [JsonPropertyName("Place")]
+    public string Place { get; set; }
+
+    [JsonPropertyName("PlaceDiff")]
+    public string PlaceDiff { get; set; }
 
     [JsonPropertyName("Points")]
     public int Points { get; set; }
@@ -60,11 +62,15 @@ public class UserModel
     [JsonPropertyName("Corners")]
     public int Corners { get; private set; }
 
+    [JsonPropertyName("GeneralBet")]
+    public GeneralBetViewModel? GeneralBet { get; set; }
+
     [JsonPropertyName("YellowCards")]
     public int YellowCards { get; private set; }
 
     public void SetGeneralBet(GeneralBetViewModel generalBet)
     {
+        GeneralBet = generalBet;
         if (generalBet.IsResolved)
         {
             Points += generalBet.Points;
