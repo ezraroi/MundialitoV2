@@ -76,6 +76,8 @@
                 templateUrl: 'App/Games/Game.html',
                 controller: 'GameCtrl',
                 resolve: {
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()],
                     game: ['$route', 'GamesManager', ($route, GamesManager) => {
                             var gameId = $route.current.params.gameId;
                             return GamesManager.getGame(gameId);

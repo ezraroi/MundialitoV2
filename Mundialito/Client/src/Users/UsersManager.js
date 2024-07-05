@@ -68,20 +68,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             return deferred.promise;
         },
 
-        getTable: function () {
-            var scope = this;
-            $log.debug('UsersManager: will fetch table from server');
-            return $http.get('api/users/table', { tracker: 'getUsers' })
-                .then((usersArray) => {
-                    var users = [];
-                    usersArray.data.forEach((userData) => {
-                        var user = scope._retrieveInstance(userData.Username, userData);
-                        users.push(user);
-                    });
-                    return users;
-                });
-        },
-
         getSocial: (username) => {
             $log.debug('UsersManager: will fetch followers and followees of user ' + username);
             return $http.get('api/users/' + username + '/followees', { tracker: 'getSocial' })
@@ -120,7 +106,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
                         var user = scope._retrieveInstance(userData.Username, userData);
                         users.push(user);
                     });
-
                     deferred.resolve(users);
                 })
                 .catch((e) => {

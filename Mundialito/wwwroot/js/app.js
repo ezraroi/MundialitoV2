@@ -76,6 +76,8 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                 templateUrl: 'App/Games/Game.html',
                 controller: 'GameCtrl',
                 resolve: {
+                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()],
                     game: ['$route', 'GamesManager', ($route, GamesManager) => {
                             var gameId = $route.current.params.gameId;
                             return GamesManager.getGame(gameId);
@@ -193,11 +195,12 @@ angular.module('mundialitoApp').constant('Constants',
             rowTemplate: '<div ng-click="grid.appScope.goToUser(row)" style="cursor: pointer" ng-class="{\'text-primary\':row.entity.Username===grid.appScope.security.user.Username }"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ui-grid-cell></div></div>',
             columnDefs: [
                 { field: 'Place', displayName: '', resizable: false, maxWidth: 30 },
-                { field: 'Name', displayName: 'Name', resizable: true, minWidth: 120 },
-                { field: 'Points', displayName: 'Points', resizable: true, minWidth: 45 },
+                { field: 'Name', displayName: 'Name', resizable: true, minWidth: 115 },
+                { field: 'Points', displayName: 'Points', resizable: true, minWidth: 45, maxWidth: 75},
+                { field: 'GeneralBet.WinningTeam', displayName: 'Team', resizable: false, maxWidth: 45, cellTemplate: '<div class="ui-grid-cell-contents text-center" title="TOOLTIP"><i ng-class="[\'flag\',\'flag-fifa-{{grid.appScope.teamsDic[row.entity.GeneralBet.WinningTeamId].ShortName | lowercase}}\']" tooltip="{{grid.appScope.teamsDic[row.entity.GeneralBet.WinningTeamId].Name}}"></i></div>' },
+                { field: 'GeneralBet.GoldenBootPlayer', displayName: 'Player', resizable: false, minWidth: 50, maxWidth: 50 },
                 { field: 'TotalMarks', displayName: 'Total Marks', resizable: true },
                 { field: 'Results', displayName: 'Results', resizable: true },
-                { field: 'Marks', displayName: 'Marks', resizable: true },
                 { field: 'YellowCards', displayName: 'Yellow Cards Marks', resizable: true },
                 { field: 'Corners', displayName: 'Corners Marks', resizable: true },
                 { field: 'PlaceDiff', displayName: '', resizable: false, maxWidth: 45, cellTemplate: '<div ng-class="{\'text-success\': COL_FIELD.indexOf(\'+\') !== -1, \'text-danger\': (COL_FIELD.indexOf(\'+\') === -1) && (COL_FIELD !== \'0\')}"><div class="ngCellText">{{::COL_FIELD}}</div></div>' }
@@ -626,8 +629,8 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players', 'BetsManager',
-    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players, BetsManager) {
+angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players', 'BetsManager', 'MundialitoUtils',
+    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players, BetsManager, MundialitoUtils) {
         $scope.generalBetsAreOpen = false;
         $scope.submittedGeneralBet = true;
         $scope.pendingUpdateGames = false;
@@ -762,8 +765,18 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 });
             }
         });
-        UsersManager.getTable().then((users) => {
+        UsersManager.loadAllUsers().then((users) => {
             $scope.users = users;
+            $scope.users.forEach((user) => {
+                if (angular.isDefined(user.GeneralBet)) {
+                    user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
+                    user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
+                }
+            });
+            $scope.usersDic = users.reduce((acc, item) => {
+                acc[item.Id] = item;
+                return acc;
+            }, {});
         });
         $scope.isOpenForBetting = (item) => item.IsOpen;
         $scope.isPendingUpdate = (item) => item.IsPendingUpdate;
@@ -783,6 +796,9 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 }
             }
         };
+
+        $scope.test = (grid,row) => {
+            return "";        }
 
         function saveState() {
             var state = $scope.gridApi.saveState.save();
@@ -840,8 +856,10 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players) {
     $scope.game = game;
+    $scope.teamsDic = {};
+    $scope.playersDic = {};
     $scope.simulatedGame = {};
     $scope.plugins = {};
     $scope.userBet = userBet;
@@ -851,7 +869,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
     $scope.integrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
-
+    for (var i = 0; i < teams.length; i++) {
+        $scope.teamsDic[teams[i].TeamId] = teams[i];
+    }
+    for (var i = 0; i < players.length; i++) {
+        $scope.playersDic[players[i].PlayerId] = players[i];
+    }
     PluginsProvider.getGameDetailsFromAll($scope.game).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
@@ -862,7 +885,6 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         BetsManager.getGameBets($scope.game.GameId).then((data) => {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
-
             var chart1 = {};
             chart1.type = "PieChart";
             chart1.options = {
@@ -925,6 +947,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         $log.debug('GameCtrl: simulating game');
         GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
             $scope.users = data;
+            $scope.users.forEach((user) => {
+                if (angular.isDefined(user.GeneralBet)) {
+                    user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
+                    user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
+                }
+            });
             Alert.success('Table updated with simulation result');
         }).catch((err) => {
             Alert.error('Failed to simulate game, please try again');
@@ -976,7 +1004,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         return $scope.usersMap.get(user.Username).Place;
     }
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
-    UsersManager.getTable().then((users) => {
+    UsersManager.loadAllUsers().then((users) => {
         $scope.usersMap = new Map();
         users.forEach((obj) => {
             $scope.usersMap.set(obj.Username, obj);
@@ -1427,6 +1455,10 @@ angular.module('mundialitoApp').factory('MundialitoUtils', [ 'Constants', functi
             }
             var now = new Date().getTime();
             return ((now - instance.LoadTime.getTime()) > Constants.REFRESH_TIME);
+        },
+        shortName : (name) => {
+            let temp = name.split(' ')
+            return temp[0].substring(0, 1) + '.' + temp[1].substring(0, 1);
         }
     };
 
@@ -2472,20 +2504,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             return deferred.promise;
         },
 
-        getTable: function () {
-            var scope = this;
-            $log.debug('UsersManager: will fetch table from server');
-            return $http.get('api/users/table', { tracker: 'getUsers' })
-                .then((usersArray) => {
-                    var users = [];
-                    usersArray.data.forEach((userData) => {
-                        var user = scope._retrieveInstance(userData.Username, userData);
-                        users.push(user);
-                    });
-                    return users;
-                });
-        },
-
         getSocial: (username) => {
             $log.debug('UsersManager: will fetch followers and followees of user ' + username);
             return $http.get('api/users/' + username + '/followees', { tracker: 'getSocial' })
@@ -2524,7 +2542,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
                         var user = scope._retrieveInstance(userData.Username, userData);
                         users.push(user);
                     });
-
                     deferred.resolve(users);
                 })
                 .catch((e) => {

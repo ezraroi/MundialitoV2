@@ -7,6 +7,8 @@ using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.GeneralBets;
+using Mundialito.DAL.Players;
+using Mundialito.DAL.Teams;
 using Mundialito.Logic;
 using Mundialito.Models;
 
@@ -28,7 +30,7 @@ public class UsersController : ControllerBase
     private readonly TableBuilder tableBuilder;
     private readonly MundialitoDbContext mundialitoDbContext;
     private readonly ILogger logger;
-
+    
     public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
     {
         this.actionLogsRepository = actionLogsRepository;
@@ -44,17 +46,11 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public IEnumerable<UserModel> GetAllUsers()
+    public ActionResult<IEnumerable<UserWithPointsModel>> GetAllUsers()
     {
-        var res = GetTableDetails().ToList();
+        var res = GetTableDetails(userManager.Users.ToList()).ToList();
         res.ForEach(user => IsAdmin(user));
-        return res;
-    }
-
-    [HttpGet("table")]
-    public ActionResult<IEnumerable<UserModel>> GetTable()
-    {
-        return Ok(GetTableDetails());
+        return Ok(res);
     }
 
     [HttpPost("follow/{username}")]
@@ -139,21 +135,18 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{username}")]
-    public async Task<ActionResult<UserModel>> GetUserByUsername(string username)
+    public async Task<ActionResult<UserWithPointsModel>> GetUserByUsername(string username)
     {
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
             return NotFound(new ErrorMessage { Message = string.Format("No such user '{0}'", username) });
-        var userModel = new UserModel(user);
-        betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
-        var generalBet = generalBetsRepository.GetUserGeneralBet(username);
-        if (generalBet != null)
-            userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
-        return await IsAdmin(userModel);
+        var res = GetTableDetails(new List<MundialitoUser>{user}).ToList();
+        res.ForEach(user => IsAdmin(user));
+        return Ok(res.First());
     }
 
     [HttpGet("me")]
-    public async Task<ActionResult<UserModel>> GetMe()
+    public async Task<ActionResult<UserWithPointsModel>> GetMe()
     {
         return await GetUserByUsername(httpContextAccessor.HttpContext?.User.Identity.Name);
     }
@@ -214,7 +207,7 @@ public class UsersController : ControllerBase
         return Ok(param);
     }
 
-    private void AddLog(ActionType actionType, String message)
+    private void AddLog(ActionType actionType, string message)
     {
         try
         {
@@ -227,9 +220,9 @@ public class UsersController : ControllerBase
         }
     }
 
-    private IEnumerable<UserModel> GetTableDetails()
+    private IEnumerable<UserWithPointsModel> GetTableDetails(IEnumerable<MundialitoUser> users)
     {
-        return tableBuilder.GetTable(userManager.Users, betsRepository.GetBets(), generalBetsRepository.GetGeneralBets());
+        return tableBuilder.GetTable(users, betsRepository.GetBets().ToList(), generalBetsRepository.GetGeneralBets().Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList());
     }
 }
 

@@ -12,7 +12,7 @@ public class GeneralBet
 
     }
 
-    public void Resolve(Boolean player, Boolean team)
+    public void Resolve(bool player, bool team)
     {
         IsResolved = true;
         TeamPoints = team ? 12 : 0;
@@ -35,7 +35,7 @@ public class GeneralBet
     public int GoldBootPlayerId { get; set; }
 
     [JsonPropertyName("IsResolved")]
-    public Boolean IsResolved { get; set; }
+    public bool IsResolved { get; set; }
 
     [JsonPropertyName("TeamPoints")]
     public int? TeamPoints { get; set; }

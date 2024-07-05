@@ -1,6 +1,8 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players) {
     $scope.game = game;
+    $scope.teamsDic = {};
+    $scope.playersDic = {};
     $scope.simulatedGame = {};
     $scope.plugins = {};
     $scope.userBet = userBet;
@@ -10,7 +12,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
     $scope.integrationsData = $scope.toKeyValue($scope.game.IntegrationsData);
-
+    for (var i = 0; i < teams.length; i++) {
+        $scope.teamsDic[teams[i].TeamId] = teams[i];
+    }
+    for (var i = 0; i < players.length; i++) {
+        $scope.playersDic[players[i].PlayerId] = players[i];
+    }
     PluginsProvider.getGameDetailsFromAll($scope.game).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
@@ -21,7 +28,6 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         BetsManager.getGameBets($scope.game.GameId).then((data) => {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
-
             var chart1 = {};
             chart1.type = "PieChart";
             chart1.options = {
@@ -84,6 +90,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         $log.debug('GameCtrl: simulating game');
         GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
             $scope.users = data;
+            $scope.users.forEach((user) => {
+                if (angular.isDefined(user.GeneralBet)) {
+                    user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
+                    user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
+                }
+            });
             Alert.success('Table updated with simulation result');
         }).catch((err) => {
             Alert.error('Failed to simulate game, please try again');
@@ -135,7 +147,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         return $scope.usersMap.get(user.Username).Place;
     }
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
-    UsersManager.getTable().then((users) => {
+    UsersManager.loadAllUsers().then((users) => {
         $scope.usersMap = new Map();
         users.forEach((obj) => {
             $scope.usersMap.set(obj.Username, obj);

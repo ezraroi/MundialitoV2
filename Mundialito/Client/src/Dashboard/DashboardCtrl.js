@@ -1,6 +1,6 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players', 'BetsManager',
-    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players, BetsManager) {
+angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', 'Constants', '$location', '$timeout', 'GamesManager', 'UsersManager', 'GeneralBetsManager', 'teams', 'players', 'BetsManager', 'MundialitoUtils',
+    function ($scope, $log, Constants, $location, $timeout, GamesManager, UsersManager, GeneralBetsManager, teams, players, BetsManager, MundialitoUtils) {
         $scope.generalBetsAreOpen = false;
         $scope.submittedGeneralBet = true;
         $scope.pendingUpdateGames = false;
@@ -135,8 +135,18 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 });
             }
         });
-        UsersManager.getTable().then((users) => {
+        UsersManager.loadAllUsers().then((users) => {
             $scope.users = users;
+            $scope.users.forEach((user) => {
+                if (angular.isDefined(user.GeneralBet)) {
+                    user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
+                    user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
+                }
+            });
+            $scope.usersDic = users.reduce((acc, item) => {
+                acc[item.Id] = item;
+                return acc;
+            }, {});
         });
         $scope.isOpenForBetting = (item) => item.IsOpen;
         $scope.isPendingUpdate = (item) => item.IsPendingUpdate;
@@ -156,6 +166,9 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 }
             }
         };
+
+        $scope.test = (grid,row) => {
+            return "";        }
 
         function saveState() {
             var state = $scope.gridApi.saveState.save();

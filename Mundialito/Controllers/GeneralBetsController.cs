@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.GeneralBets;
+using Mundialito.DAL.Players;
+using Mundialito.DAL.Teams;
 using Mundialito.Logic;
 using Mundialito.Models;
 
@@ -41,17 +43,18 @@ public class GeneralBetsController : ControllerBase
         {
             return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet"});
         }
-        return Ok(generalBetsRepository.GetGeneralBets().Select(bet => new GeneralBetViewModel(bet, tournamentTimesUtils.GetGeneralBetsCloseTime())).OrderBy(bet => bet.OwnerName));
+        return Ok(generalBetsRepository.GetGeneralBets().Select(bet => 
+            new GeneralBetViewModel(bet, tournamentTimesUtils.GetGeneralBetsCloseTime())).OrderBy(bet => bet.OwnerName));
     }
 
     [HttpGet("has-bet/{username}")]
-    public Boolean HasBet(string username)
+    public bool HasBet(string username)
     {
         return generalBetsRepository.IsGeneralBetExists(username);
     }
 
     [HttpGet("CanSubmitBets")]
-    public Boolean CanSubmitBets()
+    public bool CanSubmitBets()
     {
         return dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime();
     }
@@ -60,9 +63,7 @@ public class GeneralBetsController : ControllerBase
     public ActionResult<GeneralBetViewModel> GetUserGeneralBet(string username)
     {
         if (httpContextAccessor.HttpContext?.User.Identity.Name != username && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
-        {
             return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet"});
-        }
         var item = generalBetsRepository.GetUserGeneralBet(username);
         if (item == null)
             return NotFound(string.Format("User '{0}' dosen't have a general bet yet", username));
@@ -83,7 +84,7 @@ public class GeneralBetsController : ControllerBase
     public async Task<ActionResult<NewGeneralBetModel>> PostBet(NewGeneralBetModel newBet)
     {
         var validate = Validate();
-        if (!String.IsNullOrEmpty(validate))
+        if (!string.IsNullOrEmpty(validate))
         {
             AddLog(ActionType.ERROR, validate);
             return BadRequest(new ErrorMessage { Message = validate});
@@ -165,10 +166,10 @@ public class GeneralBetsController : ControllerBase
             AddLog(ActionType.ERROR, "General bets are already closed for betting");
             return "General bets are already closed for betting";
         }
-        return String.Empty;
+        return string.Empty;
     }
 
-    private void AddLog(ActionType actionType, String message)
+    private void AddLog(ActionType actionType, string message)
     {
         try
         {
