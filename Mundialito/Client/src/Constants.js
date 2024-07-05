@@ -18,8 +18,8 @@ angular.module('mundialitoApp').constant('Constants',
                 { field: 'GeneralBet.GoldenBootPlayer', displayName: 'Player', resizable: false, minWidth: 50, maxWidth: 50 },
                 { field: 'TotalMarks', displayName: 'Total Marks', resizable: true },
                 { field: 'Results', displayName: 'Results', resizable: true },
-                { field: 'YellowCards', displayName: 'Yellow Cards Marks', resizable: true },
-                { field: 'Corners', displayName: 'Corners Marks', resizable: true },
+                { field: 'YellowCards', displayName: 'Yellow Cards Marks', maxWidth: 55, resizable: false, headerCellTemplate: '<div class="text-center" style="margin-top: 5px;"><i class="fa fa-stop fa-2xl" style="color: #ffff00"></i></div>' },
+                { field: 'Corners', displayName: 'Corners Marks', maxWidth: 55, resizable: false, headerCellTemplate: '<div class="text-center" style="margin-top: 5px;"><i class="fa fa-flag fa-xl"></i></div>' },,
                 { field: 'PlaceDiff', displayName: '', resizable: false, maxWidth: 45, cellTemplate: '<div ng-class="{\'text-success\': COL_FIELD.indexOf(\'+\') !== -1, \'text-danger\': (COL_FIELD.indexOf(\'+\') === -1) && (COL_FIELD !== \'0\')}"><div class="ngCellText">{{::COL_FIELD}}</div></div>' }
             ],
         }
