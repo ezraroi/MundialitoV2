@@ -36,7 +36,10 @@
 <div class="row">
     <div class="col-md-12">
         <div class="panel panel-success" cg-busy="{tracker:'getTeamGames'}">
-            <div class="panel-heading">{{team.Name}} Games</div>
+            <div class="panel-heading">
+                <i ng-class="['flag','flag-fifa-{{team.ShortName | lowercase}}']"
+                                title=" {{team.Name}}"></i> {{team.Name}} Games <span ng-repeat="mark in teamsForm[team.TeamId].form"><span ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}" class="label">{{mark.mark}}</span> </span> 
+            </div>
             <div class="panel-body">
                 <mundialito-games info="games" show-only="true"></mundialito-games>
             </div>

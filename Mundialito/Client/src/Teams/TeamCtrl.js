@@ -1,8 +1,9 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'TeamsManager', 'team', 'games', 'Alert', 'PluginsProvider', function ($scope, $log, TeamsManager, team, games, Alert, PluginsProvider) {
+angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'TeamsManager', 'team', 'games', 'Alert', 'PluginsProvider', 'MundialitoUtils', function ($scope, $log, TeamsManager, team, games, Alert, PluginsProvider, MundialitoUtils) {
     $scope.team = team;
     $scope.games = games;
     $scope.plugins = {};
+    $scope.teamsForm = {};
     $scope.showEditForm = false;
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
@@ -18,6 +19,13 @@ angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'Teams
         return res;
     };
 
+    const form = _.chain($scope.games).sortBy((game) => new Date(game.Date)).filter((game) => game.IsBetResolved).map((game) => {
+        return MundialitoUtils.getGameMark(game, $scope.team.TeamId);
+    }).value();
+    $scope.teamsForm[$scope.team.TeamId] = {
+        form : form,
+        games: _.filter($scope.games, (game) => game.IsBetResolved)
+    }
     PluginsProvider.getTeamDetailsFromAll($scope.team).then((results) => {
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };

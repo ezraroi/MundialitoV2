@@ -186,31 +186,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     function storeTeamForm(games, teamId) {
         const form = _.chain(games).sortBy((game) => new Date(game.Date)).filter((game) => game.IsBetResolved).map((game) => {
-            return getGameMark(game, teamId);
+            return MundialitoUtils.getGameMark(game, teamId);
         }).value();
         $scope.teamsForm[teamId] = {
             form : form,
             games: _.filter(games, (game) => game.IsBetResolved)
         }
     }
-
-    function getGameMark(res, teamId) {
-        if (res.HomeTeam.TeamId === teamId) {
-            if (res.HomeScore > res.AwayScore) {
-                return { game : res.GameId, mark : "W" };
-            } else if (res.HomeScore < res.AwayScore) {
-                return { game : res.GameId, mark : "L" };
-            }
-            return { game : res.GameId, mark : "D" };
-        } else {
-            if (res.HomeScore > res.AwayScore) {
-                return { game : res.GameId, mark : "L" };
-            } else if (res.HomeScore < res.AwayScore) {
-                return { game : res.GameId, mark : "W" };
-            }
-            return { game : res.GameId, mark : "D" };
-        }
-    }
-
     $scope.loadTeamsForm();
 }]);
