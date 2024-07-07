@@ -905,6 +905,27 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 ['2', mark2]
             ];
             $scope.chart = chart1;
+            UsersManager.loadAllUsers().then((users) => {
+                $scope.usersMap = new Map();
+                users.forEach((obj) => {
+                    $scope.usersMap.set(obj.Username, obj);
+                });
+                let followeesUsers = _.chain(users).filter((user) => $scope.security.user.Followees.includes(user.Username)).pluck('Username').value();
+                $scope.followeesBets = _.filter($scope.gameBets, (bet) => followeesUsers.includes(bet.User.Username));
+                let topUsers = _.chain(users).first(3).pluck('Username').value();
+                $scope.top3UsersBets = _.filter($scope.gameBets, (bet) => topUsers.includes(bet.User.Username));
+                let myPlace = 0;
+                users.forEach((user, place) => {
+                    if (user.Username === $scope.security.user.Username) {
+                        myPlace = place;
+                    }
+                });
+                let lowIndex = Math.max(myPlace - 3, 0);
+                let upperIndex = Math.min(myPlace + 3, users.length);
+                let neighbors = _.chain(users.slice(lowIndex, upperIndex + 1))
+                    .pluck('Username').filter((user) => user !== $scope.security.user.Username).value();
+                $scope.neighborsBets = _.filter($scope.gameBets, (bet) => neighbors.includes(bet.User.Username));
+            });
         });
     }
 
@@ -1005,28 +1026,6 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         return $scope.usersMap.get(user.Username).Place;
     }
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
-    UsersManager.loadAllUsers().then((users) => {
-        $scope.usersMap = new Map();
-        users.forEach((obj) => {
-            $scope.usersMap.set(obj.Username, obj);
-        });
-        let followeesUsers = _.chain(users).filter((user) => $scope.security.user.Followees.includes(user.Username)).pluck('Username').value();
-        $scope.followeesBets = _.filter($scope.gameBets, (bet) => followeesUsers.includes(bet.User.Username));
-        let topUsers = _.chain(users).first(3).pluck('Username').value();
-        $scope.top3UsersBets = _.filter($scope.gameBets, (bet) => topUsers.includes(bet.User.Username));
-        let myPlace = 0;
-        users.forEach((user, place) => {
-            if (user.Username === $scope.security.user.Username) {
-                myPlace = place;
-            }
-        });
-        let lowIndex = Math.max(myPlace - 3, 0);
-        let upperIndex = Math.min(myPlace + 3, users.length);
-        let neighbors = _.chain(users.slice(lowIndex, upperIndex + 1))
-            .pluck('Username').filter((user) => user !== $scope.security.user.Username).value();
-        $scope.neighborsBets = _.filter($scope.gameBets, (bet) => neighbors.includes(bet.User.Username));
-    });
-
     $scope.loadTeamsForm = () => {
         $scope.teamsForm = {};
         GamesManager.getTeamGames($scope.game.HomeTeam.TeamId).then((res) => {
