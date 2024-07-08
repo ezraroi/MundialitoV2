@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -97,12 +96,17 @@ public class StatsController : ControllerBase
             Leader = getSafe(leaderPoints, games),
             Overall = getSafe(getSafe(allPoins, users), games),
             Followees = getSafe(getSafe(followeesPoints, followees.Count()), games),
+            BestResult = new BestResult {
+                Name = leader.FirstName + " " + leader.LastName,
+                Value = getSafe(leaderPoints, games),
+            },
             Category = "Points per Match"
         };
     }
 
     private PerGameModel getCornersPointsPerMatch(float games, float users, List<Bet> bets, MundialitoUser user, MundialitoUser loggedUser, MundialitoUser leader, IEnumerable<MundialitoUser> followees)
     {
+        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.CornersWin).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
         var requestedCorners = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.CornersWin).Count();
         var followeesCorners = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.CornersWin).Count();
         var loggedCorners = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.CornersWin).Count();
@@ -115,12 +119,17 @@ public class StatsController : ControllerBase
             Leader = getSafe(leaderCorners, games),
             Overall = getSafe(getSafe(allCorners, users), games),
             Followees = getSafe(getSafe(followeesCorners, followees.Count()), games),
+            BestResult = new BestResult{
+                Value = getSafe(best.Value, games),
+                Name = best.Key,
+            },
             Category = "Corners points per Match (out of 1 point)"
         };
     }
 
     private PerGameModel getCardsPointsPerMatch(float games, float users, List<Bet> bets, MundialitoUser user, MundialitoUser loggedUser, MundialitoUser leader, IEnumerable<MundialitoUser> followees)
     {
+        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.CardsWin).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
         var requestedCards = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.CardsWin).Count();
         var followeesCards = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.CardsWin).Count();
         var loggedCards = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.CardsWin).Count();
@@ -133,12 +142,17 @@ public class StatsController : ControllerBase
             Leader = getSafe(leaderCards, games),
             Overall = getSafe(getSafe(allCards, users), games),
             Followees = getSafe(getSafe(followeesCards, followees.Count()), games),
+            BestResult = new BestResult{
+                Value = getSafe(best.Value, games),
+                Name = best.Key,
+            },
             Category = "Cards points per Match (out of 1 point)"
         };
     }
 
     private PerGameModel getMarkPerMatch(float games, float users, List<Bet> bets, MundialitoUser user, MundialitoUser loggedUser, MundialitoUser leader, IEnumerable<MundialitoUser> followees)
     {
+        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.GameMarkWin).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
         var requested = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.GameMarkWin).Count();
         var followeesMarks = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.GameMarkWin).Count();
         var logged = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.GameMarkWin).Count();
@@ -151,12 +165,17 @@ public class StatsController : ControllerBase
             Leader = getSafe(leaderMarks, games),
             Overall = getSafe(getSafe(all, users), games),
             Followees = getSafe(getSafe(followeesMarks, followees.Count()), games),
+            BestResult = new BestResult{
+                Value = getSafe(best.Value, games),
+                Name = best.Key,
+            },
             Category = "Match mark win probability"
         };
     }
 
     private PerGameModel getResultProbability(float games, float users, List<Bet> bets, MundialitoUser user, MundialitoUser loggedUser, MundialitoUser leader, IEnumerable<MundialitoUser> followees)
     {
+        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.ResultWin).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
         var requested = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.ResultWin).Count();
         var followeesRes = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.ResultWin).Count();
         var logged = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.ResultWin).Count();
@@ -169,13 +188,19 @@ public class StatsController : ControllerBase
             Leader = getSafe(leaderRes, games),
             Overall = getSafe(getSafe(all, users), games),
             Followees = getSafe(getSafe(followeesRes, followees.Count()), games),
+            BestResult = new BestResult{
+                Value = getSafe(best.Value, games),
+                Name = best.Key,
+            },
             Category = "Match result win probability"
         };
     }
 
     private PerGameModel getNumOfBingo(float games, float users, List<Bet> bets, MundialitoUser user, MundialitoUser loggedUser, MundialitoUser leader, IEnumerable<MundialitoUser> followees)
     {
+        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.Points == 7).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
         var requested = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.Points == 7).Count();
+        var followeesRes = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.Points == 7).Count();
         var logged = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.Points == 7).Count();
         var leaderBingo = bets.Where((bet) => bet.User.UserName == leader.UserName).Where((bet) => bet.Points == 7).Count();
         var all = bets.Where((bet) => bet.Points == 7).Count();
@@ -185,6 +210,11 @@ public class StatsController : ControllerBase
             User = requested,
             Leader = leaderBingo,
             Overall = getSafe(all, users),
+            Followees = getSafe(followeesRes, followees.Count()),
+            BestResult = new BestResult{
+                Value = best.Value, 
+                Name = best.Key,
+            },
             Category = "Total Bingos"
         };
     }
