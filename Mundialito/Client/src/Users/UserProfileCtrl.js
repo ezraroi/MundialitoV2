@@ -84,7 +84,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
                 $scope.security.user.Followees.splice(index, 1);
                 Alert.success('You no longer following ' + $scope.profileUser.Username);
             }).catch((err) => {
-                Alert.error('Failed to unfollow ' + $scope.profileUser.Username + ': ' + e);
+                Alert.error('Failed to unfollow ' + $scope.profileUser.Username + ': ' + err);
             });
         } else {
             UsersManager.follow($scope.profileUser.Username).then(() => {
@@ -92,7 +92,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
                 $scope.security.user.Followees.push($scope.profileUser.Username);
                 Alert.success('You are now following ' + $scope.profileUser.Username);
             }).catch((err) => {
-                Alert.error('Failed to follow ' + $scope.profileUser.Username + ': ' + e);
+                Alert.error('Failed to follow ' + $scope.profileUser.Username + ': ' + err);
             });
         }
     };
@@ -102,4 +102,21 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         $scope.followers = data['followers'];
         $scope.followees = data['followees'];
     });
+
+    if ($scope.isLoggedUserProfile()) {
+        UsersManager.getMyStats().then((data) => {
+            $scope.performance = data;
+        }).catch((err) => {
+            $log.error('Failed to get user slef statistics', err);
+            Alert.error('Failed to fetch user statistics: ' + err);
+        });
+    } else {
+        UsersManager.getStats($scope.profileUser.Username).then((data) => {
+            $scope.performance = data;
+        }).catch((err) => {
+            $log.error('Failed to get user statistics', err);
+            Alert.error('Failed to fetch user statistics: ' + err);
+        });    
+    }
+    
 }]);
