@@ -73,6 +73,7 @@
                                         <thead>
                                             <th><i class="fa-solid fa-list"></i> Category</th>
                                             <th class="text-center"><i class="fa-solid fa-people-group"></i> Overall</th>
+                                            <th class="text-center"><i class="fa-solid fa-medal"></i> Best</th>
                                             <th class="text-center"><i class="fa-solid fa-trophy"></i> Leader</th>
                                             <th class="text-center" ng-if="!isLoggedUserProfile()"><i class="fa-solid fa-user"></i> {{::profileUser.Name}}</th>
                                             <th class="text-center" ng-if="isLoggedUserProfile()"><i class="fa-solid fa-users"></i> Followees</th>
@@ -82,6 +83,7 @@
                                             <tr ng-repeat="(key,value) in performance">
                                                 <td>{{::value.Category}}</td>
                                                 <td class="text-center"><span class="label label-default">{{::value.Overall}}</span></td>
+                                                <td><span class="label label-default">{{::value.BestResult.Value}}</span> <small>({{::value.BestResult.Name}})</small></td>
                                                 <td class="text-center"><span class="label label-default">{{::value.Leader}}</span></td>
                                                 <td class="text-center" ng-if="!isLoggedUserProfile()"><span ng-class="{'label-danger': value.User < value.Overall, 'label-warning': value.User >= value.Overall && value.User < value.Leader, 'label-success': value.User >= value.Leader}" class="label">{{::value.User}}</span></td>
                                                 <td class="text-center" ng-if="isLoggedUserProfile()"><span ng-class="{'label-danger': value.Followees < value.Overall, 'label-warning': value.Followees >= value.Overall && value.Followees < value.Leader, 'label-success': value.Followees >= value.Leader}" class="label">{{::value.Followees}}</span></td>
@@ -97,6 +99,9 @@
                                             <div class="list-group">
                                                 <span class="list-group-item">
                                                     <i class="fa-solid fa-people-group"></i> Overall<span class="label label-default pull-right">{{::value.Overall}}</span>
+                                                </span>
+                                                <span class="list-group-item">
+                                                    <i class="fa-solid fa-medal"></i> Best<span class="label label-default pull-right">{{::value.BestResult.Value}}</span><small>({{::value.BestResult.Name}})</small>
                                                 </span>
                                                 <span class="list-group-item">
                                                     <i class="fa-solid fa-trophy"></i> Leader<span class="label label-default pull-right">{{::value.Leader}}</span>

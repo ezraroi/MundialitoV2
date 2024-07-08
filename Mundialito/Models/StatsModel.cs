@@ -43,4 +43,16 @@ public class PerGameModel {
 
     [JsonPropertyName("Followees")]
     public float Followees { get; set; }
+
+    [JsonPropertyName("BestResult")]
+    public BestResult BestResult { get; set; }
+}
+
+public class BestResult {
+    
+    [JsonPropertyName("Name")]
+    public string Name { get; set;}
+    
+    [JsonPropertyName("Value")]
+    public float Value { get; set; }
 }
