@@ -81,6 +81,22 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
                 });
         },
 
+        getMyStats: () => {
+            $log.debug('UsersManager: will the stats of logged user');
+            return $http.get('api/stats/me', { tracker: 'getStats' })
+                .then((res) => {
+                    return res.data;
+                });
+        },
+
+        getStats: (username) => {
+            $log.debug('UsersManager: will the stats of ' + username);
+            return $http.get('api/stats/' + username, { tracker: 'getStats' })
+                .then((res) => {
+                    return res.data;
+                });
+        },
+
         follow: (username) => {
             $log.debug('UsersManager: will follow ' + username);
             return $http.post('api/users/follow/' + username, undefined, { tracker: 'follow' });

@@ -60,60 +60,124 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-info-circle"></i> User Statistics</div>
+        <div class="panel panel-info" cg-busy="{tracker:'getStats'}">
+            <div class="panel-heading"><i class="fa-solid fa-chart-pie"></i> Statistics</div>
             <div class="panel-body">
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <label class="col-md-3 col-xs-9 control-label">Points</label>
-                        <div class="col-md-1 col-xs-3">
-                            <p class="form-control-static">{{profileUser.Points}}</p>
-                        </div>
-                        <div class="col-md-8 hidden-xs">
-                            <span class="help-block"><small>Total Points</small></span>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"><i class="fa-solid fa-person-running"></i> Performance (Without General Bets)</div>
+                            <div class="panel-body">
+                                <div class="table-responsive hidden-xs">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <th><i class="fa-solid fa-list"></i> Category</th>
+                                            <th class="text-center"><i class="fa-solid fa-people-group"></i> Overall</th>
+                                            <th class="text-center"><i class="fa-solid fa-trophy"></i> Leader</th>
+                                            <th class="text-center" ng-if="!isLoggedUserProfile()"><i class="fa-solid fa-user"></i> {{::profileUser.Name}}</th>
+                                            <th class="text-center" ng-if="isLoggedUserProfile()"><i class="fa-solid fa-users"></i> Followees</th>
+                                            <th class="text-center"><i class="fa-solid fa-user"></i> You</th>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="(key,value) in performance">
+                                                <td>{{::value.Category}}</td>
+                                                <td class="text-center"><span class="label label-default">{{::value.Overall}}</span></td>
+                                                <td class="text-center"><span class="label label-default">{{::value.Leader}}</span></td>
+                                                <td class="text-center" ng-if="!isLoggedUserProfile()"><span ng-class="{'label-danger': value.User < value.Overall, 'label-warning': value.User >= value.Overall && value.User < value.Leader, 'label-success': value.User >= value.Leader}" class="label">{{::value.User}}</span></td>
+                                                <td class="text-center" ng-if="isLoggedUserProfile()"><span ng-class="{'label-danger': value.Followees < value.Overall, 'label-warning': value.Followees >= value.Overall && value.Followees < value.Leader, 'label-success': value.Followees >= value.Leader}" class="label">{{::value.Followees}}</span></td>
+                                                <td class="text-center"><span ng-class="{'label-danger': value.You < value.Overall, 'label-warning': value.You >= value.Overall && value.You < value.Leader, 'label-success': value.You >= value.Leader}" class="label">{{::value.You}}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive visible-xs">
+                                    <div class="panel panel-info" ng-repeat="(key,value) in performance">
+                                        <div class="panel-heading"><i class="fa-solid fa-list"></i> {{::value.Category}}</div>
+                                        <div class="panel-body">
+                                            <div class="list-group">
+                                                <span class="list-group-item">
+                                                    <i class="fa-solid fa-people-group"></i> Overall<span class="label label-default pull-right">{{::value.Overall}}</span>
+                                                </span>
+                                                <span class="list-group-item">
+                                                    <i class="fa-solid fa-trophy"></i> Leader<span class="label label-default pull-right">{{::value.Leader}}</span>
+                                                </span>
+                                                <span class="list-group-item" ng-if="!isLoggedUserProfile()">
+                                                    <i class="fa-solid fa-user"></i> {{::profileUser.Name}}<span ng-class="{'label-danger': value.User < value.Overall, 'label-warning': value.User >= value.Overall && value.User < value.Leader, 'label-success': value.User >= value.Leader}" class="label pull-right">{{::value.User}}</span>
+                                                </span>
+                                                <span class="list-group-item" ng-if="isLoggedUserProfile()">
+                                                    <i class="fa-solid fa-users"></i> Followees<span ng-class="{'label-danger': value.Followees < value.Overall, 'label-warning': value.Followees >= value.Overall && value.Followees < value.Leader, 'label-success': value.Followees >= value.Leader}" class="label pull-right">{{::value.Followees}}</span>
+                                                </span>
+                                                <span class="list-group-item">
+                                                    <i class="fa-solid fa-user"></i> You<span ng-class="{'label-danger': value.You < value.Overall, 'label-warning': value.You >= value.Overall && value.You < value.Leader, 'label-success': value.You >= value.Leader}" class="label pull-right">{{::value.You}}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-3 col-xs-9 control-label">Results</label>
-                        <div class="col-md-1 col-xs-3">
-                            <p class="form-control-static">{{profileUser.Results}}</p>
-                        </div>
-                        <div class="col-md-8 hidden-xs">
-                            <span class="help-block"><small>Number of games that the user guessed the game result - 5
-                                    Points(3 for the Mark + 2)</small></span>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"><i class="fa-solid fa-clipboard-list"></i> User Summary</div>
+                            <div class="panel-body">
+                                <form class="form-horizontal" role="form">
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-9 control-label">Points</label>
+                                        <div class="col-md-1 col-xs-3">
+                                            <p class="form-control-static">{{profileUser.Points}}</p>
+                                        </div>
+                                        <div class="col-md-8 hidden-xs">
+                                            <span class="help-block"><small>Total Points</small></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-9 control-label">Results</label>
+                                        <div class="col-md-1 col-xs-3">
+                                            <p class="form-control-static">{{profileUser.Results}}</p>
+                                        </div>
+                                        <div class="col-md-8 hidden-xs">
+                                            <span class="help-block"><small>Number of games that the user guessed the game result - 5
+                                                    Points(3 for the Mark + 2)</small></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-9 control-label">Game Marks</label>
+                                        <div class="col-md-1 col-xs-3">
+                                            <p class="form-control-static">{{profileUser.Marks}}</p>
+                                        </div>
+                                        <div class="col-md-8 hidden-xs">
+                                            <span class="help-block"><small>Number of games that the user guessed the game mark (1,X,2)
+                                                    - 3 Points</small></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-9 control-label">Yellow Cards</label>
+                                        <div class="col-md-1 col-xs-3">
+                                            <p class="form-control-static">{{profileUser.YellowCards}}</p>
+                                        </div>
+                                        <div class="col-md-8 hidden-xs">
+                                            <span class="help-block"><small>Number of games that the user guessed the game yellow cards
+                                                    mark (1,X,2) - 1 Point</small></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-9 control-label">Corners</label>
+                                        <div class="col-md-1 col-xs-3">
+                                            <p class="form-control-static">{{profileUser.Corners}}</p>
+                                        </div>
+                                        <div class="col-md-8 hidden-xs">
+                                            <span class="help-block"><small>Number of games that the user guessed the game corners mark
+                                                    (1,X,2) - 1 Point</small></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-3 col-xs-9 control-label">Game Marks</label>
-                        <div class="col-md-1 col-xs-3">
-                            <p class="form-control-static">{{profileUser.Marks}}</p>
-                        </div>
-                        <div class="col-md-8 hidden-xs">
-                            <span class="help-block"><small>Number of games that the user guessed the game mark (1,X,2)
-                                    - 3 Points</small></span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-3 col-xs-9 control-label">Yellow Cards</label>
-                        <div class="col-md-1 col-xs-3">
-                            <p class="form-control-static">{{profileUser.YellowCards}}</p>
-                        </div>
-                        <div class="col-md-8 hidden-xs">
-                            <span class="help-block"><small>Number of games that the user guessed the game yellow cards
-                                    mark (1,X,2) - 1 Point</small></span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-3 col-xs-9 control-label">Corners</label>
-                        <div class="col-md-1 col-xs-3">
-                            <p class="form-control-static">{{profileUser.Corners}}</p>
-                        </div>
-                        <div class="col-md-8 hidden-xs">
-                            <span class="help-block"><small>Number of games that the user guessed the game corners mark
-                                    (1,X,2) - 1 Point</small></span>
-                        </div>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>

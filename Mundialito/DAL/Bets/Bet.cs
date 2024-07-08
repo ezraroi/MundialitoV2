@@ -23,7 +23,7 @@ public class Bet
 
     [Required]
     [JsonPropertyName("UserId")]
-    public String UserId { get; set; }
+    public string UserId { get; set; }
             
     [JsonPropertyName("MundialitoUser")]
     public MundialitoUser User { get; set; }
@@ -49,30 +49,30 @@ public class Bet
     [StringLength(1)]
     [RegularExpression("[1X2]")]
     [JsonPropertyName("CornersMark")]
-    public String CornersMark { get; set; }
+    public string CornersMark { get; set; }
 
     [Required]
     [StringLength(1)]
     [RegularExpression("[1X2]")]
     [JsonPropertyName("CardsMark")]
-    public String CardsMark { get; set; }
+    public string CardsMark { get; set; }
 
     [JsonPropertyName("Points")]
     public int? Points { get; set; }
 
     
     [JsonPropertyName("CornersWin")]
-    public Boolean CornersWin { get; set; }
+    public bool CornersWin { get; set; }
 
     [JsonPropertyName("GameMarkWin")]
-    public Boolean GameMarkWin { get; set; }
+    public bool GameMarkWin { get; set; }
 
 
     [JsonPropertyName("ResultWin")]
-    public Boolean ResultWin { get; set; }
+    public bool ResultWin { get; set; }
 
     [JsonPropertyName("CardsWin")]
-    public Boolean CardsWin { get; set; }
+    public bool CardsWin { get; set; }
 
     public override string ToString()
     {
