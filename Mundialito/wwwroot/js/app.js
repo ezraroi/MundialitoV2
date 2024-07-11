@@ -39,6 +39,7 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                     teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
                     generalBetsAreOpen: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.canSubmtiGeneralBet()],
                     players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()],
+                    allUsers: ['UsersManager', (UsersManager) => UsersManager.loadAllUsers()]
                 }
             }).
             when('/manage_users', {

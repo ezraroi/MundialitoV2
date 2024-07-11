@@ -11,6 +11,7 @@ public class UserModel
         Name = string.Format("{0} {1}", user.FirstName, user.LastName);
         Id = user.Id;
         Email = user.Email;
+        Points = 0;
     }
 
     [JsonPropertyName("Id")]
@@ -27,6 +28,21 @@ public class UserModel
 
     [JsonPropertyName("Name")]
     public string Name { get; set; }
+
+    [JsonPropertyName("GeneralBet")]
+    public GeneralBetViewModel? GeneralBet { get; set; }
+
+    [JsonPropertyName("Points")]
+    public int Points { get; set; }
+
+    public void SetGeneralBet(GeneralBetViewModel generalBet)
+    {
+        GeneralBet = generalBet;
+        if (generalBet.IsResolved)
+        {
+            Points += generalBet.Points;
+        }
+    }
     
 }
 
