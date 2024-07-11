@@ -35,12 +35,47 @@ public class UserModel
     [JsonPropertyName("Points")]
     public int Points { get; set; }
 
+    [JsonPropertyName("Results")]
+    public int Results { get; private set; }
+
+    [JsonPropertyName("Marks")]
+    public int Marks { get; private set; }
+
+    [JsonPropertyName("TotalMarks")]
+    public int TotalMarks { get; set; }
+
+    [JsonPropertyName("Corners")]
+    public int Corners { get; private set; }
+
+    [JsonPropertyName("YellowCards")]
+    public int YellowCards { get; private set; }
+
     public void SetGeneralBet(GeneralBetViewModel generalBet)
     {
         GeneralBet = generalBet;
         if (generalBet.IsResolved)
         {
             Points += generalBet.Points;
+        }
+    }
+
+    public void AddBet(BetViewModel bet)
+    {
+        if (bet.IsResolved)
+        {
+            Points += bet.Points;
+            if (bet.ResultWin)
+            {
+                Results++;
+            }
+            else if (bet.GameMarkWin)
+            {
+                Marks++;
+            }
+            if (bet.CardsWin)
+                YellowCards++;
+            if (bet.CornersWin)
+                Corners++;
         }
     }
     

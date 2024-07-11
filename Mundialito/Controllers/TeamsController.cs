@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Mundialito.Models;
+using Mundialito.DAL.Bets;
 
 namespace Mundialito.Controllers;
 
@@ -11,12 +12,16 @@ namespace Mundialito.Controllers;
 public class TeamsController : ControllerBase
 {
     private readonly ITeamsRepository teamsRepository;
+    private readonly IBetsRepository betsRepository;
+    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ILogger logger;
 
 
-    public TeamsController(ILogger<TeamsController> logger, ITeamsRepository teamsRepository)
+    public TeamsController(ILogger<TeamsController> logger, ITeamsRepository teamsRepository, IBetsRepository betsRepository, IHttpContextAccessor httpContextAccessor)
     {
         this.teamsRepository = teamsRepository;
+        this.betsRepository = betsRepository;
+        this.httpContextAccessor = httpContextAccessor;
         this.logger = logger;
     }
 
@@ -38,8 +43,10 @@ public class TeamsController : ControllerBase
     [HttpGet("{id}/Games")]
     public IEnumerable<GameViewModel> GetTeamGames(int id)
     {
-        var res = teamsRepository.GetTeamGames(id);
-        return res.Select((game) => new GameViewModel(game));
+        var games = teamsRepository.GetTeamGames(id);
+        var res = games.Select((game) => new GameViewModel(game)).ToList();
+        AddUserBetsData(res);
+        return res; 
     }
 
     [HttpPost]
@@ -75,6 +82,15 @@ public class TeamsController : ControllerBase
         teamsRepository.DeleteTeam(id);
         teamsRepository.Save();
         logger.LogInformation("Deleted Team {0}", id);
+    }
+
+    private void AddUserBetsData(IEnumerable<GameViewModel> res)
+    {
+        var allBets = betsRepository.GetUserBets(httpContextAccessor.HttpContext?.User.Identity.Name).ToDictionary(bet => bet.GameId, bet => bet);
+        foreach (var game in res)
+        {
+            game.UserHasBet = allBets.ContainsKey(game.GameId);
+        }
     }
 
 }
