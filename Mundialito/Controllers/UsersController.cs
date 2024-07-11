@@ -133,18 +133,21 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{username}")]
-    public async Task<ActionResult<UserWithPointsModel>> GetUserByUsername(string username)
+    public async Task<ActionResult<UserModel>> GetUserByUsername(string username)
     {
         var user = await userManager.FindByNameAsync(username);
         if (user == null)
             return NotFound(new ErrorMessage { Message = string.Format("No such user '{0}'", username) });
-        var res = GetTableDetails(new List<MundialitoUser>{user}).ToList();
-        res.ForEach(user => IsAdmin(user));
-        return Ok(res.First());
+        var userModel = new UserModel(user);
+        betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
+        var generalBet = generalBetsRepository.GetUserGeneralBet(username);
+        if (generalBet != null)
+            userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
+        return await IsAdmin(userModel);
     }
 
     [HttpGet("me")]
-    public async Task<ActionResult<UserWithPointsModel>> GetMe()
+    public async Task<ActionResult<UserModel>> GetMe()
     {
         return await GetUserByUsername(httpContextAccessor.HttpContext?.User.Identity.Name);
     }
