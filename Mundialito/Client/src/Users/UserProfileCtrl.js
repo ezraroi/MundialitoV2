@@ -34,7 +34,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     }
 
     if ($scope.shoudLoadGeneralBet()) {
-        GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then((answer) => {
+        $scope.generalBetsPromise = GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then((answer) => {
             $log.debug('UserProfileCtrl: hasGeneralBet = ' + answer);
             if (answer === true) {
                 GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then((generalBet) => {
@@ -58,7 +58,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
 
     $scope.saveGeneralBet = () => {
         if (angular.isDefined($scope.generalBet.GeneralBetId)) {
-            $scope.generalBet.update().then(() => {
+            $scope.generalBetsPromise = $scope.generalBet.update().then(() => {
                 Alert.success('General Bet was updated successfully');
             }, () => {
                 Alert.error('Failed to update General Bet, please try again');
@@ -66,7 +66,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         }
 
         else {
-            GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
+            $scope.generalBetsPromise = GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
                 $log.log('UserProfileCtrl: General Bet ' + data.GeneralBetId + ' was added');
                 $scope.generalBet = data;
                 Alert.success('General Bet was added successfully');
@@ -97,26 +97,81 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         }
     };
 
-    UsersManager.getSocial($scope.profileUser.Username).then((data) => {
+    $scope.getSocialPromise = UsersManager.getSocial($scope.profileUser.Username).then((data) => {
         $log.log('UserProfileCtrl: Got social response');
         $scope.followers = data['followers'];
         $scope.followees = data['followees'];
     });
 
     if ($scope.isLoggedUserProfile()) {
-        UsersManager.getMyStats().then((data) => {
+        $scope.getStatsPromise = UsersManager.getMyStats().then((data) => {
             $scope.performance = data;
         }).catch((err) => {
             $log.error('Failed to get user slef statistics', err);
             Alert.error('Failed to fetch user statistics: ' + err);
         });
     } else {
-        UsersManager.getStats($scope.profileUser.Username).then((data) => {
+        $scope.getStatsPromise = UsersManager.getStats($scope.profileUser.Username).then((data) => {
             $scope.performance = data;
         }).catch((err) => {
             $log.error('Failed to get user statistics', err);
             Alert.error('Failed to fetch user statistics: ' + err);
-        });    
+        });
     }
-    
+    if ($scope.security.user.Username === $scope.profileUser.Username) {
+        $scope.compareUsersPromise = UsersManager.getUserProgess($scope.security.user.Username);
+    } else {
+        $scope.compareUsersPromise = UsersManager.compareUsers($scope.security.user.Username, $scope.profileUser.Username);
+    }
+    $scope.compareUsersPromise.then((res) => {
+        if (res.length > 0) {
+            let users = _.map(res[0].Entries, (entry) => { return entry.Name });
+            var cols = _.map(users, (user) => {
+                return {
+                    id: user,
+                    label: user,
+                    type: "number"
+                }
+            });
+            cols.unshift({
+                id: "date",
+                label: "Date",
+                type: "date"
+            });
+            let rows = _.map(res, (entry) => {
+                var res = { c: [{
+                    v: new Date(entry.Date),
+                }]};
+                _.each(entry.Entries, (entry) => {
+                    res.c.push({
+                        v: entry.Place,
+                    });
+                });
+                return res;
+            });
+            $scope.chart = {
+                type: "LineChart",
+                data: {
+                    "cols": cols,
+                    "rows": rows
+                },
+                options: {
+                    colors: ['#0000FF', '#009900', '#CC0000', '#DD9900'],
+                    defaultColors: ['#0000FF', '#009900', '#CC0000', '#DD9900'],
+                    displayExactValues: true,
+                    is3D: true,
+                    backgroundColor: { fill: 'transparent' },
+                    vAxis: {
+                        title: "Place",
+                    },
+                    hAxis: {
+                        title: "Date"
+                    }
+                }
+            };
+        }
+    }).catch((err) => {
+        $log.error('Failed to compare users', err);
+        Alert.error('Failed to compare users: ' + err);
+    });
 }]);

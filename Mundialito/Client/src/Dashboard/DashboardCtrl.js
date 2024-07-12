@@ -29,7 +29,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.playersDic[players[i].PlayerId] = players[i];
         }
 
-        GamesManager.loadAllGames().then((games) => {
+        $scope.getGamesPromise = GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
             $scope.resultsDic = {};
             $scope.marksDic = {};
@@ -136,7 +136,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 });
             }
         });
-        UsersManager.loadAllUsers().then((users) => {
+        $scope.getUsersPromise = UsersManager.loadAllUsers().then((users) => {
             $scope.users = users;
             $scope.users.forEach((user) => {
                 if (angular.isDefined(user.GeneralBet)) {

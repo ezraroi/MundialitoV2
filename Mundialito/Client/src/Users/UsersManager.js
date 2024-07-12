@@ -81,6 +81,22 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
                 });
         },
 
+        compareUsers: (usera, userb) => {
+            $log.debug('UsersManager: will compare users: ' + usera + ' and ' + userb);
+            return $http.get('api/users/compare/' + usera + '/' + userb)
+                .then((res) => {
+                    return res.data;
+                });
+        },
+
+        getUserProgess: () => {
+            $log.debug('UsersManager: will get user progress');
+            return $http.get('api/users/me/progress')
+                .then((res) => {
+                    return res.data;
+                });
+        },
+
         getMyStats: () => {
             $log.debug('UsersManager: will the stats of logged user');
             return $http.get('api/stats/me', { tracker: 'getStats' })

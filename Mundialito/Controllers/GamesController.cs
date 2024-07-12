@@ -96,7 +96,7 @@ public class GamesController : ControllerBase
         item.CardsMark = simulateGameModel.CardsMark;
         item.CornersMark = simulateGameModel.CornersMark;
         betsResolver.ResolveBets(item, betsRepository.GetGameBets(id));
-        return Ok(tableBuilder.GetTable(userManager.Users, bets, generalBetsRepository.GetGeneralBets()));
+        return Ok(tableBuilder.GetTable(userManager.Users.Select((user) => new UserWithPointsModel(user)), bets, generalBetsRepository.GetGeneralBets()));
     }
 
     [HttpGet("{id}/Bets")]

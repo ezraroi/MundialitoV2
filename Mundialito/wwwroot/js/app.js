@@ -200,7 +200,7 @@ angular.module('mundialitoApp').constant('Constants',
                 { field: 'Points', displayName: 'Points', resizable: true, minWidth: 45, maxWidth: 75},
                 { field: 'GeneralBet.WinningTeam', displayName: 'Team', resizable: false, maxWidth: 45, cellTemplate: '<div class="ui-grid-cell-contents text-center" title="TOOLTIP"><i ng-class="[\'flag\',\'flag-fifa-{{grid.appScope.teamsDic[row.entity.GeneralBet.WinningTeamId].ShortName | lowercase}}\']" tooltip="{{grid.appScope.teamsDic[row.entity.GeneralBet.WinningTeamId].Name}}"></i></div>' },
                 { field: 'GeneralBet.GoldenBootPlayer', displayName: 'Player', resizable: false, minWidth: 50, maxWidth: 50 },
-                { field: 'TotalMarks', displayName: 'Total Marks', resizable: true },
+                { field: 'Marks', displayName: 'Marks', resizable: true },
                 { field: 'Results', displayName: 'Results', resizable: true },
                 { field: 'YellowCards', displayName: 'Yellow Cards Marks', maxWidth: 55, resizable: false, headerCellTemplate: '<div class="text-center" style="margin-top: 5px;"><i class="fa fa-stop fa-2xl" style="color: #ffff00"></i></div>' },
                 { field: 'Corners', displayName: 'Corners Marks', maxWidth: 55, resizable: false, headerCellTemplate: '<div class="text-center" style="margin-top: 5px;"><i class="fa fa-flag fa-xl"></i></div>' },,
@@ -418,16 +418,16 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
             $timeout(loadUserBets,1000);
         }
         else {
-            BetsManager.getUserBets($scope.security.user.Username).then(function (bets) {
-                for(var i=0; i < bets.length; i++) {
+            $scope.getUserBetsPromise = BetsManager.getUserBets($scope.security.user.Username).then((bets) => {
+                for (var i = 0; i < bets.length; i++) {
                     $scope.bets[bets[i].Game.GameId] = bets[i];
-                    $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId
+                    $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId;
                 }
 
-                for(var j=0; j < games.length; j++) {
+                for (var j = 0; j < games.length; j++) {
                     if (!angular.isDefined($scope.bets[games[j].GameId])) {
-                        $log.debug('BetsCenterCtrl: game ' + games[j].GameId + ' has not bet')
-                        $scope.bets[games[j].GameId] = { BetId : -1, GameId : games[j].GameId};
+                        $log.debug('BetsCenterCtrl: game ' + games[j].GameId + ' has not bet');
+                        $scope.bets[games[j].GameId] = { BetId: -1, GameId: games[j].GameId };
                     }
                     else {
                         $scope.bets[$scope.bets[games[j].GameId]] = bets[i];
@@ -660,7 +660,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
             $scope.playersDic[players[i].PlayerId] = players[i];
         }
 
-        GamesManager.loadAllGames().then((games) => {
+        $scope.getGamesPromise = GamesManager.loadAllGames().then((games) => {
             $scope.games = games;
             $scope.resultsDic = {};
             $scope.marksDic = {};
@@ -767,7 +767,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                 });
             }
         });
-        UsersManager.loadAllUsers().then((users) => {
+        $scope.getUsersPromise = UsersManager.loadAllUsers().then((users) => {
             $scope.users = users;
             $scope.users.forEach((user) => {
                 if (angular.isDefined(user.GeneralBet)) {
@@ -884,7 +884,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     });
 
     if (!$scope.game.IsOpen) {
-        BetsManager.getGameBets($scope.game.GameId).then((data) => {
+        $scope.getGameBetsPromsie = BetsManager.getGameBets($scope.game.GameId).then((data) => {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
             var chart1 = {};
@@ -906,7 +906,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 ['2', mark2]
             ];
             $scope.chart = chart1;
-            UsersManager.loadAllUsers().then((users) => {
+            $scope.getUsersPromise = UsersManager.loadAllUsers().then((users) => {
                 $scope.usersMap = new Map();
                 users.forEach((obj) => {
                     $scope.usersMap.set(obj.Username, obj);
@@ -935,7 +935,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             delete game.Stadium.Games;
         }
         $scope.game.IntegrationsData = keyValueEditorUtils.mapEntries(keyValueEditorUtils.compactEntries($scope.integrationsData));
-        $scope.game.update().then((res) => {
+        $scope.updateGamePromise = $scope.game.update().then((res) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(res.data);
         }).catch((err) => {
@@ -946,7 +946,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().then((data) => {
+            $scope.updateBetPromise =  $scope.userBet.update().then((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
             }).catch((err) => {
@@ -968,7 +968,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.simulateGame = () => {
         $log.debug('GameCtrl: simulating game');
-        GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
+        $scope.simulateGamePromise = GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
             $scope.users = data;
             $scope.users.forEach((user) => {
                 if (angular.isDefined(user.GeneralBet)) {
@@ -1029,7 +1029,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
     $scope.loadTeamsForm = () => {
         $scope.teamsForm = {};
-        GamesManager.getTeamGames($scope.game.HomeTeam.TeamId).then((res) => {
+        $scope.getTeamGamesPromise = GamesManager.getTeamGames($scope.game.HomeTeam.TeamId).then((res) => {
             storeTeamForm(res, $scope.game.HomeTeam.TeamId);
         }).catch((err) => {
             Alert.error('Failed to get teams form');
@@ -1072,7 +1072,7 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
     };
 
     $scope.saveNewGame = function() {
-        GamesManager.addGame($scope.newGame).then(function(data) {
+        $scope.addGamePromise = GamesManager.addGame($scope.newGame).then(function(data) {
             Alert.success('Game was added successfully');
             $scope.newGame = GamesManager.getEmptyGameObject();
             $scope.games.push(data);
@@ -1087,7 +1087,7 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
         if  ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        game.update().then((data) => {
+        $scope.editGamePromise = game.update().then((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
         });
@@ -1853,13 +1853,13 @@ angular.module('mundialitoApp').controller('StadiumCtrl', ['$scope', '$log', 'St
     $scope.stadium = stadium;
     $scope.showEditForm = false;
 
-    GamesManager.getStadiumGames($scope.stadium.StadiumId).then((data) => {
+    $scope.getStadiumGamesPromise = GamesManager.getStadiumGames($scope.stadium.StadiumId).then((data) => {
         $log.debug('StadiumCtrl: Got games of stadium');
         $scope.games = data;
     });
 
     $scope.updateStadium = () => {
-        $scope.stadium.update().then(() => {
+        $scope.editStadiumPromise = $scope.stadium.update().then(() => {
             Alert.success('Stadium was updated successfully');
         });
     };
@@ -1872,11 +1872,11 @@ angular.module('mundialitoApp').controller('StadiumsCtrl', ['$scope', '$log', 'S
     $scope.showNewStadium = false;
     $scope.newStadium = null;
 
-    $scope.addNewStadium = function () {
+    $scope.addNewStadium = () => {
         $scope.newStadium = StadiumsManager.getEmptyStadiumObject();
     };
 
-    $scope.saveNewStadium = function() {
+    $scope.saveNewStadium = () => {
         StadiumsManager.addStadium($scope.newStadium).then((data) => {
             Alert.success('Stadium was added successfully');
             $scope.newStadium = null;
@@ -1884,15 +1884,15 @@ angular.module('mundialitoApp').controller('StadiumsCtrl', ['$scope', '$log', 'S
         });
     };
 
-    $scope.deleteStadium = function(stadium) {
+    $scope.deleteStadium = (stadium) => {
         var scope = stadium;
         stadium.delete().then(() => {
             Alert.success('Stadium was deleted successfully');
             $scope.stadiums.splice($scope.stadiums.indexOf(scope), 1);
-        })
+        });
     };
 
-    $scope.schema =  StadiumsManager.getStaidumSchema();
+    $scope.schema = StadiumsManager.getStaidumSchema();
 }]);
 'use strict';
 angular.module('mundialitoApp').factory('StadiumsManager', ['$http', '$q', 'Stadium', '$log', 'MundialitoUtils', function ($http, $q, Stadium, $log, MundialitoUtils) {
@@ -2089,7 +2089,7 @@ angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'Teams
 
     $scope.updateTeam = () => {
         $scope.team.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
-        $scope.team.update().then((data) => {
+        $scope.editTeamPromise =  $scope.team.update().then((data) => {
             Alert.success('Team was updated successfully');
             TeamsManager.setTeam(data.data);
         });
@@ -2276,23 +2276,23 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
         $scope.playersDic[players[i].PlayerId] = players[i];
     }
 
-    $scope.deleteUser = function(user) {
+    $scope.deleteUser = (user) => {
         var scope = user;
-        user.delete().then(() => {
+        $scope.deleteUserPromise = user.delete().then(() => {
             Alert.success('User was deleted successfully');
             $scope.users.splice($scope.users.indexOf(scope), 1);
-        })
+        });
     };
 
     $scope.resolveBet = function(bet) {
-        bet.resolve().then(() => {
+        $scope.resolveGeneralBetPromise = bet.resolve().then(() => {
             Alert.success('General bet was resolved successfully');
         });
     };
 
     $scope.generateKey = function() {
         $scope.privateKey.key = '';
-        UsersManager.generatePrivateKey($scope.privateKey.email).then(function(data) {
+        $scope.generatePrivateKeyPromisd = UsersManager.generatePrivateKey($scope.privateKey.email).then(function(data) {
             $log.debug('ManageAppCtrl: got private key ' + data);
             $scope.privateKey.key = data;
         });
@@ -2374,7 +2374,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     }
 
     if ($scope.shoudLoadGeneralBet()) {
-        GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then((answer) => {
+        $scope.generalBetsPromise = GeneralBetsManager.hasGeneralBet($scope.profileUser.Username).then((answer) => {
             $log.debug('UserProfileCtrl: hasGeneralBet = ' + answer);
             if (answer === true) {
                 GeneralBetsManager.getUserGeneralBet($scope.profileUser.Username).then((generalBet) => {
@@ -2398,7 +2398,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
 
     $scope.saveGeneralBet = () => {
         if (angular.isDefined($scope.generalBet.GeneralBetId)) {
-            $scope.generalBet.update().then(() => {
+            $scope.generalBetsPromise = $scope.generalBet.update().then(() => {
                 Alert.success('General Bet was updated successfully');
             }, () => {
                 Alert.error('Failed to update General Bet, please try again');
@@ -2406,7 +2406,7 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         }
 
         else {
-            GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
+            $scope.generalBetsPromise = GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
                 $log.log('UserProfileCtrl: General Bet ' + data.GeneralBetId + ' was added');
                 $scope.generalBet = data;
                 Alert.success('General Bet was added successfully');
@@ -2437,28 +2437,83 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         }
     };
 
-    UsersManager.getSocial($scope.profileUser.Username).then((data) => {
+    $scope.getSocialPromise = UsersManager.getSocial($scope.profileUser.Username).then((data) => {
         $log.log('UserProfileCtrl: Got social response');
         $scope.followers = data['followers'];
         $scope.followees = data['followees'];
     });
 
     if ($scope.isLoggedUserProfile()) {
-        UsersManager.getMyStats().then((data) => {
+        $scope.getStatsPromise = UsersManager.getMyStats().then((data) => {
             $scope.performance = data;
         }).catch((err) => {
             $log.error('Failed to get user slef statistics', err);
             Alert.error('Failed to fetch user statistics: ' + err);
         });
     } else {
-        UsersManager.getStats($scope.profileUser.Username).then((data) => {
+        $scope.getStatsPromise = UsersManager.getStats($scope.profileUser.Username).then((data) => {
             $scope.performance = data;
         }).catch((err) => {
             $log.error('Failed to get user statistics', err);
             Alert.error('Failed to fetch user statistics: ' + err);
-        });    
+        });
     }
-    
+    if ($scope.security.user.Username === $scope.profileUser.Username) {
+        $scope.compareUsersPromise = UsersManager.getUserProgess($scope.security.user.Username);
+    } else {
+        $scope.compareUsersPromise = UsersManager.compareUsers($scope.security.user.Username, $scope.profileUser.Username);
+    }
+    $scope.compareUsersPromise.then((res) => {
+        if (res.length > 0) {
+            let users = _.map(res[0].Entries, (entry) => { return entry.Name });
+            var cols = _.map(users, (user) => {
+                return {
+                    id: user,
+                    label: user,
+                    type: "number"
+                }
+            });
+            cols.unshift({
+                id: "date",
+                label: "Date",
+                type: "date"
+            });
+            let rows = _.map(res, (entry) => {
+                var res = { c: [{
+                    v: new Date(entry.Date),
+                }]};
+                _.each(entry.Entries, (entry) => {
+                    res.c.push({
+                        v: entry.Place,
+                    });
+                });
+                return res;
+            });
+            $scope.chart = {
+                type: "LineChart",
+                data: {
+                    "cols": cols,
+                    "rows": rows
+                },
+                options: {
+                    colors: ['#0000FF', '#009900', '#CC0000', '#DD9900'],
+                    defaultColors: ['#0000FF', '#009900', '#CC0000', '#DD9900'],
+                    displayExactValues: true,
+                    is3D: true,
+                    backgroundColor: { fill: 'transparent' },
+                    vAxis: {
+                        title: "Place",
+                    },
+                    hAxis: {
+                        title: "Date"
+                    }
+                }
+            };
+        }
+    }).catch((err) => {
+        $log.error('Failed to compare users', err);
+        Alert.error('Failed to compare users: ' + err);
+    });
 }]);
 
 'use strict';
@@ -2541,6 +2596,22 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
                             followees: followees.data
                         };
                     });
+                });
+        },
+
+        compareUsers: (usera, userb) => {
+            $log.debug('UsersManager: will compare users: ' + usera + ' and ' + userb);
+            return $http.get('api/users/compare/' + usera + '/' + userb)
+                .then((res) => {
+                    return res.data;
+                });
+        },
+
+        getUserProgess: () => {
+            $log.debug('UsersManager: will get user progress');
+            return $http.get('api/users/me/progress')
+                .then((res) => {
+                    return res.data;
                 });
         },
 

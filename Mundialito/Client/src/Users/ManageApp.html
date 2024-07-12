@@ -5,7 +5,7 @@
             <div class="panel-heading"><i class="fa fa-users"></i> Users Management</div>
             <div class="panel-body">
                 <div class="table-responsive">
-                    <table class="table table-striped" cg-busy="{tracker:'getUsers'}">
+                    <table class="table table-striped">
                         <thead>
                         <th>Name</th>
                         <th>Email</th>
@@ -32,7 +32,7 @@
 <!-- General Bets -->
 <div class="row" ng-if="generalBets.length > 0">
     <div class="col-md-12">
-        <div class="panel panel-info" cg-busy="{tracker:'resolveGeneralBet'}">
+        <div class="panel panel-info" cg-busy="resolveGeneralBetPromise">
             <div class="panel-heading"><i class="fa-solid fa-money-bill"></i> Users General Bets</div>
             <div class="panel-body">
                 <div class="row">
@@ -79,7 +79,7 @@
 <!-- Private Key Generator -->
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-success" cg-busy="{tracker:'generatePrivateKey'}">
+        <div class="panel panel-success" cg-busy="generatePrivateKeyPromisd">
             <div class="panel-heading"><i class="fa fa-lock"></i> Private Key Generator</div>
             <div class="panel-body">
                 <form role="form" name="privateKeyForm" class="form-horizontal" novalidate>

@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-11 col-xs-10">
-        <div class="list-group" cg-busy="{tracker:'getStadiums'}">
+        <div class="list-group">
             <a href="/stadiums/{{stadium.StadiumId}}" class="list-group-item" ng-repeat="stadium in stadiums">
                 <span class="pull-left"><img ng-src="{{team.Flag}}" style="width: 55%;" /></span>
                 {{stadium.Name}}, {{stadium.City}} (Capacity: {{stadium.Capacity | number }})

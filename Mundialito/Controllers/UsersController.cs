@@ -28,7 +28,7 @@ public class UsersController : ControllerBase
     private readonly TableBuilder tableBuilder;
     private readonly MundialitoDbContext mundialitoDbContext;
     private readonly ILogger logger;
-    
+
     public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
     {
         this.actionLogsRepository = actionLogsRepository;
@@ -152,6 +152,15 @@ public class UsersController : ControllerBase
         return await GetUserByUsername(httpContextAccessor.HttpContext?.User.Identity.Name);
     }
 
+    [HttpGet("me/progress")]
+    public async Task<ActionResult<IEnumerable<UserCompareModel>>> Progress()
+    {
+        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        if (user == null)
+            return Unauthorized(new ErrorMessage { Message = "User not found" });
+        return Ok(CompareUsers(new List<MundialitoUser> { user }));
+    }
+
     [HttpGet("GeneratePrivateKey/{email}")]
     [Authorize(Roles = "Admin")]
     public IActionResult GeneratePrivateKey(string email)
@@ -199,6 +208,62 @@ public class UsersController : ControllerBase
         return Ok();
     }
 
+    [HttpGet("compare/{usera}/{userb}")]
+    public async Task<ActionResult<IEnumerable<UserCompareModel>>> CompareUsers(string usera, string userb)
+    {
+        var userA = await userManager.FindByNameAsync(usera);
+        var userB = await userManager.FindByNameAsync(userb);
+        if (userA == null || userB == null)
+            return NotFound(new ErrorMessage { Message = "User not found" });
+        return Ok(CompareUsers(new List<MundialitoUser> { userA, userB }));
+    }
+
+    private IEnumerable<UserCompareModel> CompareUsers(List<MundialitoUser> users)
+    {
+        var allUsers = userManager.Users.Select((user) => new UserWithPointsModel(user)).ToList();
+        var allBets = betsRepository.GetBets().Where(bet => bet.IsResolved()).ToList();
+        var betsByDate = allBets.GroupBy(bet => bet.Game.Date.DayOfYear).ToDictionary(group => group.Key, group => group.ToList()).OrderBy(bet => bet.Key);
+        var resEntries = new List<UserCompareModel>();
+        foreach (var bets in betsByDate)
+        {
+            allUsers = tableBuilder.GetTable(allUsers, bets.Value, []).ToList();
+            var userEntries = users.Select(user => allUsers.FirstOrDefault(tableUser => tableUser.Id == user.Id)).Where(entry => entry != null).ToList();
+            if (userEntries.Count > 0)
+            {
+                logger.LogInformation("Adding compare entry for date {} with date {}", bets.Key, new DateTime(DateTime.Now.Year, 1, 1).AddDays(bets.Key - 1));
+                var compareModel = new UserCompareModel()
+                {
+                    Date = new DateTime(DateTime.Now.Year, 1, 1).AddDays(bets.Key - 1),
+                    Entries = userEntries.Select(userEntry => new CompareEntry()
+                    {
+                        Name = userEntry.Name,
+                        Place = int.Parse(userEntry.Place)
+                    }).ToList()
+                };
+                resEntries.Add(compareModel);
+            }
+        }
+        var generalBets = generalBetsRepository.GetGeneralBets();
+        allUsers = tableBuilder.GetTable(allUsers, [], generalBets.Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList()).ToList();
+        var finalTable = tableBuilder.GetTable(allUsers, [], generalBets);
+        var finalUserEntries = users.Select(user => finalTable.FirstOrDefault(tableUser => tableUser.Id == user.Id)).Where(entry => entry != null).ToList();
+        if (finalUserEntries.Count > 0)
+        {
+            var finalCompareModel = new UserCompareModel()
+            {
+                Date = new DateTime(DateTime.Now.Year, 1, 1).AddDays(betsByDate.Last().Key),
+                Entries = finalUserEntries.Select(userEntry => new CompareEntry()
+                {
+                    Name = userEntry.Name,
+                    Place = int.Parse(userEntry.Place)
+                }).ToList()
+            };
+            resEntries.Add(finalCompareModel);
+        }
+
+        return resEntries;
+    }
+
     private async Task<ActionResult<UserModel>> IsAdmin(UserModel param)
     {
         var user = await userManager.FindByIdAsync(param.Id);
@@ -223,7 +288,7 @@ public class UsersController : ControllerBase
 
     private IEnumerable<UserWithPointsModel> GetTableDetails(IEnumerable<MundialitoUser> users)
     {
-        return tableBuilder.GetTable(users, betsRepository.GetBets().ToList(), generalBetsRepository.GetGeneralBets().Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList());
+        return tableBuilder.GetTable(users.Select((user) => new UserWithPointsModel(user)), betsRepository.GetBets().ToList(), generalBetsRepository.GetGeneralBets().Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList());
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿<div class="row">
     <div class="col-md-12">
-        <div class="panel panel-success" cg-busy="{tracker:'getGames'}">
+        <div class="panel panel-success">
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-md-3 col-xs-12">
@@ -18,7 +18,7 @@
     </div>
 </div>
 <!-- Add Game -->
-<div class="row" data-access-level="Admin" ng-if="newGame !== null">
+<div class="row" data-access-level="Admin" ng-if="newGame !== null" cg-busy="addGamePromise">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-plus"></i> Add New Game</div>
@@ -71,7 +71,7 @@
     </div>
 </div>
 <!-- End of Add Game -->
-<div class="row" data-access-level="Admin" cg-busy="{tracker:'editGame'}">
+<div class="row" data-access-level="Admin" cg-busy="editGamePromise">
     <div class="col-md-12">
         <div class="panel panel-collapse panel-primary">
             <div class="panel-heading"><i class="fa fa-clock"></i> Pending Update Games</div>

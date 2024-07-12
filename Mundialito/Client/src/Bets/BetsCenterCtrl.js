@@ -11,16 +11,16 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
             $timeout(loadUserBets,1000);
         }
         else {
-            BetsManager.getUserBets($scope.security.user.Username).then(function (bets) {
-                for(var i=0; i < bets.length; i++) {
+            $scope.getUserBetsPromise = BetsManager.getUserBets($scope.security.user.Username).then((bets) => {
+                for (var i = 0; i < bets.length; i++) {
                     $scope.bets[bets[i].Game.GameId] = bets[i];
-                    $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId
+                    $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId;
                 }
 
-                for(var j=0; j < games.length; j++) {
+                for (var j = 0; j < games.length; j++) {
                     if (!angular.isDefined($scope.bets[games[j].GameId])) {
-                        $log.debug('BetsCenterCtrl: game ' + games[j].GameId + ' has not bet')
-                        $scope.bets[games[j].GameId] = { BetId : -1, GameId : games[j].GameId};
+                        $log.debug('BetsCenterCtrl: game ' + games[j].GameId + ' has not bet');
+                        $scope.bets[games[j].GameId] = { BetId: -1, GameId: games[j].GameId };
                     }
                     else {
                         $scope.bets[$scope.bets[games[j].GameId]] = bets[i];

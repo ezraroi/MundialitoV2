@@ -25,7 +25,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     });
 
     if (!$scope.game.IsOpen) {
-        BetsManager.getGameBets($scope.game.GameId).then((data) => {
+        $scope.getGameBetsPromsie = BetsManager.getGameBets($scope.game.GameId).then((data) => {
             $log.debug("GameCtrl: get game bets" + angular.toJson(data));
             $scope.gameBets = data;
             var chart1 = {};
@@ -47,7 +47,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 ['2', mark2]
             ];
             $scope.chart = chart1;
-            UsersManager.loadAllUsers().then((users) => {
+            $scope.getUsersPromise = UsersManager.loadAllUsers().then((users) => {
                 $scope.usersMap = new Map();
                 users.forEach((obj) => {
                     $scope.usersMap.set(obj.Username, obj);
@@ -76,7 +76,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             delete game.Stadium.Games;
         }
         $scope.game.IntegrationsData = keyValueEditorUtils.mapEntries(keyValueEditorUtils.compactEntries($scope.integrationsData));
-        $scope.game.update().then((res) => {
+        $scope.updateGamePromise = $scope.game.update().then((res) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(res.data);
         }).catch((err) => {
@@ -87,7 +87,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.updateBet = () => {
         if ($scope.userBet.BetId !== -1) {
-            $scope.userBet.update().then((data) => {
+            $scope.updateBetPromise =  $scope.userBet.update().then((data) => {
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
             }).catch((err) => {
@@ -109,7 +109,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 
     $scope.simulateGame = () => {
         $log.debug('GameCtrl: simulating game');
-        GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
+        $scope.simulateGamePromise = GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
             $scope.users = data;
             $scope.users.forEach((user) => {
                 if (angular.isDefined(user.GeneralBet)) {
@@ -170,7 +170,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.$watch('simulatedGame', () => { $scope.users = undefined }, true);
     $scope.loadTeamsForm = () => {
         $scope.teamsForm = {};
-        GamesManager.getTeamGames($scope.game.HomeTeam.TeamId).then((res) => {
+        $scope.getTeamGamesPromise = GamesManager.getTeamGames($scope.game.HomeTeam.TeamId).then((res) => {
             storeTeamForm(res, $scope.game.HomeTeam.TeamId);
         }).catch((err) => {
             Alert.error('Failed to get teams form');

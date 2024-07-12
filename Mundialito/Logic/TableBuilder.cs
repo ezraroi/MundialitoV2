@@ -18,9 +18,9 @@ public class TableBuilder
         _tournamentTimesUtils = tournamentTimesUtils;
     }
 
-    public IEnumerable<UserWithPointsModel> GetTable(IEnumerable<MundialitoUser> allUsers, IEnumerable<Bet> bets, IEnumerable<GeneralBet> generalBets)
+    public IEnumerable<UserWithPointsModel> GetTable(IEnumerable<UserWithPointsModel> allUsers, IEnumerable<Bet> bets, IEnumerable<GeneralBet> generalBets)
     {
-        var users = allUsers.ToDictionary(user => user.Id, user => new UserWithPointsModel(user));
+        var users = allUsers.ToDictionary(user => user.Id, user => user);
         var yesterdayPlaces = new Dictionary<string, int>(users.Count);
         bets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(_dateTimeProvider.UTCNow)).ToList().ForEach(bet => users[bet.User.Id].AddBet(new BetViewModel(bet, _dateTimeProvider.UTCNow)));
         bets.Where(bet => users.ContainsKey(bet.User.Id)).Where(bet => !bet.IsOpenForBetting(_dateTimeProvider.UTCNow)).Where(bet => bet.Game.Date < _dateTimeProvider.UTCNow.Subtract(TimeSpan.FromDays(1))).ToList().ForEach(bet => users[bet.User.Id].YesterdayPoints += bet.Points.HasValue ? bet.Points.Value : 0);
@@ -42,7 +42,6 @@ public class TableBuilder
             res[i].Place = (i + 1).ToString();
             var diff = yesterdayPlaces[res[i].Id] - (i + 1);
             res[i].PlaceDiff = string.Format("{0}{1}", diff > 0 ? "+" : string.Empty, diff);
-            res[i].TotalMarks = res[i].Marks + res[i].Results;
         }
         return res;
     }

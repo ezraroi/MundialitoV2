@@ -4,7 +4,7 @@ const cleanCss = require('gulp-minify-css');
 const minify = require('gulp-minify');
 
 const allCss = [
-    "Client/css/angular-busy.min.css",
+    "Client/css/angular-busy.css",
     "Client/css/angular-key-value-editor.css",
     "Client/css/bootstrap.css",
     "Client/css/bootstrap-theme.css",

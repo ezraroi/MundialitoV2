@@ -21,7 +21,7 @@
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-clock"></i> Pending Update Games</div>
             <div class="panel-body">
-                <div class="list-group" cg-busy="{tracker:'getGames'}">
+                <div class="list-group" cg-busy="getGamesPromise">
                     <div ng-repeat="game in games | filter:isPendingUpdate">
                         <a class="list-group-item" href="{{game.getUrl()}}"
                             tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
@@ -110,7 +110,7 @@
             <div class="panel-heading"><i class="fa fa-folder-open"></i> Open Games for Betting <span
                     class="pull-right badge">{{(games | filter:isOpenForBetting).length }}</span></div>
             <div class="panel-body">
-                <div class="list-group" cg-busy="{tracker:'getGames'}">
+                <div class="list-group" cg-busy="getGamesPromise">
                     <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
                         ng-repeat="game in games | filter:isOpenForBetting | limitTo:10" href="{{game.getUrl()}}"
                         tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
@@ -140,7 +140,7 @@
                     class="pull-right badge" uib-tooltip="Total Finished Games">{{(games | filter:isDecided).length}}</span>
             </div>
             <div class="panel-body">
-                <div class="list-group" cg-busy="{tracker:'getGames'}">
+                <div class="list-group" cg-busy="getGamesPromise">
                     <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
                         ng-repeat="game in games| filter:isDecided | orderBy:'Date':true | limitTo:10"
                         href="{{game.getUrl()}}">
@@ -174,7 +174,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
-                            ng-style="getTableHeight()" ui-grid-save-state cg-busy="{tracker:'getUsers'}"
+                            ng-style="getTableHeight()" ui-grid-save-state cg-busy="getUsersPromise"
                             ui-if="gridOptions.data.length > 0"></div>
                     </div>
                 </div>
