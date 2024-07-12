@@ -14,23 +14,23 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
         $scope.playersDic[players[i].PlayerId] = players[i];
     }
 
-    $scope.deleteUser = function(user) {
+    $scope.deleteUser = (user) => {
         var scope = user;
-        user.delete().then(() => {
+        $scope.deleteUserPromise = user.delete().then(() => {
             Alert.success('User was deleted successfully');
             $scope.users.splice($scope.users.indexOf(scope), 1);
-        })
+        });
     };
 
     $scope.resolveBet = function(bet) {
-        bet.resolve().then(() => {
+        $scope.resolveGeneralBetPromise = bet.resolve().then(() => {
             Alert.success('General bet was resolved successfully');
         });
     };
 
     $scope.generateKey = function() {
         $scope.privateKey.key = '';
-        UsersManager.generatePrivateKey($scope.privateKey.email).then(function(data) {
+        $scope.generatePrivateKeyPromisd = UsersManager.generatePrivateKey($scope.privateKey.email).then(function(data) {
             $log.debug('ManageAppCtrl: got private key ' + data);
             $scope.privateKey.key = data;
         });

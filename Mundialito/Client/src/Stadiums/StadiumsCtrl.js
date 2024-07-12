@@ -4,11 +4,11 @@ angular.module('mundialitoApp').controller('StadiumsCtrl', ['$scope', '$log', 'S
     $scope.showNewStadium = false;
     $scope.newStadium = null;
 
-    $scope.addNewStadium = function () {
+    $scope.addNewStadium = () => {
         $scope.newStadium = StadiumsManager.getEmptyStadiumObject();
     };
 
-    $scope.saveNewStadium = function() {
+    $scope.saveNewStadium = () => {
         StadiumsManager.addStadium($scope.newStadium).then((data) => {
             Alert.success('Stadium was added successfully');
             $scope.newStadium = null;
@@ -16,13 +16,13 @@ angular.module('mundialitoApp').controller('StadiumsCtrl', ['$scope', '$log', 'S
         });
     };
 
-    $scope.deleteStadium = function(stadium) {
+    $scope.deleteStadium = (stadium) => {
         var scope = stadium;
         stadium.delete().then(() => {
             Alert.success('Stadium was deleted successfully');
             $scope.stadiums.splice($scope.stadiums.indexOf(scope), 1);
-        })
+        });
     };
 
-    $scope.schema =  StadiumsManager.getStaidumSchema();
+    $scope.schema = StadiumsManager.getStaidumSchema();
 }]);

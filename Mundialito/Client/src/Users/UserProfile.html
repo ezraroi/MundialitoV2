@@ -17,7 +17,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-info" cg-busy="{tracker:'getSocial'}">
+        <div class="panel panel-info" cg-busy="getSocialPromise">
             <div class="panel-heading"><i class="fa fa-users"></i> Social</div>
             <div class="panel-body">
                 <div class="row">
@@ -60,10 +60,10 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-info" cg-busy="{tracker:'getStats'}">
+        <div class="panel panel-info">
             <div class="panel-heading"><i class="fa-solid fa-chart-pie"></i> Statistics</div>
             <div class="panel-body">
-                <div class="row">
+                <div class="row" cg-busy="getStatsPromise">
                     <div class="col-md-12">
                         <div class="panel panel-info">
                             <div class="panel-heading"><i class="fa-solid fa-person-running"></i> Performance (Without General Bets)</div>
@@ -119,6 +119,16 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" cg-busy="compareUsersPromise">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"><i class="fa-solid fa-chart-line"></i> Progress</div>
+                            <div class="panel-body">
+                                <div google-chart chart="chart"></div>
                             </div>
                         </div>
                     </div>
@@ -195,7 +205,7 @@
                 <span class="label label-success pull-right"
                     ng-show="!noGeneralBetWasSubmitted && generalBet.IsResolved">{{generalBet.Points}} Points</span>
             </div>
-            <div class="panel-body" cg-busy="{tracker:['getUserGeneralBet','addGeneralBet','updateGeneralBet']}">
+            <div class="panel-body" cg-busy="generalBetsPromise">
                 <form class="form-horizontal" role="form" name="generalBetForm" novalidate
                     ng-hide="noGeneralBetWasSubmitted || (!isGeneralBetClosed() && !isLoggedUserProfile())">
                     <div class="form-group">

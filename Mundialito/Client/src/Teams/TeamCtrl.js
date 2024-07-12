@@ -34,7 +34,7 @@ angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'Teams
 
     $scope.updateTeam = () => {
         $scope.team.IntegrationsData = $scope.fromKeyValue($scope.IntegrationsData);
-        $scope.team.update().then((data) => {
+        $scope.editTeamPromise =  $scope.team.update().then((data) => {
             Alert.success('Team was updated successfully');
             TeamsManager.setTeam(data.data);
         });

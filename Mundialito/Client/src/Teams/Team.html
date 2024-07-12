@@ -16,7 +16,7 @@
 </div>
 <br/>
 <br/>
-<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="{tracker:'editTeam'}">
+<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="editTeamPromise">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit Team Details</div>
@@ -35,7 +35,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-success" cg-busy="{tracker:'getTeamGames'}">
+        <div class="panel panel-success">
             <div class="panel-heading">
                 <i ng-class="['flag','flag-fifa-{{team.ShortName | lowercase}}']"
                                 title=" {{team.Name}}"></i> {{team.Name}} Games <span ng-repeat="mark in teamsForm[team.TeamId].form"><span ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}" class="label">{{mark.mark}}</span> </span> 

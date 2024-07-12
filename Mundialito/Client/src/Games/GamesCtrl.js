@@ -16,7 +16,7 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
     };
 
     $scope.saveNewGame = function() {
-        GamesManager.addGame($scope.newGame).then(function(data) {
+        $scope.addGamePromise = GamesManager.addGame($scope.newGame).then(function(data) {
             Alert.success('Game was added successfully');
             $scope.newGame = GamesManager.getEmptyGameObject();
             $scope.games.push(data);
@@ -31,7 +31,7 @@ angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesM
         if  ((angular.isDefined(game.Stadium.Games)) && (game.Stadium.Games != null)) {
             delete game.Stadium.Games;
         }
-        game.update().then((data) => {
+        $scope.editGamePromise = game.update().then((data) => {
             Alert.success('Game was updated successfully');
             GamesManager.setGame(data);
         });

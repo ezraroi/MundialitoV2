@@ -1,7 +1,6 @@
 ﻿using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.Games;
-using System.Diagnostics;
 
 namespace Mundialito.Logic;
 
@@ -98,7 +97,7 @@ public class BetValidator : IBetValidator
         }
     }
 
-    private void AddLog(ActionType actionType, String message)
+    private void AddLog(ActionType actionType, string message)
     {
         try
         {

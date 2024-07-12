@@ -42,7 +42,7 @@
     </div>
 </div>
 <!-- Edit Panel -->
-<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="{tracker:'editGame'}">
+<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="updateGamePromise">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit Game Details</div>
@@ -130,7 +130,7 @@
 <div class="row" ng-if="teamsForm[game.HomeTeam.TeamId].form.length > 0">
     <div class="col-md-12">
         <div class="panel panel-info">
-            <div class="panel-heading" cg-busy="{tracker:'getTeamGames'}">
+            <div class="panel-heading" cg-busy="getTeamGamesPromise">
                 <i class="fa-solid fa-chart-line"></i> Teams Form
             </div>
             <div class="panel-body">
@@ -178,7 +178,7 @@
                 <span class="label label-success pull-right"
                     ng-show="!game.IsOpen && !game.IsPendingUpdate">{{userBet.Points}} Points</span>
             </div>
-            <div class="panel-body" cg-busy="{tracker:['addBetOnGame','updateBet']}">
+            <div class="panel-body" cg-busy="updateBetPromise">
                 <div ng-if="!game.IsOpen && userBet.BetId == -1" class="text-danger">
                     <i class="fa fa-warning"></i> You haven't placed a bet on this game and it is already closed for
                     betting
@@ -249,7 +249,7 @@
 <!-- Bets Highlights-->
 <div class="row" ng-if="(!game.IsOpen && usersMap)">
     <div class="col-md-12">
-        <div class="panel panel-info" cg-busy="{tracker:'getUsers'}">
+        <div class="panel panel-info" cg-busy="getUsersPromise">
             <div class="panel-heading"><i class="fa fa-bolt"></i> Bets HighLights</div>
             <div class="panel-body">
                 <div class="row" ng-if="followeesBets.length > 0">
@@ -362,7 +362,7 @@
 <!-- Other users bets -->
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-success" cg-busy="{tracker:'getGameBets'}">
+        <div class="panel panel-success" cg-busy="getGameBetsPromsie">
             <div class="panel-heading"><i class="fa-solid fa-money-bill"></i> Other Users Bets</div>
             <div class="panel-body">
                 <div ng-if="game.IsOpen" class="text-info">
@@ -410,7 +410,7 @@
 <!-- Result Form -->
 <div class="row" ng-if="game.IsPendingUpdate">
     <div class="col-md-12">
-        <div class="panel panel-info" cg-busy="{tracker:'simulateGame'}">
+        <div class="panel panel-info" cg-busy="simulateGamePromise">
             <div class="panel-heading"><i class="fa fa-calculator"></i> Simulate Game</div>
             <div class="panel-body">
                 <form role="form" name="simulateGameForm" class="form-horizontal" novalidate>
@@ -482,7 +482,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
-                            ng-style="getTableHeight()" ui-grid-save-state cg-busy="{tracker:'simulateGame'}"
+                            ng-style="getTableHeight()" ui-grid-save-state cg-busy="simulateGamePromise"
                             ui-if="gridOptions.data.length > 0"></div>
                     </div>
                 </div>

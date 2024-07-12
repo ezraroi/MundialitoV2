@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Mundialito.DAL.Accounts;
 
@@ -41,9 +42,6 @@ public class UserModel
     [JsonPropertyName("Marks")]
     public int Marks { get; private set; }
 
-    [JsonPropertyName("TotalMarks")]
-    public int TotalMarks { get; set; }
-
     [JsonPropertyName("Corners")]
     public int Corners { get; private set; }
 
@@ -67,6 +65,7 @@ public class UserModel
             if (bet.ResultWin)
             {
                 Results++;
+                Marks++;
             }
             else if (bet.GameMarkWin)
             {
@@ -94,57 +93,30 @@ public class UserWithPointsModel : UserModel
 
     [JsonPropertyName("PlaceDiff")]
     public string PlaceDiff { get; set; }
-
-    [JsonPropertyName("Points")]
-    public int Points { get; set; }
-
+    
     [JsonPropertyName("YesterdayPoints")]
     public int YesterdayPoints { get; set; }
+}
 
-    [JsonPropertyName("Results")]
-    public int Results { get; private set; }
 
-    [JsonPropertyName("Marks")]
-    public int Marks { get; private set; }
+public class UserCompareModel
+{
+    [Required]
+    [JsonPropertyName("Date")]
+    public required DateTime Date { get; set; }
 
-    [JsonPropertyName("TotalMarks")]
-    public int TotalMarks { get; set; }
+    [Required]
+    [JsonPropertyName("Entries")]
+    public required List<CompareEntry> Entries { get; set; }
+}
 
-    [JsonPropertyName("Corners")]
-    public int Corners { get; private set; }
+public class CompareEntry
+{
+    [Required]
+    [JsonPropertyName("Name")]
+    public required string Name { get; set; }
 
-    [JsonPropertyName("GeneralBet")]
-    public GeneralBetViewModel? GeneralBet { get; set; }
-
-    [JsonPropertyName("YellowCards")]
-    public int YellowCards { get; private set; }
-
-    public void SetGeneralBet(GeneralBetViewModel generalBet)
-    {
-        GeneralBet = generalBet;
-        if (generalBet.IsResolved)
-        {
-            Points += generalBet.Points;
-        }
-    }
-
-    public void AddBet(BetViewModel bet)
-    {
-        if (bet.IsResolved)
-        {
-            Points += bet.Points;
-            if (bet.ResultWin)
-            {
-                Results++;
-            }
-            else if (bet.GameMarkWin)
-            {
-                Marks++;
-            }
-            if (bet.CardsWin)
-                YellowCards++;
-            if (bet.CornersWin)
-                Corners++;
-        }
-    }
+    [Required]
+    [JsonPropertyName("Place")]
+    public required int Place { get; set; }
 }

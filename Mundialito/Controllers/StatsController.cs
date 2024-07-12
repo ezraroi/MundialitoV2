@@ -67,7 +67,7 @@ public class StatsController : ControllerBase
         var games = (float)gamesRepository.GetGames().Count();
         var users = (float)userManager.Users.Count();
         var bets = betsRepository.GetBets().Where((bet) => bet.IsResolved()).ToList();
-        var table = tableBuilder.GetTable(userManager.Users.ToList(), bets, generalBetsRepository.GetGeneralBets());
+        var table = tableBuilder.GetTable(userManager.Users.Select((user) => new UserWithPointsModel(user)), bets, generalBetsRepository.GetGeneralBets());
         var leader = await userManager.FindByNameAsync(table.First().Username);
         if (leader == null)
             return StatusCode(500);

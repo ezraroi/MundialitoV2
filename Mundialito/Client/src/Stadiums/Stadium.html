@@ -10,7 +10,7 @@
 </div>
 <br/>
 <br/>
-<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="{tracker:'editStadium'}">
+<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="editStadiumPromise">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit Stadium Details</div>
@@ -25,7 +25,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-success"  cg-busy="{tracker:'getStadiumGames'}">
+        <div class="panel panel-success"  cg-busy="getStadiumGamesPromise">
             <div class="panel-heading">Games in {{stadium.Name}}</div>
             <div class="panel-body">
                 <mundialito-games info="games" show-only="true"></mundialito-games>

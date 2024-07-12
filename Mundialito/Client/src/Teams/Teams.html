@@ -1,6 +1,6 @@
 ﻿<div class="row">
     <div class="col-md-11 col-xs-10">
-        <div class="list-group" cg-busy="{tracker:'getTeams'}">
+        <div class="list-group">
             <a href="/teams/{{::team.TeamId}}" class="list-group-item" ng-repeat="team in teams">
                 <span class="pull-left"><img ng-src="{{::team.Flag.toLowerCase()}}" style="width: 55%;" /></span>
                 {{::team.Name}} ({{::team.ShortName}})
