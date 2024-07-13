@@ -64,7 +64,8 @@ gulp.task('compress-lib', function () {
         "Client/lib/angular-key-value-editor.js",
         "Client/lib/compiled-templates.js",
         "Client/lib/ng-sortable.js",
-        "Client/lib/angular-bootstrap-toggle.js"
+        "Client/lib/angular-bootstrap-toggle.js",
+        "Client/lib/html2canvas.min.js",
     ])
         .pipe(concat('lib.js'))
         .pipe(minify())

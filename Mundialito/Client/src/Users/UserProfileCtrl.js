@@ -174,4 +174,21 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
         $log.error('Failed to compare users', err);
         Alert.error('Failed to compare users: ' + err);
     });
+
+    $scope.capture = () => {
+        html2canvas(document.body).then((canvas) => {
+            // Convert the canvas to a data URL
+            var dataURL = canvas.toDataURL('image/png');
+
+            // Create a temporary link element
+            var link = document.createElement('a');
+            link.href = dataURL;
+            link.download = $scope.profileUser.Username + '.png';
+
+            // Trigger the download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
 }]);
