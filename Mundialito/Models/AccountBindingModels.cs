@@ -61,10 +61,6 @@ public class RegisterBindingModel
     [Display(Name = "Email Address")]
     [JsonPropertyName("Email")]
     public string? Email { get; set; }
-
-    [Display(Name = "Private Key")]
-    [JsonPropertyName("PrivateKey")]
-    public string? PrivateKey { get; set; }
 }
 
 public class ForgotPasswordModel

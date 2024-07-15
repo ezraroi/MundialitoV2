@@ -78,7 +78,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Active")]
     public async Task<ActionResult<NewGeneralBetModel>> PostBet(NewGeneralBetModel newBet)
     {
         var validate = Validate();
@@ -106,7 +106,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Active")]
     public async Task<ActionResult<UpdateGenralBetModel>> UpdateBet(int id, UpdateGenralBetModel bet)
     {
         if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
@@ -148,7 +148,7 @@ public class GeneralBetsController : ControllerBase
         item.Resolve(resolvedBet.PlayerIsRight, resolvedBet.TeamIsRight);
         generalBetsRepository.Save();
         logger.LogInformation("Resolved general bet {0}", id);
-        AddLog(ActionType.UPDATE, String.Format("Resolved Generel Bet: {0}", item));
+        AddLog(ActionType.UPDATE, string.Format("Resolved Generel Bet: {0}", item));
         return Ok();
     }
 

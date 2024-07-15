@@ -68,14 +68,12 @@ public class BetsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Active")]
     public async Task<ActionResult<NewBetModel>> PostBet(NewBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
-        }
         var newBet = new Bet
         {
             UserId = user.Id,
@@ -105,7 +103,7 @@ public class BetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Active")]
     public async Task<ActionResult<NewBetModel>> UpdateBet(int id, UpdateBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
@@ -138,7 +136,7 @@ public class BetsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Active")]
     public async Task<IActionResult> DeleteBet(int id)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);

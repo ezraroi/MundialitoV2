@@ -388,9 +388,10 @@ namespace Mundialito.Migrations
                 column: "GameId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bets_UserId",
+                name: "IX_Bets_UserId_GameId",
                 table: "Bets",
-                column: "UserId");
+                columns: new[] { "UserId", "GameId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Games_AwayTeamId",

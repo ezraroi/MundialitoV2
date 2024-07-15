@@ -15,7 +15,6 @@ public class Config
     public string? TournamentDBCreatorName { get; set; }
     public string? MonkeyUserName { get; set; }
     public bool SendBetMail { get; set; }
-    public bool PrivateKeyProtection { get; set; }
     public string? LinkAddress { get; set; }
     public string? Theme { get; set; }
     public string FromAddress { get; set; }
