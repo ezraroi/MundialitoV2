@@ -63,7 +63,7 @@ public class Game
     {
         get
         {
-            return Date.Subtract(TimeSpan.FromMinutes(30));
+            return Date.Subtract(TimeSpan.FromMinutes(15));
         }
     }
 
