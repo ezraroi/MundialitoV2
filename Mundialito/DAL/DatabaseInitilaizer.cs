@@ -66,7 +66,7 @@ public class DatabaseInitilaizer
                 FirstName = "Monkey",
                 LastName = "Monk",
                 Email = "monkey@zoo.com",
-                Role = Role.User,
+                Role = Role.Active,
             };
             logger.LogInformation("Creating user {0}", monkey);
             userManager.CreateAsync(monkey, "monkey").Wait();

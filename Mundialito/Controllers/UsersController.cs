@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
@@ -161,14 +162,6 @@ public class UsersController : ControllerBase
         return Ok(CompareUsers(new List<MundialitoUser> { user }));
     }
 
-    [HttpGet("GeneratePrivateKey/{email}")]
-    [Authorize(Roles = "Admin")]
-    public IActionResult GeneratePrivateKey(string email)
-    {
-        logger.LogInformation("Generating private key for {}", email);
-        return Ok(PrivateKeyValidator.GeneratePrivateKey(email));
-    }
-
     [HttpPost("MakeAdmin/{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> MakeAdmin(string id)
@@ -177,15 +170,64 @@ public class UsersController : ControllerBase
         if (user == null)
             return NotFound(new ErrorMessage { Message = "User not found" });
         user.Role = Role.Admin;
-        logger.LogInformation("Makeing user {} admin", user.UserName);
+        logger.LogInformation("Making user {} admin", user.UserName);
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
         {
             ModelState.AddModelError("", "Cannot remove user existing roles");
             return BadRequest(ModelState);
         }
-        AddLog(ActionType.UPDATE, string.Format("Made  user {0} admin", id));
+        AddLog(ActionType.UPDATE, string.Format("Made user {0} admin", id));
         logger.LogInformation("User {} is now admin", user.UserName);
+        return Ok();
+    }
+
+
+    [HttpPost("{id}/activate")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Activate(string id)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound(new ErrorMessage { Message = "User not found" });
+        if (user.Role == Role.Active || user.Role == Role.Admin)
+            return Ok();
+        user.Role = Role.Active;
+        logger.LogInformation("Activating user {}", user.UserName);
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            logger.LogError("Failed to activate user {}", user.UserName);
+            result.Errors.ToList().ForEach(error => logger.LogError("Error: {0}", error.Description));
+            ModelState.AddModelError("", "Failed to activate user");
+            return BadRequest(ModelState);
+        }
+        AddLog(ActionType.UPDATE, string.Format("Made user {0} active", id));
+        logger.LogInformation("User {} is now active", user.UserName);
+        return Ok();
+    }
+
+    [HttpDelete("{id}/activate")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeActivate(string id)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound(new ErrorMessage { Message = "User not found" });
+        if (user.Role == Role.Disabled)
+            return Ok();
+        user.Role = Role.Disabled;
+        logger.LogInformation("Disabling user {}", user.UserName);
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            logger.LogError("Failed to disable user {}", user.UserName);
+            result.Errors.ToList().ForEach(error => logger.LogError("Error: {0}", error.Description));
+            ModelState.AddModelError("", "Failed to disable user");
+            return BadRequest(ModelState);
+        }
+        AddLog(ActionType.UPDATE, string.Format("Made user {0} disabled", id));
+        logger.LogInformation("User {} is now disabled", user.UserName);
         return Ok();
     }
 
@@ -243,24 +285,27 @@ public class UsersController : ControllerBase
                 resEntries.Add(compareModel);
             }
         }
-        var generalBets = generalBetsRepository.GetGeneralBets();
-        allUsers = tableBuilder.GetTable(allUsers, [], generalBets.Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList()).ToList();
-        var finalTable = tableBuilder.GetTable(allUsers, [], generalBets);
-        var finalUserEntries = users.Select(user => finalTable.FirstOrDefault(tableUser => tableUser.Id == user.Id)).Where(entry => entry != null).ToList();
-        if (finalUserEntries.Count > 0)
+        if (betsByDate.Count() > 0)
         {
-            var finalCompareModel = new UserCompareModel()
+            var generalBets = generalBetsRepository.GetGeneralBets();
+            allUsers = tableBuilder.GetTable(allUsers, [], generalBets.Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList()).ToList();
+            var finalTable = tableBuilder.GetTable(allUsers, [], generalBets);
+            var finalUserEntries = users.Select(user => finalTable.FirstOrDefault(tableUser => tableUser.Id == user.Id)).Where(entry => entry != null).ToList();
+            if (finalUserEntries.Count > 0)
             {
-                Date = new DateTime(DateTime.Now.Year, 1, 1).AddDays(betsByDate.Last().Key),
-                Entries = finalUserEntries.Select(userEntry => new CompareEntry()
+                var finalCompareModel = new UserCompareModel()
                 {
-                    Name = userEntry.Name,
-                    Place = int.Parse(userEntry.Place)
-                }).ToList()
-            };
-            resEntries.Add(finalCompareModel);
-        }
+                    Date = new DateTime(DateTime.Now.Year, 1, 1).AddDays(betsByDate.Last().Key),
+                    Entries = finalUserEntries.Select(userEntry => new CompareEntry()
+                    {
+                        Name = userEntry.Name,
+                        Place = int.Parse(userEntry.Place)
+                    }).ToList()
+                };
+                resEntries.Add(finalCompareModel);
+            }
 
+        }
         return resEntries;
     }
 

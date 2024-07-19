@@ -139,7 +139,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.getUsersPromise = UsersManager.loadAllUsers().then((users) => {
             $scope.users = users;
             $scope.users.forEach((user) => {
-                if (angular.isDefined(user.GeneralBet)) {
+                if (user.GeneralBet !== null) {
                     user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
                     user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
                 }

@@ -16,8 +16,10 @@
                             <td><a href="{{user.getUrl()}}">{{user.Name}}</a></td>
                             <td>{{user.Email}}</td>
                             <td>
-                                <button type="button" class="btn btn-primary btn-sm" ng-click="deleteUser(user)" tooltip="Delete User"><i class="fa fa-times-circle"></i></button>
-                                <button ng-show="!user.IsAdmin" type="button" class="btn btn-primary btn-sm" ng-click="user.makeAdmin()" tooltip="Make Admin"><i class="fa fa-gear"></i></button>
+                                <button title="delete" type="button" class="btn btn-danger btn-sm" ng-click="deleteUser(user)" tooltip="Delete User"><i class="fa fa-times-circle"></i> <span class="hidden-xs">Delete</span></button>
+                                <button title="makeadmin" ng-show="!user.IsAdmin" type="button" class="btn btn-primary btn-sm" ng-click="makeAdmin(user)" tooltip="Make Admin"><i class="fa fa-gear"></i> <span class="hidden-xs">Admin</span></button>
+                                <button title="activate" ng-show="user.Roles === Disabled && !user.IsAdmin" type="button" class="btn btn-success btn-sm" ng-click="activate(user)" tooltip="Activate"><i class="fa-solid fa-user-check"></i> <span class="hidden-xs">Actiavte</span></button>
+                                <button title="deactivate" ng-show="user.Roles === Active && !user.IsAdmin" type="button" class="btn btn-warning btn-sm" ng-click="deactivate(user)" tooltip="Deactivate"><i class="fa-solid fa-user-minus"></i> <span class="hidden-xs">Deactivate</span></button>
                             </td>
                         </tr>
                         </tbody>
@@ -76,31 +78,3 @@
     </div>
 </div>
 <!-- End of General Bets -->
-<!-- Private Key Generator -->
-<div class="row">
-    <div class="col-md-12">
-        <div class="panel panel-success" cg-busy="generatePrivateKeyPromisd">
-            <div class="panel-heading"><i class="fa fa-lock"></i> Private Key Generator</div>
-            <div class="panel-body">
-                <form role="form" name="privateKeyForm" class="form-horizontal" novalidate>
-                    <div class="form-group">
-                        <label for="email" class="col-md-2 col-xs-2 control-label">User Email</label>
-                        <div class="col-md-4 col-xs-10">
-                            <input name="email" id="email" type="email" class="form-control" ng-model="privateKey.email" placeholder="User Email" required>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-show="privateKey.key && privateKey.email">
-                        <label for="key" class="col-md-2 col-xs-2 control-label">Private Key</label>
-                        <div class="col-md-4 col-xs-10">
-                            <input name="key" id="key" type="text" class="form-control" ng-model="privateKey.key">
-                        </div>
-                    </div>
-                    <div class="pull-right">
-                        <button type="button" ng-click="generateKey()" class="btn btn-primary" ng-disabled="privateKeyForm.$invalid" tabindex="100">Generate</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- End of Private Key Generator -->

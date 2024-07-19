@@ -54,20 +54,13 @@ public class AccountController : ControllerBase
         {
             return BadRequest(new ErrorMessage { Message = "Tournament is not open for registration anymore" });
         }
-        if (_config.PrivateKeyProtection)
-        {
-            if (!PrivateKeyValidator.ValidatePrivateKey(model.PrivateKey, model.Email))
-            {
-                return BadRequest(new ErrorMessage { Message = "Invalid private key" });
-            }
-        }
         MundialitoUser user = new MundialitoUser
         {
             UserName = model.UserName,
             Email = model.Email,
             LastName = model.LastName,
             FirstName = model.FirstName,
-            Role = Role.User,
+            Role = Role.Disabled,
         };
         _logger.LogInformation("Will store user {User} with mail {Mail}", user.UserName, user.Email);
         IdentityResult result = await _userManager.CreateAsync(user, model.Password);

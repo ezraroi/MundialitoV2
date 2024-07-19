@@ -55,19 +55,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             return deferred.promise;
         },
 
-        generatePrivateKey: function (email) {
-            var deferred = $q.defer();
-            $log.debug('UsersManager: will generate private key for ' + email);
-            $http.get('api/users/generateprivatekey/' + encodeURIComponent(email) + '/', { tracker: 'generatePrivateKey' })
-                .then((answer) => {
-                    deferred.resolve(answer.data);
-                })
-                .catch((e) => {
-                    deferred.reject(e);
-                });
-            return deferred.promise;
-        },
-
         getSocial: (username) => {
             $log.debug('UsersManager: will fetch followers and followees of user ' + username);
             return $http.get('api/users/' + username + '/followees', { tracker: 'getSocial' })

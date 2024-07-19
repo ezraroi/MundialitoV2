@@ -331,11 +331,6 @@ angular.module('mundialitoApp').controller('RegisterCtrl', ['$scope', 'security'
             { property: 'confirmPassword', label: 'Confirm Password', type: 'password', attr: { confirmPassword: 'user.password', required: true } }
     ];
 
-    if ($scope.mundialitoApp.protect === true) {
-        $scope.user.privateKey = '';
-        $scope.schema.push({ property: 'privateKey', help: 'The Private Key was given in the e-mail of the payment confirmation', label: 'Private Key', type: 'text', attr: { required: true } });
-    }
-
 }]);
 'use strict';
 angular.module('mundialitoApp').controller('ResetPasswordCtrl', ['$scope', '$rootScope', 'security', '$location', 'Alert', function ($scope, $rootScope, Security, $location, Alert) {
@@ -770,7 +765,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.getUsersPromise = UsersManager.loadAllUsers().then((users) => {
             $scope.users = users;
             $scope.users.forEach((user) => {
-                if (angular.isDefined(user.GeneralBet)) {
+                if (user.GeneralBet !== null) {
                     user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
                     user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
                 }
@@ -971,7 +966,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         $scope.simulateGamePromise = GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
             $scope.users = data;
             $scope.users.forEach((user) => {
-                if (angular.isDefined(user.GeneralBet)) {
+                if (user.GeneralBet !== null) {
                     user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
                     user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
                 }
@@ -1484,12 +1479,12 @@ angular.module('mundialitoApp').directive('accessLevel', ['$log','security', fun
               function (newValue) {
                   $scope.user = newValue;
                   if (($scope.user === undefined) || ($scope.user === null)) {
-                      userRole = "User"
+                      userRole = "Active"
                   } else if ($scope.user.Roles) {
                       //$log.debug('Security.user has been changed:' + $scope.user.Username);
                       userRole = $scope.user.Roles;
                   } else {
-                      userRole = "User"
+                      userRole = "Active"
                   }
                   updateCSS();
               },
@@ -2264,7 +2259,6 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
 angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'users','teams', 'generalBets','UsersManager', 'players', function ($scope, $log, Alert, users, teams, generalBets, UsersManager, players) {
     $scope.users = users;
     $scope.generalBets = generalBets;
-    $scope.privateKey = {};
     $scope.teamsDic = {};
     $scope.playersDic = {};
 
@@ -2284,27 +2278,30 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
         });
     };
 
-    $scope.resolveBet = function(bet) {
+    $scope.resolveBet = (bet) => {
         $scope.resolveGeneralBetPromise = bet.resolve().then(() => {
             Alert.success('General bet was resolved successfully');
         });
     };
 
-    $scope.generateKey = function() {
-        $scope.privateKey.key = '';
-        $scope.generatePrivateKeyPromisd = UsersManager.generatePrivateKey($scope.privateKey.email).then(function(data) {
-            $log.debug('ManageAppCtrl: got private key ' + data);
-            $scope.privateKey.key = data;
-        });
-    };
-
-    $scope.makeAdmin = function(user) {
+    $scope.makeAdmin = (user) => {
         user.makeAdmin().then(() => {
             Alert.success('User was is now admin');
             user.IsAdmin = true;
-        })
+        });
     };
 
+    $scope.activate = (user) => {
+        user.activate().then(() => {
+            Alert.success('User was activated successfully');
+        });
+    };
+
+    $scope.deactivate = (user) => {
+        user.deactivate().then(() => {
+            Alert.success('User was deactivated successfully');
+        });
+    };
 }]);
 'use strict';
 angular.module('mundialitoApp').factory('User', ['$http','$log', function($http, $log) {
@@ -2333,7 +2330,19 @@ angular.module('mundialitoApp').factory('User', ['$http','$log', function($http,
                 $log.debug('User: Will make user ' + this.Username + ' admin')
                 return $http.post("api/users/makeadmin/" + this.Id, { tracker: 'makeAdmin' });
             }
-        }
+        },
+        activate: function () {
+            if (confirm('Are you sure you would like to activate ' + this.Name)) {
+                $log.debug('User: Will actiavte user ' + this.Username)
+                return $http.post('api/users/' + this.Id + '/activate');
+            }
+        },
+        deactivate: function () {
+            if (confirm('Are you sure you would like to deactiavte ' + this.Name)) {
+                $log.debug('User: Will deactiavte user ' + this.Username)
+                return $http.delete('api/users/' + this.Id + '/activate');
+            }
+        },
     };
     return User;
 }]);
@@ -2587,19 +2596,6 @@ angular.module('mundialitoApp').factory('UsersManager', ['$http', '$q', 'User', 
             } else {
                 this._load(username, deferred);
             }
-            return deferred.promise;
-        },
-
-        generatePrivateKey: function (email) {
-            var deferred = $q.defer();
-            $log.debug('UsersManager: will generate private key for ' + email);
-            $http.get('api/users/generateprivatekey/' + encodeURIComponent(email) + '/', { tracker: 'generatePrivateKey' })
-                .then((answer) => {
-                    deferred.resolve(answer.data);
-                })
-                .catch((e) => {
-                    deferred.reject(e);
-                });
             return deferred.promise;
         },
 

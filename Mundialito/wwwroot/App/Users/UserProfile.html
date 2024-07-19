@@ -21,7 +21,7 @@
             <div class="panel-heading"><i class="fa-solid fa-user-tie"></i> Admin Actions</div>
             <div class="panel-body">
                 <div class="list-group">
-                    <a class="list-group-item" target="_blank" href="mailto:{{::profileUser.Email}}?subject=Hello From {{::mundialitoApp.appName}}"><i class="fa-solid fa-envelope"></i> Send Mail</a>
+                    <a class="list-group-item" target="" href="mailto:{{::profileUser.Email}}?subject=Hello From {{::mundialitoApp.appName}}"><i class="fa-solid fa-envelope"></i> Send Mail</a>
                     <a class="list-group-item" id="capture" ng-click="capture()" href="" ><i class="fa-solid fa-print"></i> Captue Profile</a>
                 </div>  
             </div>
@@ -210,7 +210,7 @@
         </div>
     </div>
 </div>
-<div class="row">
+<div class="row" ng-show="security.user.Roles !== 'Disabled">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading">
@@ -255,7 +255,7 @@
         </div>
     </div>
 </div>
-<div class="row">
+<div class="row" ng-show="security.user.Roles !== 'Disabled">
     <div class="col-md-12">
         <div class="panel panel-info">
             <div class="panel-heading">Game Bets</div>

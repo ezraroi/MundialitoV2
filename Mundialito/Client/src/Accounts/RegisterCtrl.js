@@ -33,9 +33,4 @@ angular.module('mundialitoApp').controller('RegisterCtrl', ['$scope', 'security'
             { property: 'confirmPassword', label: 'Confirm Password', type: 'password', attr: { confirmPassword: 'user.password', required: true } }
     ];
 
-    if ($scope.mundialitoApp.protect === true) {
-        $scope.user.privateKey = '';
-        $scope.schema.push({ property: 'privateKey', help: 'The Private Key was given in the e-mail of the payment confirmation', label: 'Private Key', type: 'text', attr: { required: true } });
-    }
-
 }]);
