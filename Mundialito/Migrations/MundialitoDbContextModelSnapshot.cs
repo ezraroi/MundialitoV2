@@ -394,6 +394,10 @@ namespace Mundialito.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Relational:JsonPropertyName", "StadiumId");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasAnnotation("Relational:JsonPropertyName", "Type");
+
                     b.HasKey("GameId");
 
                     b.HasIndex("AwayTeamId");

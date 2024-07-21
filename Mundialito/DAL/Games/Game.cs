@@ -12,6 +12,10 @@ public class Game
     public int GameId { get; set; }
 
     [Required]
+    [JsonPropertyName("Type")]
+    public GameType Type { get; set; }
+
+    [Required]
     [JsonPropertyName("HomeTeamId")]
     public int HomeTeamId { get; set; }
 

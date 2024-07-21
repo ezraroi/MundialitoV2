@@ -87,7 +87,7 @@
             </div>
             <!-- End of Fixed navbar -->
             <div class="container" ng-hide="mundialitoApp.message != null">
-                <div class="row" ng-if="security.user.Roles !== 'Disabled'">
+                <div class="row" ng-if="security.user.Roles === 'Disabled'">
                     <div class="col-md-12">
                         <div class="alert alert-danger" role="alert">
                             <i class="fa fa-exclamation-triangle"></i> Your user is not active yet, please contact the Admin

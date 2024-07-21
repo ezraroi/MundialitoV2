@@ -13,6 +13,7 @@ public class GameViewModel
         GameId = game.GameId;
         HomeTeam = new GameTeamModel(game.HomeTeam);
         AwayTeam = new GameTeamModel(game.AwayTeam);
+        Type = game.Type;
         Date = game.Date.ToLocalTime();
         HomeScore = game.HomeScore;
         AwayScore = game.AwayScore;
@@ -37,6 +38,9 @@ public class GameViewModel
     [JsonPropertyName("GameId")]
     public int GameId { get; private set; }
 
+    [JsonPropertyName("Type")]
+    public GameType Type { get; private set; }
+    
     [JsonPropertyName("HomeTeam")]
     public GameTeamModel HomeTeam { get; private set; }
 
@@ -142,6 +146,10 @@ public class NewGameModel
     public int GameId { get; set; }
 
     [Required]
+    [JsonPropertyName("Type")]
+    public GameType Type { get; private set; }
+
+    [Required]
     [DataType(DataType.DateTime)]
     [JsonPropertyName("Date")]
     public DateTime Date { get; set; }
@@ -191,8 +199,12 @@ public class PutGameModel
         CornersMark = game.CornersMark;
         CardsMark = game.CardsMark;
         IntegrationsData = game.IntegrationsData;
+        Type = game.Type;
     }
 
+    [JsonPropertyName("Type")]
+    public GameType Type { get; set; }
+    
     [JsonPropertyName("Date")]
     public DateTime Date { get; set; }
 
