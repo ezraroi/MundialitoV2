@@ -10,8 +10,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.GeneralBets;
-using Mundialito.DAL.Players;
-using Mundialito.DAL.Teams;
 
 namespace Mundialito.Controllers;
 
@@ -149,7 +147,8 @@ public class GamesController : ControllerBase
             AwayTeamId = game.AwayTeam.TeamId,
             StadiumId = game.Stadium.StadiumId,
             Date = game.Date,
-            IntegrationsData = game.IntegrationsData
+            IntegrationsData = game.IntegrationsData,
+            Type = game.Type
         };
         var res = gamesRepository.InsertGame(newGame);
         gamesRepository.Save();
@@ -179,6 +178,7 @@ public class GamesController : ControllerBase
         item.CornersMark = game.CornersMark;
         item.Date = game.Date;
         item.IntegrationsData = game.IntegrationsData;
+        item.Type = game.Type;
         gamesRepository.Save();
         if (item.IsBetResolved(dateTimeProvider.UTCNow))
         {

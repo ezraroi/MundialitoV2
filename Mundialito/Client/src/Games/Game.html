@@ -14,7 +14,8 @@
                     <i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i> {{game.CardsMark}}
                     <i class="fa fa-flag" tooltip="Corners Mark"></i> {{game.CornersMark}}
                 </h5>
-                <h4>{{game.Stadium.Name}} Stadium</h4>
+                <h6><i class="fa-solid" ng-class="{ 'fa-skull-crossbones' :  game.Type === 'Knockouts' , 'fa-people-group' : game.Type === 'Groups' }"></i> {{game.Type}} Stage</h6>
+                <h5>{{game.Stadium.Name}} Stadium</h5>
                 <h4>{{game.Date | date:'dd/MM/yy @ H:mm'}} <small ng-show="game.IsOpen">(<i class="fa fa-clock"></i>
                         Open until {{game.CloseTime | date:'dd/MM/yy @ H:mm'}})</small></h4>
                 <h5 ng-show="game.GameStatsPage !== null"><a target="_blank" ng-href="{{game.GameStatsPage}}"><i
@@ -88,6 +89,17 @@
                                 <option value="1">{{game.HomeTeam.Name}}</option>
                                 <option value="X">X</option>
                                 <option value="2">{{game.AwayTeam.Name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="game.IsOpen">
+                        <label class="col-md-3 control-label" for="game_type">Type</label>
+                        <div class="col-md-2">
+                            <select id="game_type" name="game_type" ui-select2="{allowClear: false}"
+                                class="form-control" ng-model="game.Type" required
+                                placeholder="Game Type">
+                                <option value="Groups">Groups Stage</option>
+                                <option value="Knockouts">Knockouts Stage</option>
                             </select>
                         </div>
                     </div>

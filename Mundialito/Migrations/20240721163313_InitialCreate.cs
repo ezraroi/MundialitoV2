@@ -278,6 +278,7 @@ namespace Mundialito.Migrations
                 {
                     GameId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<int>(type: "integer", nullable: false),
                     HomeTeamId = table.Column<int>(type: "integer", nullable: false),
                     AwayTeamId = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
