@@ -45,6 +45,14 @@
                         </select>
                     </div>
                     <div class="form-group select">
+                        <label for="game_type">Type</label>
+                        <select id="game_type" ui-select2="{allowClear: false}" class="form-control"
+                            ng-model="newGame.Type" required>
+                            <option value="Groups">Groups Stage</option>
+                            <option value="Knockouts">Knockouts Stage</option>
+                        </select>
+                    </div>
+                    <div class="form-group select">
                         <div class="dropdown dropdown1-parent">
                             <label for="Date">Date & Time</label>
                             <a class="dropdown-toggle" id="datedropdown" role="button" data-toggle="dropdown" data-target=".dropdown1-parent" href="#">
