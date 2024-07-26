@@ -55,7 +55,7 @@ public class GamesController : ControllerBase
         return res;
     }
 
-    [HttpGet(("Stadium/{stadiumId}"))]
+    [HttpGet("Stadium/{stadiumId}")]
     public IEnumerable<GameViewModel> GetStadiumGames(int stadiumId)
     {
         var res = gamesRepository.GetStadiumGames(stadiumId).Select(game => new GameViewModel(game)).ToList();
@@ -63,7 +63,7 @@ public class GamesController : ControllerBase
         return res;
     }
 
-    [HttpGet(("{id}"))]
+    [HttpGet("{id}")]
     public ActionResult<GameViewModel> GetGameByID(int id)
     {
         var item = gamesRepository.GetGame(id);
@@ -75,7 +75,7 @@ public class GamesController : ControllerBase
         return Ok(res);
     }
 
-    [HttpPost(("{id}/simulate"))]
+    [HttpPost("{id}/simulate")]
     public ActionResult<IEnumerable<UserModel>> SimulateGame(int id, SimulateGameModel simulateGameModel)
     {
         var item = gamesRepository.GetGame(id);
@@ -238,7 +238,7 @@ public class GamesController : ControllerBase
         var monkeyUserName = config.MonkeyUserName;
         if (!string.IsNullOrEmpty(monkeyUserName))
         {
-            var monkeyUser = await userManager.FindByNameAsync(monkeyUserName);
+            var monkeyUser = userManager.Users.Where(user => user.UserName == monkeyUserName).First();
             if (monkeyUser == null)
             {
                 logger.LogError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);

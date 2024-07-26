@@ -147,7 +147,7 @@ public class NewGameModel
 
     [Required]
     [JsonPropertyName("Type")]
-    public GameType Type { get; private set; }
+    public GameType Type { get; set; }
 
     [Required]
     [DataType(DataType.DateTime)]
