@@ -78,7 +78,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Active")]
+    [Authorize(Roles = "Active,Admin")]
     public async Task<ActionResult<NewGeneralBetModel>> PostBet(NewGeneralBetModel newBet)
     {
         var validate = Validate();
@@ -106,7 +106,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Active")]
+    [Authorize(Roles = "Active,Admin")]
     public async Task<ActionResult<UpdateGenralBetModel>> UpdateBet(int id, UpdateGenralBetModel bet)
     {
         if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())

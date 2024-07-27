@@ -29,6 +29,8 @@ public class BetViewModel
         IsOpenForBetting = bet.IsOpenForBetting(now);
         IsResolved = bet.IsResolved(now);
         Points = bet.Points.HasValue ? bet.Points.Value : 0;
+        MaxPoints = bet.MaxPoints;
+        BonusPoints = bet.MaxPoints ? bet.Game.BingoBonusPoints() : 0;
         Game = new BetGame(bet.Game);
         User = new BetUser(bet.User);
     }
@@ -74,6 +76,13 @@ public class BetViewModel
 
     [JsonPropertyName("IsResolved")]
     public bool IsResolved { get; set; }
+    
+    [JsonPropertyName("IsMaxPoints")]
+    public bool MaxPoints { get; set; }
+
+    [JsonPropertyName("BonusPoints")]
+    public int BonusPoints { get; set; }
+
 }
 
 public class BetUser

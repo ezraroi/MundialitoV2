@@ -326,7 +326,8 @@ namespace Mundialito.Migrations
                     CornersWin = table.Column<bool>(type: "boolean", nullable: false),
                     GameMarkWin = table.Column<bool>(type: "boolean", nullable: false),
                     ResultWin = table.Column<bool>(type: "boolean", nullable: false),
-                    CardsWin = table.Column<bool>(type: "boolean", nullable: false)
+                    CardsWin = table.Column<bool>(type: "boolean", nullable: false),
+                    MaxPoints = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

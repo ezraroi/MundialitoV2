@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mundialito.Migrations
 {
     [DbContext(typeof(MundialitoDbContext))]
-    [Migration("20240721163313_InitialCreate")]
+    [Migration("20240726144127_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -326,6 +326,10 @@ namespace Mundialito.Migrations
                     b.Property<int>("HomeScore")
                         .HasColumnType("integer")
                         .HasAnnotation("Relational:JsonPropertyName", "HomeScore");
+
+                    b.Property<bool>("MaxPoints")
+                        .HasColumnType("boolean")
+                        .HasAnnotation("Relational:JsonPropertyName", "MaxPoints");
 
                     b.Property<int?>("Points")
                         .HasColumnType("integer")

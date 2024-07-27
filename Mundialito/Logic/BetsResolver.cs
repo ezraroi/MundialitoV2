@@ -21,36 +21,42 @@ public class BetsResolver : IBetsResolver
         foreach (Bet bet in bets)
         {
             var points = 0;
+            bet.MaxPoints = false;
             if (bet.Mark() == game.Mark(dateTimeProvider.UTCNow))
             {
-                points += 3;
+                points += game.MarkPoints();
                 bet.GameMarkWin = true;
             }
             else
                 bet.GameMarkWin = false;
             if ((bet.HomeScore == game.HomeScore) && (bet.AwayScore == game.AwayScore))
             {
-                points += 2;
+                points += game.ResultPoints();
                 bet.ResultWin = true;
             }
             else
                 bet.ResultWin = false;
             if (game.CardsMark == bet.CardsMark)
             {
-                points += 1;
+                points += game.CardsPoints();
                 bet.CardsWin = true;
             }
             else
                 bet.CardsWin = false;
             if (game.CornersMark == bet.CornersMark)
             {
-                points += 1;
+                points += game.CornersPoints();
                 bet.CornersWin = true;
             }
             else
                 bet.CornersWin = false;
+            if (points == game.MaxPoints()) 
+            {
+                bet.MaxPoints = true;
+                points += game.BingoBonusPoints();
+            }
             bet.Points = points;
-            logger.LogInformation("{0} of {1} got {2} points", bet.BetId, game.GameId, points);
+            logger.LogInformation("{0} of {1} ({2}) got {3} points", bet.BetId, game.GameId, game.Type, points);
         }
     }
 }

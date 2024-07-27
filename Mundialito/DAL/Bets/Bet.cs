@@ -74,6 +74,9 @@ public class Bet
     [JsonPropertyName("CardsWin")]
     public bool CardsWin { get; set; }
 
+    [JsonPropertyName("MaxPoints")]
+    public bool MaxPoints { get; set; }
+
     public override string ToString()
     {
         return string.Format("Bet ID = {0}, UserID = {1}, Game ID = {2}", BetId, UserId, GameId);
