@@ -263,7 +263,7 @@
                 <div class="row">
                     <div class="col-md-12 col-xs-12">
                         <div class="list-group" ng-show="userGameBets.length > 0">
-                            <a href="{{userBet.getGameUrl()}}" class="list-group-item"
+                            <a href="{{userBet.getGameUrl()}}" class="list-group-item" ng-class="{'list-group-item-success': userBet.IsMaxPoints, 'list-group-item-danger': userBet.IsResolved && userBet.Points == 0}"
                                 ng-repeat="userBet in userGameBets | orderBy : 'Game.Date'">
                                 <div class="row">
                                     <div class="col-md-2 col-xs-1">
@@ -299,7 +299,7 @@
                                         </span>
                                     </div>
                                     <div class="col-md-2 col-xs-2" ng-if="userBet.IsResolved">
-                                        <i class="fa fa-legal" tooltip="Points"></i> <b>{{userBet.Points}}</b>
+                                        <i class="fa" ng-class="{'fa-legal': !userBet.IsMaxPoints && userBet.Points > 0, 'fa-bullseye': userBet.IsMaxPoints, 'fa-skull-crossbones': userBet.Points == 0}" tooltip="Points"></i> <b>{{userBet.Points}}</b>
                                     </div>
                                     <div class="col-md-2 col-xs-2" ng-if="!userBet.IsResolved">
                                         <i class="fa fa-clock-o" tooltip="Not resolved yet"></i>

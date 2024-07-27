@@ -180,30 +180,62 @@
 <!-- User Bet -->
 <div class="row" ng-show="security.user.Roles !== 'Disabled'">
     <div class="col-md-12">
-        <div class="panel panel-default">
+        <div  ng-class="{ 'panel-default': !userBet.IsMaxPoints, 'panel-success': userBet.IsMaxPoints, 'panel-danger': userBet.IsResolved && userBet.Points == 0 }" class="panel">
             <div class="panel-heading">
                 <i class="fa fa-user"></i> Your Bet
                 <span ng-show="game.IsPendingUpdate" class="label label-info pull-right"><i class="fa fa-clock"></i>
                     Pending Update</span>
                 <span ng-show="game.IsOpen" class="label label-success pull-right"><i class="fa fa-unlock"></i> Open for
                     betting</span>
-                <span class="label label-success pull-right"
-                    ng-show="!game.IsOpen && !game.IsPendingUpdate">{{userBet.Points}} Points</span>
+                <i style="padding-right: 3px;" ng-class="{'fa-legal': !userBet.IsMaxPoints, 'fa-bullseye': userBet.IsMaxPoints, 'fa-skull-crossbones': userBet.IsResolved && userBet.Points == 0, 'fa-question': !userBet.IsResolved}" class="fa-solid pull-right"> </i>
             </div>
             <div class="panel-body" cg-busy="updateBetPromise">
                 <div ng-if="!game.IsOpen && userBet.BetId == -1" class="text-danger">
                     <i class="fa fa-warning"></i> You haven't placed a bet on this game and it is already closed for
                     betting
                 </div>
-                <form class="form-horizontal" novalidate name="userBetFrom"
-                    ng-show="userBet.BetId != -1 || game.IsOpen">
+                <div ng-show="!game.IsOpen">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <th>Result</th>
+                                <th><i class="fa fa-stop" style="color: #ffff00"
+                                        tooltip="Yellow Cards Mark"></i></th>
+                                <th><i class="fa fa-flag" tooltip="Corners Mark"></i></th>
+                                <th>Points</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{::userBet.HomeScore}} - {{::userBet.AwayScore}}</td>
+                                    <td>
+                                        <span ng-if="userBet.CardsMark === 'X'">X</span>
+                                        <span ng-if="userBet.CardsMark !== 'X'">
+                                            <i ng-class="['flag','flag-fifa-{{userBet.getTeamByCardsMark().ShortName | lowercase}}']" tooltip="{{userBet.getTeamByCardsMark().Name}}"></i>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span ng-if="userBet.CornersMark === 'X'">X</span>
+                                        <span ng-if="userBet.CornersMark !== 'X'">
+                                            <i ng-class="['flag','flag-fifa-{{userBet.getTeamByCornersMark().ShortName | lowercase}}']" tooltip="{{userBet.getTeamByCornersMark().Name}}"></i>
+                                        </span>
+                                    </td>
+                                    <td><span class="label label-{{userBet.getClass()}}"
+                                            ng-show="userBet.IsResolved">{{::userBet.Points}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                        
+                </div>
+                <form class="form-horizontal" novalidate name="userBetFrom" ng-show="game.IsOpen">
                     <div class="form-group">
                         <label class="col-md-3 control-label" for="{{game.HomeTeam.TeamId}}">
                             <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
                                 title=" {{game.HomeTeam.Name}}"></i> {{game.HomeTeam.Name}} Score
                         </label>
                         <div class="col-md-2">
-                            <input name="{{game.HomeTeam.TeamId}}" ng-readonly="!game.IsOpen"
+                            <input name="{{game.HomeTeam.TeamId}}"
                                 id="{{game.HomeTeam.TeamId}}" type="number" ng-model="userBet.HomeScore"
                                 class="form-control" placeholder="Home Team Score" required min="0">
                         </div>
@@ -214,7 +246,7 @@
                                 title=" {{game.AwayTeam.Name}}"></i> {{game.AwayTeam.Name}} Score
                         </label>
                         <div class="col-md-2">
-                            <input name="{{game.AwayTeam.TeamId}}" ng-readonly="!game.IsOpen"
+                            <input name="{{game.AwayTeam.TeamId}}"
                                 id="{{game.AwayTeam.TeamId}}" type="number" ng-model="userBet.AwayScore"
                                 class="form-control" placeholder="Away Team Score" required min="0">
                         </div>
@@ -222,7 +254,7 @@
                     <div class="form-group" ng-class="{'has-error' : cards.$error}">
                         <label class="col-md-3 control-label" for="cards">Yellow Cards</label>
                         <div class="col-md-2">
-                            <select id="cards" name="cards" ng-readonly="!game.IsOpen" ui-select2="{allowClear: false}"
+                            <select id="cards" name="cards" ui-select2="{allowClear: false}"
                                 class="form-control" ng-model="userBet.CardsMark" required
                                 placeholder="Game Cards Mark">
                                 <option value="1">{{game.HomeTeam.Name}}</option>
@@ -236,7 +268,7 @@
                             Corners
                         </label>
                         <div class="col-md-2">
-                            <select id="corners" name="corners" ng-readonly="!game.IsOpen"
+                            <select id="corners" name="corners" 
                                 ui-select2="{allowClear: false}" class="form-control" ng-model="userBet.CornersMark"
                                 required placeholder="Game Corners Mark">
                                 <option value="1">{{game.HomeTeam.Name}}</option>
@@ -286,8 +318,18 @@
                                                 <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                         {{::bet.User.LastName}}</a></td>
                                                 <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                <td>{{::bet.CardsMark}}</td>
-                                                <td>{{::bet.CornersMark}}</td>
+                                                <td>
+                                                    <span ng-if="bet.CardsMark === 'X'">X</span>
+                                                    <span ng-if="bet.CardsMark !== 'X'">
+                                                        <i ng-class="['flag','flag-fifa-{{bet.getTeamByCardsMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCardsMark().Name}}"></i>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span ng-if="bet.CornersMark === 'X'">X</span>
+                                                    <span ng-if="bet.CornersMark !== 'X'">
+                                                        <i ng-class="['flag','flag-fifa-{{bet.getTeamByCornersMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCornersMark().Name}}"></i>
+                                                    </span>
+                                                </td>
                                                 <td><span class="label label-{{bet.getClass()}}"
                                                         ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
@@ -320,8 +362,18 @@
                                                 <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                         {{::bet.User.LastName}}</a></td>
                                                 <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                <td>{{::bet.CardsMark}}</td>
-                                                <td>{{::bet.CornersMark}}</td>
+                                                <td>
+                                                    <span ng-if="bet.CardsMark === 'X'">X</span>
+                                                    <span ng-if="bet.CardsMark !== 'X'">
+                                                        <i ng-class="['flag','flag-fifa-{{bet.getTeamByCardsMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCardsMark().Name}}"></i>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span ng-if="bet.CornersMark === 'X'">X</span>
+                                                    <span ng-if="bet.CornersMark !== 'X'">
+                                                        <i ng-class="['flag','flag-fifa-{{bet.getTeamByCornersMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCornersMark().Name}}"></i>
+                                                    </span>
+                                                </td>
                                                 <td><span class="label label-{{bet.getClass()}}"
                                                         ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
@@ -354,8 +406,18 @@
                                                 <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                         {{::bet.User.LastName}}</a></td>
                                                 <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                <td>{{::bet.CardsMark}}</td>
-                                                <td>{{::bet.CornersMark}}</td>
+                                                <td>
+                                                    <span ng-if="bet.CardsMark === 'X'">X</span>
+                                                    <span ng-if="bet.CardsMark !== 'X'">
+                                                        <i ng-class="['flag','flag-fifa-{{bet.getTeamByCardsMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCardsMark().Name}}"></i>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span ng-if="bet.CornersMark === 'X'">X</span>
+                                                    <span ng-if="bet.CornersMark !== 'X'">
+                                                        <i ng-class="['flag','flag-fifa-{{bet.getTeamByCornersMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCornersMark().Name}}"></i>
+                                                    </span>
+                                                </td>
                                                 <td><span class="label label-{{bet.getClass()}}"
                                                         ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
@@ -399,8 +461,18 @@
                                     <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                             {{::bet.User.LastName}}</a></td>
                                     <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                    <td>{{::bet.CardsMark}}</td>
-                                    <td>{{::bet.CornersMark}}</td>
+                                    <td>
+                                        <span ng-if="bet.CardsMark === 'X'">X</span>
+                                        <span ng-if="bet.CardsMark !== 'X'">
+                                            <i ng-class="['flag','flag-fifa-{{bet.getTeamByCardsMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCardsMark().Name}}"></i>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span ng-if="bet.CornersMark === 'X'">X</span>
+                                        <span ng-if="bet.CornersMark !== 'X'">
+                                            <i ng-class="['flag','flag-fifa-{{bet.getTeamByCornersMark().ShortName | lowercase}}']" tooltip="{{bet.getTeamByCornersMark().Name}}"></i>
+                                        </span>
+                                    </td>
                                     <td><span class="label label-{{bet.getClass()}}"
                                             ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                 </tr>

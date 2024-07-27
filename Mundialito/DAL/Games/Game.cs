@@ -7,6 +7,13 @@ namespace Mundialito.DAL.Games;
 
 public class Game
 {
+    private const int MarkGroupsPoints = 3;
+    private const int MarkKnockoutsPoints = 4;
+    private const int ResultGroupsPoints = 2;
+    private const int ResultKnockoutsPoints = 3;
+    private const int CardsAndCornersPoints = 1;
+    private const int BingoPoints = 2;
+
     [Required]
     [JsonPropertyName("GameId")]
     public int GameId { get; set; }
@@ -74,5 +81,51 @@ public class Game
     public override string ToString()
     {
         return string.Format("Game ID = {0}, {1} - {2}", GameId, HomeTeam != null ? HomeTeam.Name : "Unknown", AwayTeam != null ? AwayTeam.Name : "Unknown");
+    }
+
+    public int MarkPoints() 
+    {
+        switch (Type)
+        {
+            case GameType.Groups:
+                return MarkGroupsPoints;
+            case GameType.Knockouts:
+                return MarkKnockoutsPoints;
+            default:
+                return MarkGroupsPoints;
+        }
+    }
+
+    public int ResultPoints() 
+    {
+        switch (Type)
+        {
+            case GameType.Groups:
+                return ResultGroupsPoints;
+            case GameType.Knockouts:
+                return ResultKnockoutsPoints;
+            default:
+                return ResultGroupsPoints;
+        }
+    }
+
+    public int CardsPoints() 
+    {
+        return CardsAndCornersPoints;
+    }
+
+    public int CornersPoints() 
+    {
+        return CardsAndCornersPoints;
+    }
+
+    public int BingoBonusPoints() 
+    {
+        return BingoPoints;
+    }
+
+    public int MaxPoints() 
+    {
+        return MarkPoints() + ResultPoints() + CardsPoints() + CornersPoints();
     }
 }

@@ -324,6 +324,10 @@ namespace Mundialito.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Relational:JsonPropertyName", "HomeScore");
 
+                    b.Property<bool>("MaxPoints")
+                        .HasColumnType("boolean")
+                        .HasAnnotation("Relational:JsonPropertyName", "MaxPoints");
+
                     b.Property<int?>("Points")
                         .HasColumnType("integer")
                         .HasAnnotation("Relational:JsonPropertyName", "Points");
