@@ -24,6 +24,7 @@ public class GameViewModel
         IsPendingUpdate = game.IsPendingUpdate();
         IsBetResolved = game.IsBetResolved();
         Mark = game.Mark();
+        Points = new GamePoints(game);
         if (game.HomeTeam.TournamentTeamId.HasValue && game.AwayTeam.TournamentTeamId.HasValue)
         {
             GameStatsPage = string.Format($"https://www.uefa.com/euro2024/teams/comparison/{game.HomeTeam.TournamentTeamId.Value}/{game.AwayTeam.TournamentTeamId.Value}/");
@@ -95,6 +96,8 @@ public class GameViewModel
     [JsonPropertyName("IntegrationsData")]
     public Dictionary<string, string>? IntegrationsData { get; set; }
 
+    [JsonPropertyName("Points")]
+    public GamePoints Points { get; set; }
 }
 
 public class GameTeamModel
@@ -136,8 +139,6 @@ public class GameTeamModel
 
     [JsonPropertyName("TournamentTeamId")]
     public int? TournamentTeamId { get; set; }
-
-
 }
 
 public class NewGameModel
@@ -278,4 +279,37 @@ public class SimulateGameModel
     [Required]
     [JsonPropertyName("CardsMark")]
     public required string CardsMark { get; set; }
+}
+
+
+public class GamePoints
+{
+    public GamePoints(Game game)
+    {
+        Mark = game.MarkPoints();
+        Result = game.ResultPoints();
+        Corners = game.CornersPoints();
+        Cards = game.CardsPoints();
+        Bonus = game.BingoBonusPoints();
+        Max = game.MaxPoints() + + game.BingoBonusPoints();  
+    }
+
+    [JsonPropertyName("Mark")]
+    public int Mark { get; set; }
+
+    [JsonPropertyName("Result")]
+    public int Result { get; set; }
+
+    [JsonPropertyName("Corners")]
+    public int Corners { get; set; }
+
+    [JsonPropertyName("Cards")]
+    public int Cards { get; set; }
+
+    [JsonPropertyName("Bonus")]
+    public int Bonus { get; set; }
+
+    [JsonPropertyName("Max")]
+    public int Max { get; set; }
+
 }

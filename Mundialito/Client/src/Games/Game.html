@@ -18,9 +18,11 @@
                 <h5>{{game.Stadium.Name}} Stadium</h5>
                 <h4>{{game.Date | date:'dd/MM/yy @ H:mm'}} <small ng-show="game.IsOpen">(<i class="fa fa-clock"></i>
                         Open until {{game.CloseTime | date:'dd/MM/yy @ H:mm'}})</small></h4>
+                <h6>
+                Points: <i class="fa-solid fa-check"></i> {{::game.Points.Mark}} <i class="fa-solid fa-bullseye"></i> {{::game.Points.Result}} <i class="fa fa-flag"></i> {{::game.Points.Corners}} <i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i> {{::game.Points.Cards}} <i class="fa-solid fa-award"></i> {{::game.Points.Bonus}} (Max: {{::game.Points.Max}})
+                </h6>
                 <h5 ng-show="game.GameStatsPage !== null"><a target="_blank" ng-href="{{game.GameStatsPage}}"><i
                             class="fa fa-bar-chart"></i> Head to Head</a></h5>
-                <br />
             </div>
         </div>
         <div class="row">
