@@ -1,13 +1,29 @@
 ﻿<div ng-controller="LoginCtrl">
-    <div class="row">
+    <div class="row" ng-if="mundialitoApp.GoogleClientId != ''">
+        <div class="col-md-6 col-md-offset-3">
+            <h2>Login</h2>
+            <div class="alert alert-info">
+                <p>Use your Google account to login.</p>
+            </div>
+            <div id="g_id_onload" data-client_id="{{mundialitoApp.GoogleClientId}}" data-context="use"
+                data-ux_mode="popup" data-callback="login" data-auto_select="true" data-itp_support="true">
+            </div>
+            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_blue"
+                data-text="signin_with" data-size="large" data-logo_alignment="left">
+            </div>
+        </div>
+    </div>
+    <div class="row" ng-show="mundialitoApp.GoogleClientId == ''">
         <div class="col-md-6 col-md-offset-3">
             <h2>Login</h2>
             <form name="loginForm" ng-submit="login()">
                 <auto:fields fields="schema" data="user"></auto:fields>
-                <button type="submit" class="btn btn-success btn-lg btn-block" ng-disabled="loginForm.$invalid" tabindex="100"><i class="fa fa-sign-in"></i> Login</button>
+                <button type="submit" class="btn btn-success btn-lg btn-block" ng-disabled="loginForm.$invalid"
+                    tabindex="100"><i class="fa fa-sign-in"></i> Login</button>
             </form>
             <p class="text-muted gutter-top text-center">Don't have an account? <a href="/join">Register now!</a></p>
-            <p class="text-muted gutter-top text-center">Forgot your password? <a href="/forgot">Reset your password now!</a></p>
+            <p class="text-muted gutter-top text-center">Forgot your password? <a href="/forgot">Reset your password
+                    now!</a></p>
             <hr />
         </div>
     </div>

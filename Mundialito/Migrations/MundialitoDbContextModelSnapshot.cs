@@ -203,6 +203,9 @@ namespace Mundialito.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ProfilePicture")
+                        .HasColumnType("text");
+
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 

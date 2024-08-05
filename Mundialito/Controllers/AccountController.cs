@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
+using Mundialito.Auth;
 using Mundialito.Configuration;
 using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
@@ -25,11 +26,12 @@ public class AccountController : ControllerBase
     private readonly SignInManager<MundialitoUser> _signInManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IEmailSender _emailSender;
+    private readonly AuthService _authService;
     private readonly ILogger _logger;
 
 
     public AccountController(ILogger<AccountController> logger, UserManager<MundialitoUser> userManager, MundialitoDbContext context,
-        TokenService tokenService, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils, SignInManager<MundialitoUser> signInManager, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender)
+        TokenService tokenService, IOptions<Config> config, TournamentTimesUtils tournamentTimesUtils, SignInManager<MundialitoUser> signInManager, IHttpContextAccessor httpContextAccessor, IEmailSender emailSender, AuthService authService)
     {
         _userManager = userManager;
         _context = context;
@@ -39,6 +41,7 @@ public class AccountController : ControllerBase
         _signInManager = signInManager;
         _httpContextAccessor = httpContextAccessor;
         _emailSender = emailSender;
+        _authService = authService;
         _logger = logger;
     }
 
@@ -136,6 +139,7 @@ public class AccountController : ControllerBase
             LastName = user.LastName,
             Email = user.Email,
             Roles = user.Role.ToString(),
+            ProfilePicture = user.ProfilePicture,
             Followees = user.Followees.Select((user) => user.Followee.UserName).ToList(),
             Followers = user.Followers.Select((user) => user.Follower.UserName).ToList(),
         });
@@ -213,4 +217,18 @@ public class AccountController : ControllerBase
         return Ok();
     }
 
+    /// <summary>
+    /// SIGN IN WITH GOOGLE
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost("signin-google")]
+    [ProducesResponseType(typeof(AuthResponse), 200)]
+    public async Task<ActionResult<AuthResponse>> GoogleSignIn(GoogleSigninModel model)
+    {
+        var token = await _authService.SignInWithGoogle(model);
+        if (token is null)
+            return BadRequest(new ErrorMessage { Message = "Bad credentials" });
+        return Ok(new AuthResponse { AccessToken = token });
+    }
 }

@@ -48,16 +48,19 @@ public class DatabaseInitilaizer
 
     private static async void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
     {
-        var user = new MundialitoUser
+        if (string.IsNullOrEmpty(config.GoogleClientId))
         {
-            UserName = config.AdminUserName,
-            Email = config.AdminEmail,
-            LastName = config.AdminLastName,
-            FirstName = config.AdminFirstName,
-            Role = Role.Admin,
-        };
-        logger.LogInformation("Creating user {0}", user);
-        userManager.CreateAsync(user, "123456").Wait();
+            var user = new MundialitoUser
+            {
+                UserName = config.AdminUserName,
+                Email = config.AdminEmail,
+                LastName = config.AdminLastName,
+                FirstName = config.AdminFirstName,
+                Role = Role.Admin,
+            };
+            logger.LogInformation("Creating admin user {0}", user);
+            userManager.CreateAsync(user, "123456").Wait();            
+        }
         if (!string.IsNullOrEmpty(config.MonkeyUserName))
         {
             var monkey = new MundialitoUser
@@ -86,9 +89,7 @@ public class DatabaseInitilaizer
     private static void SetupTeams(MundialitoDbContext context, ITournamentCreator tournamentCreator)
     {
         var teams = tournamentCreator.GetTeams();
-
         teams.ForEach(team => context.Teams.Add(team));
-
         context.SaveChanges();
         teamsDic = context.Teams.ToDictionary(team => team.Name, team => team);
     }

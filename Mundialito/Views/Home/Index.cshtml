@@ -1,4 +1,5 @@
 ﻿@model Mundialito.Configuration.Config
+
 <!DOCTYPE html>
 <html lang="en" ng-app="mundialitoApp">
 
@@ -6,6 +7,7 @@
     <meta charset="utf-8" />
     <title>@Model.ApplicationName</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="google-signin-client_id" content="@Model.GoogleClientId">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta http-equiv="cache-control" content="max-age=0" />
     <meta http-equiv="cache-control" content="no-cache" />
@@ -41,7 +43,7 @@
         <!-- End of App Loading message -->
         <!-- Main Content -->
         <div class="body-content ng-cloak" ng-hide="mundialitoApp.loading || mundialitoApp.authenticating"
-            ng-init='mundialitoApp.appName="@Model.ApplicationName"; mundialitoApp.clientConfig=@Json.Serialize(@Model.ClientConfig)'>
+            ng-init='mundialitoApp.appName="@Model.ApplicationName"; mundialitoApp.clientConfig=@Json.Serialize(@Model.ClientConfig); mundialitoApp.GoogleClientId="@Model.GoogleClientId"'>
             <!-- Fixed navbar -->
             <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
                 <div class="container">
@@ -54,12 +56,14 @@
                             <span class="icon-bar"></span>
                         </button>
                         <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy" style="color: #FFD43B;"></i>
-                            @Model.ApplicationName</a><img src="~/icons/yellowstring.png" style="height: 30px; width: 30px; margin-top: 10px; margin-right: 10px" />
+                            @Model.ApplicationName</a><img src="~/icons/yellowstring.png"
+                            style="height: 30px; width: 30px; margin-top: 10px; margin-right: 10px" />
                     </div>
                     <div ng-if="security.user" class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
                             <li active-nav><a href="/"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
-                            <li ng-show="security.user.Roles !== 'Disabled'" active-nav><a href="/bets_center" class="hidden-xs"><i class="fa fa-money"></i> Bets
+                            <li ng-show="security.user.Roles !== 'Disabled'" active-nav><a href="/bets_center"
+                                    class="hidden-xs"><i class="fa fa-money"></i> Bets
                                     Center</a></li>
                             <li active-nav><a href="/games"><i class="fa-solid fa-futbol"></i> Games</a></li>
                             <li active-nav><a href="/teams"><i class="fa-solid fa-users"></i> Teams</a></li>
@@ -69,13 +73,15 @@
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                             <li uib-dropdown on-toggle="toggled(open)">
-                                <a href="#" uib-dropdown-toggle id="userDropdown"><i class="fa-solid fa-user"></i>
-                                    {{security.user.Username}} <b class="caret"></b></a>
+                                <a href="#" uib-dropdown-toggle id="userDropdown">
+                                    <img ng-show="{{security.user.ProfilePicture != null}}" src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;">
+                                    <i class="fa fa-solid fa-user" ng-show="{{security.user.ProfilePicture == null}}"></i> {{security.user.Username}} <b class="caret"></b></a>
                                 <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="userDropdown">
                                     <li><a href="/users/{{security.user.Username}}"><span
                                                 class="fa-solid fa-book"></span>
                                             Profile</a></li>
-                                    <li><a href="/manage"><span class="fa-solid fa-cog"></span> Account</a></li>
+                                    <li ng-if="mundialitoApp.GoogleClientId == ''"><a href="/manage"><span
+                                                class="fa-solid fa-cog"></span> Account</a></li>
                                     <li><a href="#" ng-click="security.logout()"><span
                                                 class="fa-solid fa-power-off"></span>
                                             Logout</a></li>
@@ -90,7 +96,8 @@
                 <div class="row" ng-if="security.user.Roles === 'Disabled'">
                     <div class="col-md-12">
                         <div class="alert alert-danger" role="alert">
-                            <i class="fa fa-exclamation-triangle"></i> Your user is not active yet, please contact the Admin
+                            <i class="fa fa-exclamation-triangle"></i> Your user is not active yet, please contact the
+                            Admin
                         </div>
                     </div>
                 </div>
@@ -133,6 +140,7 @@
             <!-- End of Content Loading message -->
         </div>
         <!-- End of Main Content -->
+        <script src="//accounts.google.com/gsi/client" async defer></script>
         <script src="lib/lib.js"></script>
         <script src="js/app.js"></script>
     </div>

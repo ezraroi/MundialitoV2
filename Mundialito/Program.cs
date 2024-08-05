@@ -1,9 +1,11 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Mundialito.Auth;
 using Mundialito.Configuration;
 using Mundialito.DAL;
 using Mundialito.DAL.Accounts;
@@ -25,6 +27,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.Configure<Config>(builder.Configuration.GetSection(Config.Key));
 builder.Services.Configure<JwtTokenSettings>(builder.Configuration.GetSection(JwtTokenSettings.Key));
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 builder.Services.AddControllers().AddJsonOptions(opt =>
 {
 	opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -36,15 +43,15 @@ builder.Services.AddDbContext<MundialitoDbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient("MyHttpClient").ConfigurePrimaryHttpMessageHandler(() =>
 			{
-                var handler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true // Ignore SSL certificate validation
-                };
-                return handler;
+				var handler = new HttpClientHandler
+				{
+					ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true // Ignore SSL certificate validation
+				};
+				return handler;
 			});
 builder.Services.AddSwaggerGen(opt =>
 {
-	opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Mundialito", Version = "v1" });
+	opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MundialitoV2", Version = "v1" });
 	opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 	{
 		In = ParameterLocation.Header,
@@ -74,6 +81,9 @@ builder.Services.AddSwaggerGen(opt =>
 builder.Services.AddIdentity<MundialitoUser, IdentityRole>(
 	options =>
 	{
+		options.Lockout.AllowedForNewUsers = true;
+	    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+	    options.Lockout.MaxFailedAccessAttempts = 3;
 		options.User.RequireUniqueEmail = true;
 		options.SignIn.RequireConfirmedAccount = false;
 		options.SignIn.RequireConfirmedEmail = false;
@@ -123,6 +133,8 @@ builder.Services.AddScoped<IBetsResolver, BetsResolver>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IActionLogsRepository, ActionLogsRepository>();
 builder.Services.AddScoped<TokenService, TokenService>();
+builder.Services.AddScoped<GoogleAuthService, GoogleAuthService>();
+builder.Services.AddScoped<AuthService, AuthService>();
 builder.Services.AddScoped<TableBuilder, TableBuilder>();
 builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
@@ -139,7 +151,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
-   opt.TokenLifespan = TimeSpan.FromHours(5));
+   opt.TokenLifespan = TimeSpan.FromHours(24));
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 if (!builder.Environment.IsDevelopment())
 {
@@ -155,7 +167,7 @@ else
 	builder.Logging.AddConsole();
 }
 var app = builder.Build();
-
+app.UseForwardedHeaders();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

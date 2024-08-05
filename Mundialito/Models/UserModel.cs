@@ -10,13 +10,18 @@ public class UserModel
     {
         Username = user.UserName;
         Name = string.Format("{0} {1}", user.FirstName, user.LastName);
-        Id = user.Id;
+        Id = user.Id.ToString();
         Email = user.Email;
         Points = 0;
+        ProfilePicture = user.ProfilePicture;
     }
 
     [JsonPropertyName("Id")]
     public string Id { get; private set; }
+
+
+    [JsonPropertyName("ProfilePicture")]
+    public string? ProfilePicture { get; private set; }
 
     [JsonPropertyName("Email")]
     public string Email { get; set; }

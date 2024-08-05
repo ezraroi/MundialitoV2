@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mundialito.Migrations
 {
     [DbContext(typeof(MundialitoDbContext))]
-    [Migration("20240726144127_InitialCreate")]
+    [Migration("20240805202005_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -205,6 +205,9 @@ namespace Mundialito.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("ProfilePicture")
+                        .HasColumnType("text");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");

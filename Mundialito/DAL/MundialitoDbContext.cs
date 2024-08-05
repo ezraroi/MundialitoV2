@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Mundialito.Configuration;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;

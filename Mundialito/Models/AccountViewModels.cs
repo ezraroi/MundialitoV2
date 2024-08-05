@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using Mundialito.DAL.Accounts;
 
 namespace Mundialito.Models;
 
@@ -7,6 +6,10 @@ namespace Mundialito.Models;
 
 public class UserInfoViewModel
 {
+
+    [JsonPropertyName("ProfilePicture")]
+    public string? ProfilePicture { get; set; }
+
     [JsonPropertyName("Username")]
     public string? UserName { get; set; }
 

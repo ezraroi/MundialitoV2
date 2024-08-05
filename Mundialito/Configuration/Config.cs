@@ -20,4 +20,6 @@ public class Config
     public string FromAddress { get; set; }
     public string EmailConnectionString {get; set;}
     public Dictionary<string, string> ClientConfig {get; set;}
+    public string? GoogleClientId { get; set; }
+    public string? GoogleClientSecret { get; set; }
 }

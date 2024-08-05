@@ -81305,415 +81305,403 @@ if (typeof jQuery === 'undefined') {
 "use strict";angular.module("autofields.bootstrap",["autofields.standard","ui.bootstrap"]).config(["$autofieldsProvider",function(a){a.settings.classes.container.push("form-group"),a.settings.classes.input.push("form-control"),a.settings.classes.label.push("control-label"),a.registerHandler("checkbox",function(b,c,d){var e=a.field(b,c,"<input/>");return e.label&&e.label.prepend(e.input),e.input.removeClass("form-control"),e.fieldContainer}),a.settings.dateSettings={datepickerPopup:"MMMM dd, yyyy"},a.settings.scope.datepickerOptions={showWeeks:!1},a.settings.scope.openCalendar=function(a,b,c){c.preventDefault(),c.stopPropagation(),a[b]=!a[b]},a.registerHandler("date",function(b,c,d){var e=c.datepickerPopup?c.datepickerPopup:b.options.dateSettings.datepickerPopup,f={type:"text",uibDatepickerPopup:e,datepickerOptions:"datepickerOptions",isOpen:"$property_cleanOpen"};c.attr&&1==c.attr.disabled||(c.$addons=[{button:!0,icon:"glyphicon glyphicon-calendar",attr:{ngClick:'openCalendar("$property_cleanOpen",$event)'}}]);var g=a.field(b,c,"<input/>",f);return g.fieldContainer}),a.registerHandler("static",function(b,c,d){var g=(c.showWeeks?c.showWeeks:b.options.dateSettings.showWeeks,c.datepickerPopup?c.datepickerPopup:b.options.dateSettings.datepickerPopup,a.field(b,c,"<p/>")),h=angular.element("<p/>");return h.attr("ng-bind",g.input.attr("ng-model")),h.addClass("form-control-static"),g.input.replaceWith(h),g.fieldContainer}),a.settings.classes.row=a.settings.classes.row||[],a.settings.classes.row.push("row"),a.settings.classes.col=a.settings.classes.col||[],a.settings.classes.col.push("col-sm-$size"),a.settings.classes.colOffset=a.settings.classes.colOffset||[],a.settings.classes.colOffset.push("col-sm-offset-$size"),a.registerHandler("multiple",function(b,c,d){var e=angular.element("<div/>");return e.addClass(b.options.classes.row.join(" ")),angular.forEach(c.fields,function(d,f){var g=angular.element("<div/>"),h="multiple"!=d.type?d.columns||c.columns:c.columns;g.addClass(b.options.classes.col.join(" ").replace(/\$size/g,h)),g.append(a.createField(b,d,f)),e.append(g)}),e}),a.settings.classes.helpBlock=a.settings.classes.helpBlock||[],a.settings.classes.helpBlock.push("help-block"),a.registerMutator("helpBlock",function(a,b,c){return b.help?(c.helpBlock=angular.element("<p/>"),c.helpBlock.addClass(a.options.classes.helpBlock.join(" ")),c.helpBlock.html(b.help),c.fieldContainer.append(c.helpBlock),c):c}),a.settings.classes.inputGroup=["input-group"],a.settings.classes.inputGroupAddon=["input-group-addon"],a.settings.classes.inputGroupAddonButton=["input-group-btn"],a.settings.classes.button=["btn","btn-default"],a.registerMutator("addons",function(b,c,d){if(!c.$addons&&!c.addons)return d;d.inputGroup=angular.element("<div/>"),d.inputGroup.addClass(a.settings.classes.inputGroup.join(" "));var e=[];return angular.forEach(c.$addons||c.addons,function(f){var g=angular.element("<span/>"),h=null;if(g.addClass(a.settings.classes.inputGroupAddon.join(" ")),f.button&&(g.attr("class",a.settings.classes.inputGroupAddonButton.join(" ")),h=angular.element('<button type="button"/>'),h.addClass(a.settings.classes.button.join(" ")),g.append(h)),null!=f.icon){var i=angular.element("<i/>");i.addClass(f.icon),(h||g).append(i)}null!=f.content&&(h||g).html(f.content),f.attr&&a.setAttributes(b,c,h||g,f.attr),f.before?d.inputGroup.append(g):e.push(g)}),d.inputGroup.append(d.input),angular.forEach(e,function(a){d.inputGroup.append(a)}),d.fieldContainer.append(d.inputGroup),d}),a.settings.layout={type:"basic",labelSize:2,inputSize:10},a.registerMutator("horizontalForm",function(b,c,d){if(!b.options.layout||"horizontal"!=b.options.layout.type)return b.container.removeClass("form-horizontal"),d;var e=a.settings.classes.col[0],f=a.settings.classes.colOffset[0],g=c.labelSize?c.labelSize:b.options.layout.labelSize,h=c.inputSize?c.inputSize:b.options.layout.inputSize;b.container.addClass("form-horizontal");var i=angular.element("<div/>");if(i.addClass(e.replace(/\$size/gi,h)),d.label&&"checkbox"!=c.type?(d.label.addClass(e.replace(/\$size/gi,g)),d.label.after(i)):(d.fieldContainer.prepend(i),i.addClass(f.replace(/\$size/g,g))),"checkbox"==c.type){d.fieldContainer.removeClass("checkbox");var j=angular.element("<div/>");j.addClass("checkbox"),j.append(d.label),i.append(j)}else i.append(d.inputGroup||d.input);return c.help&&i.append(d.helpBlock),d},{require:"helpBlock"})}]),angular.module("autofields.bootstrap.validation",["autofields.validation"]).config(["$uibTooltipProvider",function(a){a.setTriggers({"keyup focus":"blur"}),a.options({placement:"top",animation:!1})}]).config(["$autofieldsProvider",function(a){a.settings.attributes.container.ngClass="{'has-error':"+a.settings.validation.invalid+", 'has-success':"+a.settings.validation.valid+"}",a.settings.attributes.input.uibPopover="{{("+a.settings.validation.valid+") ? '$validMsg' : ($errorMsgs)}}",a.settings.noPopover=["date"],a.registerMutator("bootstrap-validation",function(b,c,d){if(!d.validation||-1!=a.settings.noPopover.indexOf(c.type))return d.input.removeAttr("uib-popover"),d;if(d.msgs.length){var e=d.input.attr("uib-popover").replace(/\$validMsg/gi,d.validMsg).replace(/\$errorMsgs/gi,d.msgs.join("+"));d.input.attr({"uib-popover-trigger":"keyup focus","uib-popover":e})}else d.input.removeAttr("uib-popover");return d},{require:"validation",override:!0})}]),angular.module("autofields",["autofields.bootstrap","autofields.bootstrap.validation"]);
 "use strict";angular.module("autofields.core",[]).provider("$autofields",function(){var a={},b={CamelToTitle:function(a){return a.replace(/([A-Z])/g," $1").replace(/^./,function(a){return a.toUpperCase()})},CamelToDash:function(a){return a.replace(/([a-z])([A-Z])/g,"$1-$2").toLowerCase()},LabelText:function(a){return a.label||b.CamelToTitle(a.property)}};a.settings={classes:{container:[],input:[],label:[]},attributes:{container:{"class":"$type"},input:{id:"$property_clean",name:"$property_clean",type:"$type",ngModel:"$data.$property",placeholder:"$placeholder"},label:{}},container:'<div class="autofields" ng-form name="$form"></div>',scope:{}};var c=a.setAttributes=function(a,c,d,e){angular.forEach(e,function(e,f){e&&"string"==typeof e&&(e=e.replace(/\$form/g,a.formStr).replace(/\$schema/g,a.schemaStr).replace(/\$type/g,c.type||"text").replace(/\$property_clean/g,c.property.replace(/\[|\]|\./g,"")).replace(/\$property/g,c.property).replace(/\$data/g,a.dataStr).replace(/\$placeholder/g,null!=c.placeholder?c.placeholder:b.LabelText(c))),d.attr(b.CamelToDash(f),e)})},d=function(b,d,e){var f=angular.element("<div/>");return e=angular.extend({},a.settings.attributes.container,e),c(b,d,f,e),f.addClass((b.options||a.settings).classes.container.join(" ")),f},e=function(d,e,f){var g=angular.element("<label/>");return f=angular.extend({},a.settings.attributes.label,f),c(d,e,g,f),g.addClass((d.options||a.settings).classes.label.join(" ")),g.html(b.LabelText(e)),g},f=function(b,d,e,f){var g=angular.element(e);return f=angular.extend({},a.settings.attributes.input,f,d.attr),c(b,d,g,f),g.addClass((b.options||a.settings).classes.input.join(" ")),g};a.field=function(a,b,c,g){var i={fieldContainer:d(a,b),label:""!=b.label?e(a,b):null,input:f(a,b,c,g)};i.fieldContainer.append(i.label).append(i.input);var j=[];return angular.forEach(h,function(c,d){i=c(a,b,i,j),j.push(d)}),i},a.updateScope=function(b){angular.forEach(a.settings.scope,function(a,c){"function"==typeof a?b[c]=function(){var c=Array.prototype.slice.call(arguments,0);c.unshift(b),a.apply(this,c)}:b[c]=a})};var g={};a.registerHandler=function(a,b){a=Array.isArray(a)?a:[a],angular.forEach(a,function(a){g[a]=b})};var h={};return a.registerMutator=function(a,b,c){(!h[a]||c.override)&&(h[a]=function(d,e,f,g){return c&&"string"==typeof c.require&&-1==g.indexOf(c.require)&&(f=h[c.require]),-1==g.indexOf(a)?b(d,e,f):void 0})},a.createField=function(a,b,c){var d=null==b.type?g.text:g[b.type];return null==d?void console.warn(b.type+" not supported - field ignored"):d(a,b,c)},a.$get=function(){return{settings:a.settings,createField:a.createField,updateScope:a.updateScope}},a}).directive("autoFields",["$autofields","$compile",function(a,b){return{restrict:"E",priority:1,replace:!0,compile:function(){return function(c,d,e){var f={schemaStr:e.fields||e.autoFields,optionsStr:e.options,dataStr:e.data,formStr:e.form||"autofields",classes:e["class"],container:null,formScope:null},g={extendDeep:function(a){return angular.forEach(arguments,function(b){b!==a&&angular.forEach(b,function(b,c){a[c]&&a[c].constructor&&a[c].constructor===Object?g.extendDeep(a[c],b):a[c]=b})}),a}};f.options=angular.copy(a.settings);var h=function(d){d=d||c[f.schemaStr],f.container.html(""),angular.forEach(d,function(b,c){var d=a.createField(f,b,c);f.container.append(d)}),null!=f.formScope&&f.formScope.$destroy(),f.formScope=c.$new(),f.formScope.data=c[f.dataStr],f.formScope.fields=d,a.updateScope(f.formScope),b(f.container)(f.formScope)};c.$watch(f.optionsStr,function(a,b){g.extendDeep(f.options,a),a!==b&&h()},!0),c.$watch(f.schemaStr,function(a){h(a)},!0),c.$watch(f.formStr,function(a){f.container.attr("name",f.formStr)}),c.$watch(function(){return e["class"]},function(a){f.classes=e["class"],f.container.attr("class",f.classes)}),f.container=angular.element(f.options.container),f.container.attr("name",f.formStr),f.container.attr("class",f.classes),d.replaceWith(f.container)}}}}]),angular.module("autofields.standard",["autofields.core"]).config(["$autofieldsProvider",function(a){a.settings.fixUrl=!0,a.registerHandler(["text","email","url","date","number","password"],function(b,c,d){var e=a.field(b,c,"<input/>"),f=c.fixUrl?c.fixUrl:b.options.fixUrl;return"url"==c.type&&f&&e.input.attr("fix-url",""),e.fieldContainer}),a.settings.defaultOption="Select One",a.registerHandler("select",function(b,c,d){var e=c.defaultOption?c.defaultOption:b.options.defaultOption,f='<select><option value="">'+e+"</option></select>",g={ngOptions:c.list},h=a.field(b,c,f,g);return h.fieldContainer}),a.settings.textareaRows=3,a.registerHandler("textarea",function(b,c,d){var e=c.rows?c.rows:b.options.textareaRows,f=a.field(b,c,"<textarea/>",{rows:e});return f.fieldContainer}),a.registerHandler("checkbox",function(b,c,d){var e=a.field(b,c,"<input/>");return e.label&&e.label.prepend(e.input),e.fieldContainer}),a.settings.displayAttributes=(a.settings.displayAttributes||[]).concat(["ng-if","ng-show","ng-hide"]),a.registerMutator("displayAttributes",function(b,c,d){return c.attr?(angular.forEach(a.settings.displayAttributes,function(a){var b=d.input.attr(a);b&&(d.fieldContainer.attr(a,b),d.input.removeAttr(a))}),d):d})}]).directive("fixUrl",[function(){return{restrict:"A",require:"ngModel",link:function(a,b,c,d){var e=/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.\-\?\=\&]*)$/i,f=function(){var a=d.$modelValue;null!=a&&(angular.forEach(d.$formatters,function(b){a=b(a)}),d.$viewValue=a,d.$render())};b.bind("blur",f);var g=function(a){var b=e.test(a);if(b){var c=a.match(e),d=null!=c[1]&&""!=c[1]?c[1]:"http://";d+=c[2]+"."+c[3],"undefined"!=typeof c[4]&&(d+=c[4]),a=d}return a};d.$formatters.push(g),d.$parsers.unshift(g)}}}]),angular.module("autofields.validation",["autofields.core"]).config(["$autofieldsProvider",function(a){var b={CamelToTitle:function(a){return a.replace(/([A-Z])/g," $1").replace(/^./,function(a){return a.toUpperCase()})}};a.settings.validation={enabled:!0,showMessages:!0,defaultMsgs:{required:"This field is required",minlength:"This is under minimum length",maxlength:"This exceeds maximum length",min:"This is under the minumum value",max:"This exceeds the maximum value",email:"This is not a valid email address",valid:""},invalid:"$form.$property_clean.$invalid && $form.$property_clean.$dirty",valid:"$form.$property_clean.$valid"},a.settings.attributes.container.ngClass="{'invalid':"+a.settings.validation.invalid+", 'valid':"+a.settings.validation.valid+"}",a.registerMutator("validation",function(a,c,d){return d.validation=a.options.validation.enabled&&c.validate!==!1,d.validation?(d.msgs=[],a.options.validation.showMessages?(angular.forEach(angular.extend({},a.options.validation.defaultMsgs,c.msgs),function(e,f){if(c.msgs&&null!=c.msgs[f]||c.type==f||c.attr&&(null!=c.attr[f]||null!=c.attr["ng"+b.CamelToTitle(f)])){var g=c.property.replace(/\[|\]|\./g,"");d.msgs.push("("+a.formStr+"."+g+".$error."+f+"? '"+e+"' : '')")}}),d.validMsg=c.msgs&&c.msgs.valid?c.msgs.valid:a.options.validation.defaultMsgs.valid,d.msgs.length,d):d):(d.fieldContainer.removeAttr("ng-class"),d)})}]),angular.module("autofields",["autofields.standard","autofields.validation"]),angular.module("autoFields",["autofields"]);
 angular.module('security', [])
-.constant('security.urls', {
-	site: '/',
-	manage: '/manage',
-	join: '/api/account/register',
-	login: '/api/account/login',
-	logout: '/api/account/logout',
-	forgotPassword: '/api/account/forgot',
-	resetPassword: '/api/account/reset',
-	confirmEmail: '/api/account/confirmEmail',
-	userInfo: '/api/account/userInfo',
-	changePassword: '/api/account/changePassword',
-	// externalLogins: '/',
-	// manageInfo: '/api/account/manageInfo',
-	// registerExternal: '/api/account/registerExternal',
-	// addExternalLogin: '/api/account/addExternalLogin',
-	// removeLogin: '/api/account/removeLogin'
-})
-.factory('security.api', ['$http', 'security.urls', function ($http, Urls) {
-	//Parameterize - Necessary for funky login expectations...
-	var formdataHeader = { 'Content-Type': 'application/x-www-form-urlencoded' };
-	var parameterize = function (data) {
-		var param = function (obj) {
-			var query = '';
-			var subValue, fullSubName, innerObj, i;
-			angular.forEach(obj, function (value, name) {
-				if (value instanceof Array) {
-					for (i = 0; i < value.length; ++i) {
-						subValue = value[i];
-						fullSubName = name + '[' + i + ']';
-						innerObj = {};
-						innerObj[fullSubName] = subValue;
-						query += param(innerObj) + '&';
+	.constant('security.urls', {
+		site: '/',
+		manage: '/manage',
+		join: '/api/account/register',
+		login: '/api/account/login',
+		googleLogin: '/api/account/signin-google',
+		logout: '/api/account/logout',
+		forgotPassword: '/api/account/forgot',
+		resetPassword: '/api/account/reset',
+		confirmEmail: '/api/account/confirmEmail',
+		userInfo: '/api/account/userInfo',
+		changePassword: '/api/account/changePassword',
+		// externalLogins: '/',
+		// manageInfo: '/api/account/manageInfo',
+		// registerExternal: '/api/account/registerExternal',
+		// addExternalLogin: '/api/account/addExternalLogin',
+		// removeLogin: '/api/account/removeLogin'
+	})
+	.factory('security.api', ['$http', 'security.urls', function ($http, Urls) {
+		//Parameterize - Necessary for funky login expectations...
+		var formdataHeader = { 'Content-Type': 'application/x-www-form-urlencoded' };
+		var parameterize = function (data) {
+			var param = function (obj) {
+				var query = '';
+				var subValue, fullSubName, innerObj, i;
+				angular.forEach(obj, function (value, name) {
+					if (value instanceof Array) {
+						for (i = 0; i < value.length; ++i) {
+							subValue = value[i];
+							fullSubName = name + '[' + i + ']';
+							innerObj = {};
+							innerObj[fullSubName] = subValue;
+							query += param(innerObj) + '&';
+						}
+					}
+					else if (value instanceof Object) {
+						angular.forEach(value, function (subValue, subName) {
+							fullSubName = name + '[' + subName + ']';
+							innerObj = {};
+							innerObj[fullSubName] = subValue;
+							query += param(innerObj) + '&';
+						});
+					}
+					else if (value !== undefined && value !== null) {
+						query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
+					}
+				});
+
+				return query.length ? query.substr(0, query.length - 1) : query;
+			};
+			return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
+		};
+
+		var Api = {
+			getUserInfo: (accessToken) => $http({ url: Urls.userInfo, method: 'GET', headers: { 'Authorization': 'Bearer ' + accessToken } }),
+			login: (data) => $http({ method: 'POST', url: Urls.login, data: data }),
+			googleLogin: (data) => $http({ method: 'POST', url: Urls.googleLogin, data: data }),
+			logout: () => $http({ method: 'POST', url: Urls.logout }),
+			register: (data) => $http({ method: 'POST', url: Urls.join, data: data }),
+			forgotPassword: (data) => $http({ method: 'POST', url: Urls.forgotPassword, data: data }),
+			resetPassword: (data) => $http({ method: 'POST', url: Urls.resetPassword, data: data }),
+			confirmEmail: (data) => $http({ method: 'GET', url: Urls.confirmEmail + '?code=' + encodeURIComponent(data.code) + '&userId=' + encodeURIComponent(data.userId) }),
+			changePassword: (data) => $http({ method: 'POST', url: Urls.changePassword, data: data }),
+			manageInfo: () => $http({ method: 'GET', url: Urls.manageInfo + '?returnUrl=' + encodeURIComponent(Urls.site) + '&generateState=false' }),
+			registerExternal: (accessToken, data) => $http({ method: 'POST', url: Urls.registerExternal, data: data, headers: { 'Authorization': 'Bearer ' + accessToken } }),
+			addExternalLogin: (accessToken, externalAccessToken) => $http({ method: 'POST', url: Urls.addExternalLogin, data: { externalAccessToken: externalAccessToken }, headers: { 'Authorization': 'Bearer ' + accessToken } }),
+			removeLogin: (data) => $http({ method: 'POST', url: Urls.removeLogin, data: data })
+		};
+
+		return Api;
+	}])
+	.provider('security', ['security.urls', function (Urls) {
+		var securityProvider = this;
+		//Options
+		securityProvider.registerThenLogin = true;
+		securityProvider.usePopups = false;
+		securityProvider.urls = {
+			login: '/login',
+			registerExternal: '/registerExternal',
+			postLogout: '/login',
+			home: '/'
+		};
+		securityProvider.apiUrls = Urls;
+		securityProvider.events = {
+			login: null,
+			logout: null,
+			register: null,
+			reloadUser: null,
+			closeOAuthWindow: null
+		};
+
+		securityProvider.$get = ['security.api', '$q', '$http', '$location', '$timeout', function (Api, $q, $http, $location, $timeout) {
+			//Private Variables
+			var externalLoginWindowTimer = null;
+
+			//Private Methods
+			var parseQueryString = function (queryString) {
+				var data = {},
+					pairs, pair, separatorIndex, escapedKey, escapedValue, key, value;
+
+				if (queryString === null) {
+					return data;
+				}
+
+				pairs = queryString.split("&");
+
+				for (var i = 0; i < pairs.length; i++) {
+					pair = pairs[i];
+					separatorIndex = pair.indexOf("=");
+
+					if (separatorIndex === -1) {
+						escapedKey = pair;
+						escapedValue = null;
+					} else {
+						escapedKey = pair.substr(0, separatorIndex);
+						escapedValue = pair.substr(separatorIndex + 1);
+					}
+
+					key = decodeURIComponent(escapedKey);
+					value = decodeURIComponent(escapedValue);
+
+					data[key] = value;
+				}
+
+				return data;
+			};
+			var accessToken = function (accessToken, persist) {
+				if (accessToken) {
+					if (accessToken == 'clear') {
+						localStorage.removeItem('accessToken');
+						sessionStorage.removeItem('accessToken');
+						delete $http.defaults.headers.common.Authorization;
+					} else {
+						if (persist) localStorage.accessToken = accessToken;
+						else sessionStorage.accessToken = accessToken;
+						$http.defaults.headers.common.Authorization = 'Bearer ' + accessToken;
 					}
 				}
-				else if (value instanceof Object) {
-					angular.forEach(value, function (subValue, subName) {
-						fullSubName = name + '[' + subName + ']';
-						innerObj = {};
-						innerObj[fullSubName] = subValue;
-						query += param(innerObj) + '&';
+				return sessionStorage.accessToken || localStorage.accessToken;
+			};
+			var associating = function (newValue) {
+				if (newValue == 'clear') {
+					delete localStorage.associating;
+					return;
+				}
+				if (newValue) localStorage.associating = newValue;
+				return localStorage.associating;
+			};
+			var redirectTarget = function (newTarget) {
+				if (newTarget == 'clear') {
+					delete localStorage.redirectTarget;
+					return;
+				}
+				if (newTarget) localStorage.redirectTarget = newTarget;
+				return localStorage.redirectTarget;
+			};
+
+			var initialize = function () {
+				//Check for access token and get user info
+				if (accessToken()) {
+					accessToken(accessToken());
+					return Api.getUserInfo(accessToken()).then((user) => {
+						Security.user = user.data;
+						if (securityProvider.events.reloadUser) securityProvider.events.reloadUser(Security, user); // Your Register events
 					});
 				}
-				else if (value !== undefined && value !== null) {
-					query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
-				}
-			});
+				return $q.when();
+			};
 
-			return query.length ? query.substr(0, query.length - 1) : query;
-		};
-		return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
-	};
+			//Public Variables
+			var Security = this;
+			Security.user = null;
+			Security.externalUser = null;
+			Security.externalLogins = [];
 
-	var Api = {
-		getUserInfo: function (accessToken) {
-			return $http({ url: Urls.userInfo, method: 'GET', headers: { 'Authorization': 'Bearer ' + accessToken } });
-		},
-		login: function (data) {
-			return $http({ method: 'POST', url: Urls.login, data: data });
-		},
-		logout: function () {
-			return $http({ method: 'POST', url: Urls.logout });
-		},
-		register: function (data) {
-			return $http({ method: 'POST', url: Urls.join, data: data });
-		},
-		forgotPassword: function (data) {
-			return $http({ method: 'POST', url: Urls.forgotPassword, data: data });
-		},
-		resetPassword: function (data) {
-			return $http({ method: 'POST', url: Urls.resetPassword, data: data });
-		},
-		confirmEmail: function (data) {
-			return $http({ method: 'GET', url: Urls.confirmEmail+'?code='+encodeURIComponent(data.code)+'&userId='+encodeURIComponent(data.userId) });
-		},
-		changePassword: function (data) {
-			return $http({ method: 'POST', url: Urls.changePassword, data: data });
-		},
-		manageInfo: function () {
-			return $http({ method: 'GET', url: Urls.manageInfo + '?returnUrl=' + encodeURIComponent(Urls.site)+'&generateState=false' });
-		},
-		registerExternal: function (accessToken, data) {
-			return $http({ method: 'POST', url: Urls.registerExternal, data: data, headers: { 'Authorization': 'Bearer ' + accessToken } });
-		},
-		addExternalLogin: function (accessToken, externalAccessToken) {
-		    return $http({ method: 'POST', url: Urls.addExternalLogin, data: { externalAccessToken: externalAccessToken }, headers: { 'Authorization': 'Bearer ' + accessToken } });
-		},
-		removeLogin: function (data) {
-		    return $http({ method: 'POST', url: Urls.removeLogin, data: data });
-		}
-	};
-
-	return Api;
-}])
-.provider('security', ['security.urls', function (Urls) {
-	var securityProvider = this;
-	//Options
-	securityProvider.registerThenLogin = true;
-	securityProvider.usePopups = false;
-	securityProvider.urls = {
-		login: '/login',
-		registerExternal: '/registerExternal',
-		postLogout: '/login',
-		home: '/'
-	};
-	securityProvider.apiUrls = Urls;
-	securityProvider.events = {
-		login: null,
-		logout: null,
-		register: null,
-		reloadUser: null,
-		closeOAuthWindow: null
-	};
-
-	securityProvider.$get = ['security.api', '$q', '$http', '$location', '$timeout', function (Api, $q, $http, $location, $timeout) {
-		//Private Variables
-		var externalLoginWindowTimer = null;
-
-		//Private Methods
-		var parseQueryString = function (queryString) {
-			var data = {},
-				pairs, pair, separatorIndex, escapedKey, escapedValue, key, value;
-
-			if (queryString === null) {
-				return data;
-			}
-
-			pairs = queryString.split("&");
-
-			for (var i = 0; i < pairs.length; i++) {
-				pair = pairs[i];
-				separatorIndex = pair.indexOf("=");
-
-				if (separatorIndex === -1) {
-					escapedKey = pair;
-					escapedValue = null;
-				} else {
-					escapedKey = pair.substr(0, separatorIndex);
-					escapedValue = pair.substr(separatorIndex + 1);
-				}
-
-				key = decodeURIComponent(escapedKey);
-				value = decodeURIComponent(escapedValue);
-
-				data[key] = value;
-			}
-
-			return data;
-		};
-		var accessToken = function (accessToken, persist) {
-			if (accessToken) {
-				if (accessToken == 'clear') {
-					localStorage.removeItem('accessToken');
-					sessionStorage.removeItem('accessToken');
-					delete $http.defaults.headers.common.Authorization;
-				} else {
-					if (persist) localStorage.accessToken = accessToken;
-					else sessionStorage.accessToken = accessToken;
-					$http.defaults.headers.common.Authorization = 'Bearer ' + accessToken;
-				}
-			}
-			return sessionStorage.accessToken || localStorage.accessToken;
-		};
-	    var associating = function(newValue) {
-	        if (newValue == 'clear') {
-	            delete localStorage.associating;
-	            return;
-	        }
-	        if (newValue) localStorage.associating = newValue;
-	        return localStorage.associating;
-	    };
-		var redirectTarget = function (newTarget) {
-			if (newTarget == 'clear') {
-				delete localStorage.redirectTarget;
-				return;
-			}
-			if (newTarget) localStorage.redirectTarget = newTarget;
-			return localStorage.redirectTarget;
-		};
-		
-		var initialize = function () {
-			//Check for access token and get user info
-			if (accessToken()) {
-				accessToken(accessToken());
-				return Api.getUserInfo(accessToken()).then((user) => {
-					Security.user = user.data;
-					if (securityProvider.events.reloadUser) securityProvider.events.reloadUser(Security, user); // Your Register events
+			//Public Methods
+			Security.login = (data) => {
+				var deferred = $q.defer();
+				data.grant_type = 'password';
+				Api.login(data).then((res) => { return doLogin(res, data, deferred)}).catch((errorData) => {
+					deferred.reject(errorData);
 				});
-			}
-			return $q.when();
-		};
+				return deferred.promise;
+			};
 
-		//Public Variables
-		var Security = this;
-		Security.user = null;
-		Security.externalUser = null;
-		Security.externalLogins = [];
+			Security.googleLogin = (data) => {
+				var deferred = $q.defer();
+				Api.googleLogin(data).then((res) => { return doLogin(res, { rememberMe : true}, deferred)}).catch((errorData) => {
+					deferred.reject(errorData);
+				});
+				return deferred.promise;
+			};
 
-		//Public Methods
-		Security.login = function (data) {
-			var deferred = $q.defer();
-			data.grant_type = 'password';
-			Api.login(data).then((user) => {
+			Security.logout = () => {
+				var deferred = $q.defer();
+
+				Api.logout().then(() => {
+					Security.user = null;
+					accessToken('clear');
+					redirectTarget('clear');
+					if (securityProvider.events.logout) securityProvider.events.logout(Security); // Your Logout events
+					$location.path(securityProvider.urls.postLogout);
+					deferred.resolve();
+				}).catch((errorData) => {
+					accessToken('clear');
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.register = function (data) {
+				var deferred = $q.defer();
+
+				Api.register(data).then(() => {
+					if (securityProvider.events.register) securityProvider.events.register(Security); // Your Register events
+					if (securityProvider.registerThenLogin) {
+						Security.login(data).then((user) => {
+							deferred.resolve(user.data);
+						}, function (errorData) {
+							deferred.reject(errorData);
+						});
+					} else {
+						deferred.resolve();
+					}
+				}).catch((errorData) => {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.registerExternal = function () {
+				var deferred = $q.defer();
+
+				if (!Security.externalUser) {
+					deferred.reject();
+				} else {
+					Api.registerExternal(Security.externalUser.access_token, Security.externalUser).then(() => {
+						//Success
+						deferred.resolve(Security.loginWithExternal(Security.externalUser.provider));
+						Security.externalUser = null;
+					}).catch((errorData) => {
+						deferred.reject(errorData);
+					});
+				}
+
+				return deferred.promise;
+			};
+
+			Security.forgotPassword = function (data) {
+				var deferred = $q.defer();
+
+				Api.forgotPassword(data).then((data) => {
+					deferred.resolve(data.data);
+				}).catch((errorData) => {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.resetPassword = function (data) {
+				var deferred = $q.defer();
+
+				Api.resetPassword(data).then(function (data) {
+					deferred.resolve(data);
+				}).catch(function (errorData) {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.confirmEmail = function (data) {
+				var deferred = $q.defer();
+
+				Api.confirmEmail(data).then((data) => {
+					deferred.resolve(data.data);
+				}).catch((errorData) => {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.mangeInfo = function () {
+				var deferred = $q.defer();
+
+				Api.manageInfo().then((manageInfo) => {
+					deferred.resolve(manageInfo.data);
+				}).catch((errorData) => {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.changePassword = (data) => {
+				var deferred = $q.defer();
+
+				Api.changePassword(data).then(() => {
+					deferred.resolve();
+				}).catch(function (errorData) {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			Security.addExternalLogin = function (externalAccessToken, data) {
+				var deferred = $q.defer();
+
+				Api.addExternalLogin(externalAccessToken, data).then(function () {
+					deferred.resolve();
+				}).catch(function (errorData) {
+					deferred.reject(errorData);
+				});
+
+				return deferred.promise;
+			};
+
+			function doLogin(user, data, deferred) {
 				accessToken(user.data.AccessToken, data.rememberMe);
 				initialize().then(() => {
 					Security.redirectAuthenticated(redirectTarget() || securityProvider.urls.home);
 					if (securityProvider.events.login) securityProvider.events.login(Security, user); // Your Login events
 					deferred.resolve(Security.user);
 				});
-			}).catch(function (errorData) {
-				deferred.reject(errorData);
-			});
-			return deferred.promise;
-		};
-
-		Security.logout = function () {
-			var deferred = $q.defer();
-
-			Api.logout().then(() => {
-				Security.user = null;
-				accessToken('clear');
-				redirectTarget('clear');
-				if (securityProvider.events.logout) securityProvider.events.logout(Security); // Your Logout events
-				$location.path(securityProvider.urls.postLogout);
-				deferred.resolve();
-			}).catch((errorData) => {
-				accessToken('clear');
-				deferred.reject(errorData);
-			});
-
-			return deferred.promise;
-		};
-
-		Security.register = function (data) {
-			var deferred = $q.defer();
-
-			Api.register(data).then(() => {
-				if (securityProvider.events.register) securityProvider.events.register(Security); // Your Register events
-				if (securityProvider.registerThenLogin) {
-					Security.login(data).then((user) => {
-						deferred.resolve(user.data);
-					}, function (errorData) {
-						deferred.reject(errorData);
-					});
-				} else {
-					deferred.resolve();
-				}
-			}).catch((errorData) => {
-				deferred.reject(errorData);
-			});
-
-			return deferred.promise;
-		};
-
-		Security.registerExternal = function () {
-			var deferred = $q.defer();
-
-			if (!Security.externalUser) {
-				deferred.reject();
-			} else {
-				Api.registerExternal(Security.externalUser.access_token, Security.externalUser).then(() => {
-					//Success
-					deferred.resolve(Security.loginWithExternal(Security.externalUser.provider));
-					Security.externalUser = null;
-				}).catch((errorData) => {
-					deferred.reject(errorData);
-				});
 			}
 
-			return deferred.promise;
-		};
+			Security.associateExternal = function (login, returnUrl) {
+				var deferred = $q.defer();
+				if (securityProvider.usePopups) {
+					var loginWindow = window.open(login.url, 'frame', 'resizeable,height=510,width=380');
 
-		Security.forgotPassword = function (data) {
-			var deferred = $q.defer();
+					//Watch for close
+					$timeout.cancel(externalLoginWindowTimer);
+					externalLoginWindowTimer = $timeout(function closeWatcher() {
+						if (!loginWindow.closed) {
+							externalLoginWindowTimer = $timeout(closeWatcher, 500);
+							return;
+						}
+						//closeOAuthWindow handler - passes external_data if there is any
+						if (securityProvider.events.closeOAuthWindow) securityProvider.events.closeOAuthWindow(Security, window.external_data);
 
-			Api.forgotPassword(data).then((data) => {
-				deferred.resolve(data.data);
-			}).catch((errorData) => {
-				deferred.reject(errorData);
-			});
+						//Return if the window was closed and external data wasn't added
+						if (typeof (window.external_data) === 'undefined') {
+							deferred.reject();
+							return;
+						}
 
-			return deferred.promise;
-		};
+						//Move external_data from global to local
+						var external_data = window.external_data;
+						delete window.external_data;
 
-		Security.resetPassword = function (data) {
-			var deferred = $q.defer();
+						deferred.resolve();
+					}, 500);
+				} else {
+					localStorage.loginProvider = JSON.stringify(login);
+					associating(true);
+					redirectTarget(returnUrl || "/");
+					window.location.href = login.url;
+				}
 
-			Api.resetPassword(data).then(function (data) {
-				deferred.resolve(data);
-			}).catch(function (errorData) {
-				deferred.reject(errorData);
-			});
+				return deferred.promise;
+			};
 
-			return deferred.promise;
-		};
+			Security.removeLogin = function (data) {
+				var deferred = $q.defer();
 
-		Security.confirmEmail = function (data) {
-			var deferred = $q.defer();
+				Api.removeLogin(data).then(function (result) {
+					deferred.resolve(result.data);
+				}).catch(function (errorData) {
+					deferred.reject(errorData);
+				});
 
-			Api.confirmEmail(data).then(function (data) {
-				deferred.resolve(data.data);
-			}).catch(function (errorData) {
-				deferred.reject(errorData);
-			});
+				return deferred.promise;
+			};
 
-			return deferred.promise;
-		};
+			Security.authenticate = function () {
+				if (accessToken()) return;
+				if (!redirectTarget()) redirectTarget($location.path());
+				$location.path(securityProvider.urls.login);
+			};
 
-	    Security.mangeInfo = function() {
-	        var deferred = $q.defer();
+			Security.redirectAuthenticated = function (url) {
+				if (!accessToken()) return;
+				if (redirectTarget()) redirectTarget('clear');
+				$location.path(url);
+			};
+			// Initialize
+			initialize();
 
-	        Api.manageInfo().then((manageInfo) => {
-				deferred.resolve(manageInfo.data);
-			}).catch(function (errorData) {
-	            deferred.reject(errorData);
-	        });
-
-	        return deferred.promise;
-	    };
-
-		Security.changePassword = function (data) {
-			var deferred = $q.defer();
-
-			Api.changePassword(data).then(function () {
-				deferred.resolve();
-			}).catch(function (errorData) {
-				deferred.reject(errorData);
-			});
-
-			return deferred.promise;
-		};
-
-		Security.addExternalLogin = function (externalAccessToken, data) {
-			var deferred = $q.defer();
-
-		    Api.addExternalLogin(externalAccessToken, data).then(function () {
-				deferred.resolve();
-			}).catch(function (errorData) {
-				deferred.reject(errorData);
-			});
-
-			return deferred.promise;
-		};
-
-		Security.associateExternal = function (login, returnUrl) {
-		    var deferred = $q.defer();
-		    if (securityProvider.usePopups) {
-		        var loginWindow = window.open(login.url, 'frame', 'resizeable,height=510,width=380');
-
-		        //Watch for close
-		        $timeout.cancel(externalLoginWindowTimer);
-		        externalLoginWindowTimer = $timeout(function closeWatcher() {
-		            if (!loginWindow.closed) {
-		                externalLoginWindowTimer = $timeout(closeWatcher, 500);
-		                return;
-		            }
-		            //closeOAuthWindow handler - passes external_data if there is any
-		            if (securityProvider.events.closeOAuthWindow) securityProvider.events.closeOAuthWindow(Security, window.external_data);
-
-		            //Return if the window was closed and external data wasn't added
-		            if (typeof (window.external_data) === 'undefined') {
-		                deferred.reject();
-		                return;
-		            }
-
-		            //Move external_data from global to local
-		            var external_data = window.external_data;
-		            delete window.external_data;
-
-		            deferred.resolve();
-		        }, 500);
-		    } else {
-		        localStorage.loginProvider = JSON.stringify(login);
-		        associating(true);
-		        redirectTarget(returnUrl || "/");
-		        window.location.href = login.url;
-		    }
-
-		    return deferred.promise;
-		};
-
-		Security.removeLogin = function (data) {
-			var deferred = $q.defer();
-
-		    Api.removeLogin(data).then(function (result) {
-				deferred.resolve(result.data);
-			}).catch(function (errorData) {
-				deferred.reject(errorData);
-			});
-
-			return deferred.promise;
-		};
-
-		Security.authenticate = function () {
-		    if (accessToken()) return;
-            if(!redirectTarget())redirectTarget($location.path());
-			$location.path(securityProvider.urls.login);
-		};
-
-		Security.redirectAuthenticated = function (url) {
-		    if (!accessToken()) return;
-			if(redirectTarget())redirectTarget('clear');
-			$location.path(url);
-		};
-		// Initialize
-		initialize();
-
-		return Security;
-	}];
-}]);
+			return Security;
+		}];
+	}]);
 
 (function(){function n(n,t,i){var r;return function(n){r||(r=i.get("$http"));var u=r.pendingRequests[r.pendingRequests.length-1];return u.tracker&&(angular.isArray(u.tracker)||(u.tracker=[u.tracker]),angular.forEach(u.tracker,function(i){t(i).addPromise(n,u)})),n}}function t(n,t){return{request:function(i){return i.tracker&&(angular.isArray(i.tracker)||(i.tracker=[i.tracker]),i.$promiseTrackerDeferred=i.$promiseTrackerDeferred||[],angular.forEach(i.tracker,function(n){var r=t(n).createPromise(i);i.$promiseTrackerDeferred.push(r)})),n.when(i)},response:function(t){return t.config&&t.config.$promiseTrackerDeferred&&angular.forEach(t.config.$promiseTrackerDeferred,function(n){n.resolve(t)}),n.when(t)},responseError:function(t){return t.config&&t.config.$promiseTrackerDeferred&&angular.forEach(t.config.$promiseTrackerDeferred,function(n){n.reject(t)}),n.reject(t)}}}angular.module("ajoslin.promise-tracker",[]);angular.module("ajoslin.promise-tracker").config(["$httpProvider",function(i){i.interceptors?i.interceptors.push(t):i.responseInterceptors.push(n)}]);n.$inject=["$q","promiseTracker","$injector"];t.$inject=["$q","promiseTracker"];angular.module("ajoslin.promise-tracker").provider("promiseTracker",function(){function i(){for(var t=n.length,i;t;){if(t--,i=n[t].charCodeAt(0),i===57)return n[t]="A",n.join("");if(i===90)n[t]="0";else return n[t]=String.fromCharCode(i+1),n.join("")}return n.unshift("0"),n.join("")}var n=["0","0","0"],t={};this.$get=["$q","$timeout",function(n,r){function u(t){function o(n){angular.forEach(f[n.event],function(t){t.call(u,n.value,n.id)})}function s(t){function h(){u._minDuration&&(u._minPromise=r(angular.noop,u._minDuration));u._maxDuration&&(u._maxPromise=r(f.resolve,u._maxDuration))}function c(t){return function(i){(u._minPromise||n.when()).then(function(){var n=e.indexOf(f);e.splice(n,1);e.length===0&&(u._maxPromise&&(r.cancel(u._maxPromise),u._maxPromise=null),u._delayPromise&&(r.cancel(u._delayPromise),u._delayPromise=null));o({event:t?"error":"success",id:s,value:i});o({event:"done",id:s,value:i})})}}var f=n.defer(),s=i();return e.push(f),e.length===1&&(u._activationDelay?u._delayPromise=r(function(){u._delayPromise=null;h()},u._activationDelay):h()),o({event:"start",id:s,value:t}),f.promise.then(c(!1),c(!0)),f}var u=this,f={start:[],done:[],error:[],success:[]},e=[];t=t||{};u.setMinDuration=function(n){u._minDuration=n};u.setMinDuration(t.minDuration);u.setMaxDuration=function(n){u._maxDuration=n};u.setMaxDuration(t.maxDuration);u.setActivationDelay=function(n){u._activationDelay=n};u.setActivationDelay(t.activationDelay);u.active=function(){return u._delayPromise?!1:e.length>0};u.cancel=function(){angular.forEach(e,function(n){n.resolve()})};u.addPromise=function(t,i){var u=t&&(t.then||t.$then||t.$promise&&t.$promise.then),r;if(!u)throw new Error("promiseTracker#addPromise expects a promise object!");return r=s(i),u(function(n){return r.resolve(n),n},function(t){return r.reject(t),n.reject(t)}),r};u.createPromise=s;u.on=u.bind=function(n,t){if(!f[n])throw new Error("Cannot bind callback for event '"+n+"'. Allowed types: 'start', 'done', 'error', 'success'");return f[n].push(t),u};u.off=u.unbind=function(n,t){if(!f[n])throw new Error("Cannot unbind callback for event '"+n+"'. Allowed types: 'start', 'done', 'error', 'success'");if(t){var i=f[n].indexOf(t);f[n].splice(i,1)}else f[n].length=0;return u}}var f=this;return function(n,i){return t[n]||(t[n]=new u(i)),t[n]}}]})})();
 /*
