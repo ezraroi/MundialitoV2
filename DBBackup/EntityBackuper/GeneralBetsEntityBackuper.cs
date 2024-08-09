@@ -15,13 +15,12 @@ public class GeneralBetsEntityBackuper : AbstractEntityBackuper<GeneralBet>
 
     protected override List<string> GetFieldsToBackup()
     {
-        return new List<string>() { "GeneralBetId", "WinningTeamId", "GoldBootPlayerId", "TeamPoints", "PlayerPoints", "User" };
+        return new List<string>() { "GeneralBetId", "WinningTeam", "GoldBootPlayer", "TeamPoints", "PlayerPoints", "User" };
     }
 
     protected override List<GeneralBet> GetAllEntites()
     {
-        var repository = new GeneralBetsRepository(mundialitoDbContext);
-        return repository.GetGeneralBets().ToList();
+        return new GeneralBetsRepository(mundialitoDbContext).GetGeneralBets().ToList();
     }
 
     protected override object ProcessValue(object obj, string propName)

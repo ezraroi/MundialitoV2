@@ -427,9 +427,8 @@ namespace Mundialito.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GeneralBetId"));
 
-                    b.Property<int>("GoldBootPlayerId")
-                        .HasColumnType("integer")
-                        .HasAnnotation("Relational:JsonPropertyName", "GoldBootPlayerId");
+                    b.Property<int>("GoldBootPlayerPlayerId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsResolved")
                         .HasColumnType("boolean")
@@ -447,13 +446,16 @@ namespace Mundialito.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WinningTeamId")
-                        .HasColumnType("integer")
-                        .HasAnnotation("Relational:JsonPropertyName", "WinningTeamId");
+                    b.Property<int>("WinningTeamTeamId")
+                        .HasColumnType("integer");
 
                     b.HasKey("GeneralBetId");
 
+                    b.HasIndex("GoldBootPlayerPlayerId");
+
                     b.HasIndex("UserId");
+
+                    b.HasIndex("WinningTeamTeamId");
 
                     b.ToTable("GeneralBets");
                 });
@@ -467,6 +469,10 @@ namespace Mundialito.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PlayerId"));
 
+                    b.Property<string>("IntegrationsData")
+                        .HasColumnType("jsonb")
+                        .HasAnnotation("Relational:JsonPropertyName", "IntegrationsData");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -475,6 +481,8 @@ namespace Mundialito.Migrations
                     b.HasKey("PlayerId");
 
                     b.ToTable("Players");
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "GoldBootPlayer");
                 });
 
             modelBuilder.Entity("Mundialito.DAL.Stadiums.Stadium", b =>
@@ -674,13 +682,29 @@ namespace Mundialito.Migrations
 
             modelBuilder.Entity("Mundialito.DAL.GeneralBets.GeneralBet", b =>
                 {
+                    b.HasOne("Mundialito.DAL.Players.Player", "GoldBootPlayer")
+                        .WithMany()
+                        .HasForeignKey("GoldBootPlayerPlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Mundialito.DAL.Accounts.MundialitoUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Mundialito.DAL.Teams.Team", "WinningTeam")
+                        .WithMany()
+                        .HasForeignKey("WinningTeamTeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GoldBootPlayer");
+
                     b.Navigation("User");
+
+                    b.Navigation("WinningTeam");
                 });
 
             modelBuilder.Entity("Mundialito.DAL.Accounts.MundialitoUser", b =>

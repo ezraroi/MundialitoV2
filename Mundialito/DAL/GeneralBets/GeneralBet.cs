@@ -1,4 +1,6 @@
 ﻿using Mundialito.DAL.Accounts;
+using Mundialito.DAL.Players;
+using Mundialito.DAL.Teams;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -27,12 +29,12 @@ public class GeneralBet
     public MundialitoUser User { get; set; }
 
     [Required]
-    [JsonPropertyName("WinningTeamId")]
-    public int WinningTeamId { get; set; }
+    [JsonPropertyName("WinningTeam")]
+    public Team WinningTeam { get; set; }
 
     [Required]
-    [JsonPropertyName("GoldBootPlayerId")]
-    public int GoldBootPlayerId { get; set; }
+    [JsonPropertyName("GoldBootPlayer")]
+    public Player GoldBootPlayer { get; set; }
 
     [JsonPropertyName("IsResolved")]
     public bool IsResolved { get; set; }
@@ -46,6 +48,6 @@ public class GeneralBet
 
     public override string ToString()
     {
-        return string.Format("General Bet ID = {0}, Owner = {1}, WinningTeamId = {2}, GoldBootPlayerId = {3}, TeamPoints = {4}, PlayerPoints = {5}", GeneralBetId, User == null ? "Unkown" : User.UserName, WinningTeamId, GoldBootPlayerId, TeamPoints.HasValue ? TeamPoints.Value.ToString() : "NA", PlayerPoints.HasValue ? PlayerPoints.Value.ToString() : "NA");
+        return string.Format("General Bet ID = {0}, Owner = {1}, WinningTeamId = {2}, GoldBootPlayerId = {3}, TeamPoints = {4}, PlayerPoints = {5}", GeneralBetId, User == null ? "Unkown" : User.UserName, WinningTeam.TeamId, GoldBootPlayer.PlayerId, TeamPoints.HasValue ? TeamPoints.Value.ToString() : "NA", PlayerPoints.HasValue ? PlayerPoints.Value.ToString() : "NA");
     }
 }
