@@ -15,7 +15,7 @@ public class TournamentTimesUtils
 
     public DateTime GetGeneralBetsCloseTime()
     {
-        if (String.IsNullOrEmpty(config.TournamentStartDate))
+        if (string.IsNullOrEmpty(config.TournamentStartDate))
         {
             return new DateTime(2024, 6, 14).ToUniversalTime();
         }
@@ -27,7 +27,7 @@ public class TournamentTimesUtils
 
     public DateTime GetGeneralBetsResolveTime()
     {
-        if (String.IsNullOrEmpty(config.TournamentEndDate))
+        if (string.IsNullOrEmpty(config.TournamentEndDate))
         {
             return new DateTime(2024, 7, 14).ToUniversalTime();
         }

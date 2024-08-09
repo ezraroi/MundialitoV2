@@ -64,7 +64,6 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
                 Alert.error('Failed to update General Bet, please try again');
             });
         }
-
         else {
             $scope.generalBetsPromise = GeneralBetsManager.addGeneralBet($scope.generalBet).then((data) => {
                 $log.log('UserProfileCtrl: General Bet ' + data.GeneralBetId + ' was added');

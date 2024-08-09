@@ -78,7 +78,8 @@ namespace Mundialito.Migrations
                 {
                     PlayerId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    IntegrationsData = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -226,30 +227,6 @@ namespace Mundialito.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GeneralBets",
-                columns: table => new
-                {
-                    GeneralBetId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    WinningTeamId = table.Column<int>(type: "integer", nullable: false),
-                    GoldBootPlayerId = table.Column<int>(type: "integer", nullable: false),
-                    IsResolved = table.Column<bool>(type: "boolean", nullable: false),
-                    TeamPoints = table.Column<int>(type: "integer", nullable: true),
-                    PlayerPoints = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GeneralBets", x => x.GeneralBetId);
-                    table.ForeignKey(
-                        name: "FK_GeneralBets_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserFollows",
                 columns: table => new
                 {
@@ -309,6 +286,42 @@ namespace Mundialito.Migrations
                         column: x => x.HomeTeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GeneralBets",
+                columns: table => new
+                {
+                    GeneralBetId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    WinningTeamTeamId = table.Column<int>(type: "integer", nullable: false),
+                    GoldBootPlayerPlayerId = table.Column<int>(type: "integer", nullable: false),
+                    IsResolved = table.Column<bool>(type: "boolean", nullable: false),
+                    TeamPoints = table.Column<int>(type: "integer", nullable: true),
+                    PlayerPoints = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GeneralBets", x => x.GeneralBetId);
+                    table.ForeignKey(
+                        name: "FK_GeneralBets_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GeneralBets_Players_GoldBootPlayerPlayerId",
+                        column: x => x.GoldBootPlayerPlayerId,
+                        principalTable: "Players",
+                        principalColumn: "PlayerId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GeneralBets_Teams_WinningTeamTeamId",
+                        column: x => x.WinningTeamTeamId,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -412,9 +425,19 @@ namespace Mundialito.Migrations
                 column: "StadiumId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GeneralBets_GoldBootPlayerPlayerId",
+                table: "GeneralBets",
+                column: "GoldBootPlayerPlayerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GeneralBets_UserId",
                 table: "GeneralBets",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GeneralBets_WinningTeamTeamId",
+                table: "GeneralBets",
+                column: "WinningTeamTeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFollows_FolloweeId",
@@ -450,9 +473,6 @@ namespace Mundialito.Migrations
                 name: "GeneralBets");
 
             migrationBuilder.DropTable(
-                name: "Players");
-
-            migrationBuilder.DropTable(
                 name: "UserFollows");
 
             migrationBuilder.DropTable(
@@ -460,6 +480,9 @@ namespace Mundialito.Migrations
 
             migrationBuilder.DropTable(
                 name: "Games");
+
+            migrationBuilder.DropTable(
+                name: "Players");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

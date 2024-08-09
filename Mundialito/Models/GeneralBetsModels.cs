@@ -1,4 +1,6 @@
 using Mundialito.DAL.GeneralBets;
+using Mundialito.DAL.Players;
+using Mundialito.DAL.Teams;
 using System.Text.Json.Serialization;
 
 namespace Mundialito.Models;
@@ -10,8 +12,8 @@ public class GeneralBetViewModel
     {
         OwnerId = bet.User.Id;
         GeneralBetId = bet.GeneralBetId;
-        WinningTeamId = bet.WinningTeamId;
-        GoldenBootPlayerId = bet.GoldBootPlayerId;
+        WinningTeam = bet.WinningTeam;
+        GoldenBootPlayer = bet.GoldBootPlayer;
         IsResolved = bet.IsResolved;
         if (IsResolved)
             Points = bet.PlayerPoints.Value + bet.TeamPoints.Value;
@@ -26,11 +28,11 @@ public class GeneralBetViewModel
     [JsonPropertyName("OwnerName")]
     public string OwnerName { get; private set; }
 
-    [JsonPropertyName("GoldenBootPlayerId")]
-    public int GoldenBootPlayerId { get; set; }
+    [JsonPropertyName("GoldenBootPlayer")]
+    public Player GoldenBootPlayer { get; set; }
 
-    [JsonPropertyName("WinningTeamId")]
-    public int WinningTeamId { get; set; }
+    [JsonPropertyName("WinningTeam")]
+    public Team WinningTeam { get; set; }
 
     [JsonPropertyName("IsResolved")]
     public bool IsResolved { get; set; }
@@ -50,11 +52,11 @@ public class GeneralBetViewModel
 
 public class NewGeneralBetModel
 {
-    [JsonPropertyName("WinningTeamId")]
-    public int WinningTeamId { get; set; }
+    [JsonPropertyName("WinningTeam")]
+    public Team WinningTeam { get; set; }
 
-    [JsonPropertyName("GoldenBootPlayerId")]
-    public int GoldenBootPlayerId { get; set; }
+    [JsonPropertyName("GoldenBootPlayer")]
+    public Player GoldenBootPlayer { get; set; }
 
     [JsonPropertyName("GeneralBetId")]
     public int GeneralBetId { get; set; }   
@@ -62,11 +64,11 @@ public class NewGeneralBetModel
 
 public class UpdateGenralBetModel
 {
-    [JsonPropertyName("WinningTeamId")]
-    public int WinningTeamId { get; set; }
+    [JsonPropertyName("WinningTeam")]
+    public Team WinningTeam { get; set; }
 
-    [JsonPropertyName("GoldenBootPlayerId")]
-    public int GoldenBootPlayerId { get; set; }
+    [JsonPropertyName("GoldenBootPlayer")]
+    public Player GoldenBootPlayer { get; set; }
 }
 
 public class ResolveGeneralBetModel

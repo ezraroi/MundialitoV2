@@ -8,7 +8,7 @@
     <title>@Model.ApplicationName</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <meta name="google-signin-client_id" content="@Model.GoogleClientId">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="cache-control" content="max-age=0" />
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
@@ -74,7 +74,7 @@
                         <ul class="nav navbar-nav navbar-right">
                             <li uib-dropdown on-toggle="toggled(open)">
                                 <a href="#" uib-dropdown-toggle id="userDropdown">
-                                    <img ng-show="{{security.user.ProfilePicture != null}}" src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;">
+                                    <img referrerpolicy="no-referrer" ng-show="{{security.user.ProfilePicture != null}}" src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;">
                                     <i class="fa fa-solid fa-user" ng-show="{{security.user.ProfilePicture == null}}"></i> {{security.user.Username}} <b class="caret"></b></a>
                                 <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="userDropdown">
                                     <li><a href="/users/{{security.user.Username}}"><span

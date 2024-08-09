@@ -64,13 +64,21 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
 			.Metadata.SetValueComparer(dictionaryComparer);
 
-		modelBuilder.Entity<Team>()
-            .Property(t => t.IntegrationsData)
+		modelBuilder.Entity<Player>()
+			.Property(g => g.IntegrationsData)
 			.HasColumnType("jsonb")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
-            .Metadata.SetValueComparer(dictionaryComparer);
+			.HasConversion(
+				v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+				v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
+			.Metadata.SetValueComparer(dictionaryComparer);
+
+		modelBuilder.Entity<Team>()
+			.Property(t => t.IntegrationsData)
+			.HasColumnType("jsonb")
+			.HasConversion(
+				v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+				v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null))
+			.Metadata.SetValueComparer(dictionaryComparer);
 
 		modelBuilder.Entity<Game>().HasOne(m => m.AwayTeam)
 				.WithMany(t => t.AwayMatches)
@@ -79,8 +87,8 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				.IsRequired();
 
 		modelBuilder.Entity<Bet>()
-            .HasIndex(b => new { b.UserId, b.GameId })
-            .IsUnique();
+			.HasIndex(b => new { b.UserId, b.GameId })
+			.IsUnique();
 
 		modelBuilder.Entity<UserFollow>()
 					.HasKey(uf => new { uf.FollowerId, uf.FolloweeId });

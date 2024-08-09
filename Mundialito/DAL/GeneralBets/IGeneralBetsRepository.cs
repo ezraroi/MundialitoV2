@@ -6,9 +6,9 @@ public interface IGeneralBetsRepository
 
     GeneralBet GetGeneralBet(int betId);
 
-    GeneralBet GetUserGeneralBet(String username);
+    GeneralBet GetUserGeneralBet(string username);
 
-    bool IsGeneralBetExists(String userId);
+    bool IsGeneralBetExists(string userId);
 
     GeneralBet InsertGeneralBet(GeneralBet bet);
 
