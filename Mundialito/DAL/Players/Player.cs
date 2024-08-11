@@ -12,4 +12,7 @@ public class Player
     [JsonPropertyName("Name")]
     public required string Name { get; set; }
 
+    [JsonPropertyName("IntegrationsData")]
+    public Dictionary<string, string>? IntegrationsData { get; set; }
+
 }

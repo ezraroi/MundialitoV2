@@ -1,7 +1,7 @@
 ﻿<div class="row">
     <div class="col-md-10">
         <h4>
-            <i class="fa fa-user" ng-if="profileUser.ProfilePicture == null"></i><img ng-if="profileUser.ProfilePicture != null" src="{{profileUser.ProfilePicture}}" class="img-circle"> {{profileUser.Name}} Profile
+            <i class="fa fa-user" ng-if="profileUser.ProfilePicture == null"></i><img referrerpolicy="no-referrer" ng-if="profileUser.ProfilePicture != null" src="{{profileUser.ProfilePicture}}" class="img-circle"> {{profileUser.Name}} Profile
         </h4>
     </div>
     <div class="col-md-2" ng-if="profileUser.Username !== security.user.Username">
@@ -227,7 +227,7 @@
                         <label class="col-md-3 col-xs-6 control-label">Winning Team</label>
                         <div class="col-md-4 col-xs-6">
                             <select ui-select2="{allowClear: false}" class="form-control" name="team" id="team"
-                                ng-model="generalBet.WinningTeamId" ng-readonly="isGeneralBetReadOnly()" required>
+                                ng-model="generalBet.WinningTeam.TeamId" ng-readonly="isGeneralBetReadOnly()" required>
                                 <option ng-repeat="team in teams" ng-value="team.TeamId">{{team.Name}}</option>
                             </select>
                         </div>
@@ -236,7 +236,7 @@
                         <label for="goldenBootPlayer" class="col-md-3 col-xs-6 control-label">Golden Boot Player</label>
                         <div class="col-md-4 col-xs-6">
                             <select ui-select2="{allowClear: false}" class="form-control" name="player" id="player"
-                                ng-model="generalBet.GoldenBootPlayerId" ng-readonly="isGeneralBetReadOnly()" required>
+                                ng-model="generalBet.GoldenBootPlayer.PlayerId" ng-readonly="isGeneralBetReadOnly()" required>
                                 <option ng-repeat="player in players" ng-value="player.PlayerId">{{player.Name}}</option>
                             </select>
                         </div>

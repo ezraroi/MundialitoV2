@@ -130,23 +130,18 @@ public class DatabaseInitilaizer
                     context.Bets.Add(newBet);
                 });
                 Random rnd = new Random();
-                var index = rnd.Next(0, teamsDic.Count);
-                int teamId = teamsDic.Values.ElementAt(index).TeamId;
-                index = rnd.Next(0, playersDic.Count);
-                int playerId = playersDic.Values.ElementAt(index).PlayerId;
-
+                var team = teamsDic.Values.ElementAt(rnd.Next(0, teamsDic.Count));
+                var player = playersDic.Values.ElementAt(rnd.Next(0, playersDic.Count));
                 context.GeneralBets.Add(new GeneralBet
                 {
-                    GoldBootPlayerId = playerId,
-                    WinningTeamId = teamId,
+                    GoldBootPlayer = player,
+                    WinningTeam = team,
                     User = monkey
                 });
                 context.SaveChanges();
             }
             else
-            {
                 return;
-            }
         }
     }
 }
