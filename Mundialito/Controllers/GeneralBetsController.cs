@@ -109,8 +109,12 @@ public class GeneralBetsController : ControllerBase
     [Authorize(Roles = "Active,Admin")]
     public async Task<ActionResult<UpdateGenralBetModel>> UpdateBet(int id, UpdateGenralBetModel bet)
     {
-        if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
-            return BadRequest("General bets are already closed for betting");
+        var validate = Validate();
+        if (!string.IsNullOrEmpty(validate))
+        {
+            AddLog(ActionType.ERROR, validate);
+            return BadRequest(new ErrorMessage { Message = validate});
+        }
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
             return Unauthorized();
