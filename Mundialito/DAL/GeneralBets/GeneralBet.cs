@@ -29,12 +29,20 @@ public class GeneralBet
     public MundialitoUser User { get; set; }
 
     [Required]
+    [JsonPropertyName("WinningTeamId")]
+    public int WinningTeamId { get; set; }
+
+    [Required]
     [JsonPropertyName("WinningTeam")]
-    public Team WinningTeam { get; set; }
+    public virtual Team WinningTeam { get; set; }
+
+    [Required]
+    [JsonPropertyName("GoldBootPlayerId")]
+    public int GoldBootPlayerId { get; set; }
 
     [Required]
     [JsonPropertyName("GoldBootPlayer")]
-    public Player GoldBootPlayer { get; set; }
+    public virtual Player GoldBootPlayer { get; set; }
 
     [JsonPropertyName("IsResolved")]
     public bool IsResolved { get; set; }

@@ -30,7 +30,7 @@ public class DatabaseInitilaizer
             if (context.Users.Count() == 0)
             {
                 logger.LogInformation("No users found. will populate the database");
-                 CreateFirstUsers(config, userManager, logger);
+                CreateFirstUsers(config, userManager, logger);
                 if (!string.IsNullOrEmpty(config.TournamentDBCreatorName))
                 {
                     Type t = Type.GetType("Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName);
@@ -45,8 +45,7 @@ public class DatabaseInitilaizer
         }
     }
 
-
-    private static async void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
+    private static void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
     {
         if (string.IsNullOrEmpty(config.GoogleClientId))
         {
@@ -59,7 +58,7 @@ public class DatabaseInitilaizer
                 Role = Role.Admin,
             };
             logger.LogInformation("Creating admin user {0}", user);
-            userManager.CreateAsync(user, "123456").Wait();            
+            userManager.CreateAsync(user, "123456").Wait();
         }
         if (!string.IsNullOrEmpty(config.MonkeyUserName))
         {
@@ -70,6 +69,7 @@ public class DatabaseInitilaizer
                 LastName = "Monk",
                 Email = "monkey@zoo.com",
                 Role = Role.Active,
+                ProfilePicture = "../../../icons/monkey.png"
             };
             logger.LogInformation("Creating user {0}", monkey);
             userManager.CreateAsync(monkey, "monkey").Wait();
@@ -132,6 +132,7 @@ public class DatabaseInitilaizer
                 Random rnd = new Random();
                 var team = teamsDic.Values.ElementAt(rnd.Next(0, teamsDic.Count));
                 var player = playersDic.Values.ElementAt(rnd.Next(0, playersDic.Count));
+
                 context.GeneralBets.Add(new GeneralBet
                 {
                     GoldBootPlayer = player,
@@ -141,7 +142,9 @@ public class DatabaseInitilaizer
                 context.SaveChanges();
             }
             else
+            {
                 return;
+            }
         }
     }
 }

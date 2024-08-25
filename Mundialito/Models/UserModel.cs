@@ -13,7 +13,7 @@ public class UserModel
         Id = user.Id.ToString();
         Email = user.Email;
         Points = 0;
-        ProfilePicture = user.ProfilePicture;
+        ProfilePicture = user.ProfilePicture == null ? "../../../icons/user.webp" :user.ProfilePicture;
     }
 
     [JsonPropertyName("Id")]

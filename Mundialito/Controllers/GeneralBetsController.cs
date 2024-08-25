@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.GeneralBets;
-using Mundialito.DAL.Players;
-using Mundialito.DAL.Teams;
 using Mundialito.Logic;
 using Mundialito.Models;
 
@@ -23,20 +21,16 @@ public class GeneralBetsController : ControllerBase
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly UserManager<MundialitoUser> userManager;
-    private readonly IPlayersRepository playersRepository;
-    private readonly ITeamsRepository teamsRepository;
     private readonly ILogger logger;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, IPlayersRepository playersRepository, ITeamsRepository teamsRepository)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager)
     {
-        this.generalBetsRepository = generalBetsRepository;
-        this.dateTimeProvider = dateTimeProvider;
-        this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
+        this.dateTimeProvider = dateTimeProvider;
+        this.generalBetsRepository = generalBetsRepository;
+        this.actionLogsRepository = actionLogsRepository;
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.userManager = userManager;
-        this.playersRepository = playersRepository;
-        this.teamsRepository = teamsRepository;
         this.logger = logger;
     }
 
@@ -96,23 +90,17 @@ public class GeneralBetsController : ControllerBase
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
             return Unauthorized();
-        var team = teamsRepository.GetTeam(newBet.WinningTeam.TeamId);
-        if (team == null)
-            return BadRequest(new ErrorMessage { Message = string.Format("Team with id '{0}' not found", newBet.WinningTeam.TeamId)});
-        var player = playersRepository.GetPlayer(newBet.GoldenBootPlayer.PlayerId);
-        if (player == null)
-            return BadRequest(new ErrorMessage { Message = string.Format("Player with id '{0}' not found", newBet.GoldenBootPlayer.PlayerId)});
         var generalBet = new GeneralBet
         {
             User = user,
-            WinningTeam = team,
-            GoldBootPlayer = player,
+            WinningTeam = newBet.WinningTeam,
+            GoldBootPlayer = newBet.GoldenBootPlayer
         };
         var res = generalBetsRepository.InsertGeneralBet(generalBet);
         logger.LogInformation("Posting new general bet {} from {}", generalBet, user.UserName);
         generalBetsRepository.Save();
         newBet.GeneralBetId = res.GeneralBetId;
-        AddLog(ActionType.CREATE, String.Format("Posting new Generel Bet: {0}", res));
+        AddLog(ActionType.CREATE, string.Format("Posting new Generel Bet: {0}", res));
         logger.LogInformation("Saved general bet of {}", user.UserName);
         return Ok(newBet);
     }
@@ -132,17 +120,10 @@ public class GeneralBetsController : ControllerBase
             AddLog(ActionType.UNAUTHORIZED_ACCESS, "You can't update a bet that is not yours");
             return Unauthorized(new ErrorMessage { Message = "You can't update a bet that is not yours"});
         }
-        var team = teamsRepository.GetTeam(bet.WinningTeam.TeamId);
-        if (team == null)
-            return BadRequest(new ErrorMessage { Message = string.Format("Team with id '{0}' not found", bet.WinningTeam.TeamId)});
-        var player = playersRepository.GetPlayer(bet.GoldenBootPlayer.PlayerId);
-        if (player == null)
-            return BadRequest(new ErrorMessage { Message = string.Format("Player with id '{0}' not found", bet.GoldenBootPlayer.PlayerId)});
-        betToUpdate.WinningTeam = team;
-        betToUpdate.GoldBootPlayer = player;
-        logger.LogInformation("Updating general bet of {} with {}", user.UserName, betToUpdate);
+        betToUpdate.WinningTeamId = bet.WinningTeam.TeamId;
+        betToUpdate.GoldBootPlayerId = bet.GoldenBootPlayer.PlayerId;
+        generalBetsRepository.Save();
         logger.LogInformation("Updated general bet of {}", user.UserName);
-        AddLog(ActionType.UPDATE, string.Format("Updating new Generel Bet: {0}", betToUpdate));
         return bet;
     }
 

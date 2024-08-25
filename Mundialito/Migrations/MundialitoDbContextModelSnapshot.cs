@@ -427,8 +427,9 @@ namespace Mundialito.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GeneralBetId"));
 
-                    b.Property<int>("GoldBootPlayerPlayerId")
-                        .HasColumnType("integer");
+                    b.Property<int>("GoldBootPlayerId")
+                        .HasColumnType("integer")
+                        .HasAnnotation("Relational:JsonPropertyName", "GoldBootPlayerId");
 
                     b.Property<bool>("IsResolved")
                         .HasColumnType("boolean")
@@ -446,16 +447,17 @@ namespace Mundialito.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WinningTeamTeamId")
-                        .HasColumnType("integer");
+                    b.Property<int>("WinningTeamId")
+                        .HasColumnType("integer")
+                        .HasAnnotation("Relational:JsonPropertyName", "WinningTeamId");
 
                     b.HasKey("GeneralBetId");
 
-                    b.HasIndex("GoldBootPlayerPlayerId");
+                    b.HasIndex("GoldBootPlayerId");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("WinningTeamTeamId");
+                    b.HasIndex("WinningTeamId");
 
                     b.ToTable("GeneralBets");
                 });
@@ -684,7 +686,7 @@ namespace Mundialito.Migrations
                 {
                     b.HasOne("Mundialito.DAL.Players.Player", "GoldBootPlayer")
                         .WithMany()
-                        .HasForeignKey("GoldBootPlayerPlayerId")
+                        .HasForeignKey("GoldBootPlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -696,7 +698,7 @@ namespace Mundialito.Migrations
 
                     b.HasOne("Mundialito.DAL.Teams.Team", "WinningTeam")
                         .WithMany()
-                        .HasForeignKey("WinningTeamTeamId")
+                        .HasForeignKey("WinningTeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
