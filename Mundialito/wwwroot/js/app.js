@@ -2402,8 +2402,6 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
     }
 
     $scope.saveGeneralBet = () => {
-        // $scope.generalBet.GoldenBootPlayer = _.findWhere($scope.players,  {'PlayerId' : $scope.generalBet.GoldenBootPlayer.PlayerId});
-        // $scope.generalBet.WinningTeam = _.findWhere($scope.teams, { 'TeamId' : $scope.generalBet.WinningTeam.TeamId});
         if (angular.isDefined($scope.generalBet.GeneralBetId)) {
             $scope.generalBetsPromise = $scope.generalBet.update().then(() => {
                 Alert.success('General Bet was updated successfully');

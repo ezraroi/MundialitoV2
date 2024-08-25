@@ -1,9 +1,9 @@
-<div class="row">
+<div class="row" ng-show="!submittedGeneralBet && generalBetsAreOpen">
     <div class="col-md-12">
-        <uib-alert type="warning" ng-show="!submittedGeneralBet && generalBetsAreOpen">
+        <div class="alert alert-warning" role="alert">
             <i class="fa fa-exclamation-triangle"></i> You haven't placed a bet on the <b>Winning Team</b> and the
             <b>Golden Boot Player</b>, <a ng-href="users/{{security.user.Username}}">click here</a> now
-        </uib-alert>
+        </div>
     </div>
 </div>
 <div class="row">
@@ -166,22 +166,52 @@
         </div>
     </div>
 </div>
-<div class="row">
+<!-- Ranking Table -->
+<div class="row" cg-busy="getUsersPromise">
     <div class="col-md-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-calculator" aria-hidden="true"></i> Ranking Table</div>
+            <div class="panel-heading">
+                <i class="fa fa-calculator" aria-hidden="true"></i> Ranking Table
+                <span class="pull-right">
+                    <toggle ng-model="tableToggleValue" size="btn-xs" off-class="btn-success" on-class="btn-info" on="<i class='fa-solid fa-table'></i> Detailed" off="<i class='fa-solid fa-list'></i> Slim"></toggle>
+                </span>
+            </div>
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-12" ng-if="tableToggleValue">
                         <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
-                            ng-style="getTableHeight()" ui-grid-save-state cg-busy="getUsersPromise"
+                            ng-style="getTableHeight()" ui-grid-save-state
                             ui-if="gridOptions.data.length > 0"></div>
+                    </div>
+                    <div class="col-md-12" ng-if="!tableToggleValue">
+                        <ul class="media-list">
+                            <li class="media" ng-repeat="user in users">
+                              <div class="media-left">
+                                <a href="{{user.getUrl()}}">
+                                  <img referrerpolicy="no-referrer" class="img-circle media-object" style="width: 64px; height: 64px;" ng-src="{{user.ProfilePicture}}" alt="{{user.Name}}">
+                                </a>
+                              </div>
+                              <div class="media-body">
+                                <h4 class="media-heading"><a href="{{user.getUrl()}}">{{user.Place}}. {{user.Name}}</a> <span class="label label-info pull-right">{{user.Points}}</span></h4>
+                                <span ng-if="user.GeneralBet != null && generalBetsAreOpen == false">
+                                    <i class="fa-solid fa-trophy"></i> <i ng-class="['flag','flag-fifa-{{user.GeneralBet.WinningTeam.ShortName | lowercase}}']" tooltip="{{::user.GeneralBet.WinningTeam.Name}}"></i> <span>{{::user.GeneralBet.WinningTeam.Name}}</span><br/>
+                                    <i class="fa-solid fa-crown"></i> {{::user.GeneralBet.GoldenBootPlayer.Name}}
+                                </span> 
+                                <span ng-if="user.GeneralBet == null || generalBetsAreOpen == true">
+                                    <i class="fa-solid fa-trophy"></i> <span>Not placed</span><br/>
+                                    <i class="fa-solid fa-crown"></i> <span>Not placed</span>
+                                </span>
+                                
+                              </div>
+                            </li>
+                          </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- End of Ranking Table-->
 <div class="row" ng-show="!generalBetsAreOpen">
     <div class="col-md-12">
         <div class="panel panel-info">
@@ -212,8 +242,8 @@
                                         <tr ng-repeat="bet in generalBets">
                                             <td>{{bet.OwnerName}}</td>
                                             <td>{{usersDic[bet.OwnerId].Points}}</td>
-                                            <td>{{bet.WinningTeam.Name}}</td>
-                                            <td>{{bet.GoldenBootPlayer.Name}}</td>
+                                            <td>{{teamsDic[bet.WinningTeamId].Name}}</td>
+                                            <td>{{playersDic[bet.GoldenBootPlayerId].Name}}</td>
                                         </tr>
                                     </tbody>
                                 </table>

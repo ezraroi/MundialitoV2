@@ -295,8 +295,8 @@ namespace Mundialito.Migrations
                     GeneralBetId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<string>(type: "text", nullable: false),
-                    WinningTeamTeamId = table.Column<int>(type: "integer", nullable: false),
-                    GoldBootPlayerPlayerId = table.Column<int>(type: "integer", nullable: false),
+                    WinningTeamId = table.Column<int>(type: "integer", nullable: false),
+                    GoldBootPlayerId = table.Column<int>(type: "integer", nullable: false),
                     IsResolved = table.Column<bool>(type: "boolean", nullable: false),
                     TeamPoints = table.Column<int>(type: "integer", nullable: true),
                     PlayerPoints = table.Column<int>(type: "integer", nullable: true)
@@ -311,14 +311,14 @@ namespace Mundialito.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GeneralBets_Players_GoldBootPlayerPlayerId",
-                        column: x => x.GoldBootPlayerPlayerId,
+                        name: "FK_GeneralBets_Players_GoldBootPlayerId",
+                        column: x => x.GoldBootPlayerId,
                         principalTable: "Players",
                         principalColumn: "PlayerId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GeneralBets_Teams_WinningTeamTeamId",
-                        column: x => x.WinningTeamTeamId,
+                        name: "FK_GeneralBets_Teams_WinningTeamId",
+                        column: x => x.WinningTeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
                         onDelete: ReferentialAction.Cascade);
@@ -425,9 +425,9 @@ namespace Mundialito.Migrations
                 column: "StadiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GeneralBets_GoldBootPlayerPlayerId",
+                name: "IX_GeneralBets_GoldBootPlayerId",
                 table: "GeneralBets",
-                column: "GoldBootPlayerPlayerId");
+                column: "GoldBootPlayerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GeneralBets_UserId",
@@ -435,9 +435,9 @@ namespace Mundialito.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GeneralBets_WinningTeamTeamId",
+                name: "IX_GeneralBets_WinningTeamId",
                 table: "GeneralBets",
-                column: "WinningTeamTeamId");
+                column: "WinningTeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFollows_FolloweeId",

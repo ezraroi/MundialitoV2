@@ -36,7 +36,7 @@ public class TableBuilder
         {
             yesterdayPlaces.Add(res[i].Id, i + 1);
         }
-        res = res.OrderByDescending(user => user.Points).ToList();
+        res = res.OrderByDescending(user => user.Points).ThenByDescending(user => user.Results).ThenByDescending(user => user.Marks).ToList();
         for (int i = 0; i < res.Count; i++)
         {
             res[i].Place = (i + 1).ToString();

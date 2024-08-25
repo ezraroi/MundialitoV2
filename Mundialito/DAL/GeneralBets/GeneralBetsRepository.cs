@@ -34,6 +34,8 @@ public class GeneralBetsRepository : GenericRepository<GeneralBet>, IGeneralBets
     public GeneralBet InsertGeneralBet(GeneralBet bet)
     {
         Context.Users.Attach(bet.User);
+        Context.Players.Attach(bet.GoldBootPlayer);
+        Context.Teams.Attach(bet.WinningTeam);
         return Insert(bet);
     }
 
