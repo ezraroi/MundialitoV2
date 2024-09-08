@@ -28,10 +28,12 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	public DbSet<UserFollow> UserFollows { get; set; }
 	private readonly IConfiguration appConfig;
 	private readonly string _connectionString;
+	private readonly ILogger<MundialitoDbContext> logger;
 
-	public MundialitoDbContext(IConfiguration config)
+	public MundialitoDbContext(IConfiguration config, ILogger<MundialitoDbContext> logger)
 	{
 		appConfig = config;
+		this.logger = logger;
 	}
 
 	public MundialitoDbContext(IConfiguration config, string connectionString)
@@ -115,8 +117,11 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 
 	protected override void OnConfiguring(DbContextOptionsBuilder options)
 	{
+		logger.LogInformation("_connectionString: " + _connectionString);
+		var connectionString = string.IsNullOrEmpty(_connectionString) ? appConfig.GetConnectionString("App") : _connectionString;
+		logger.LogInformation("Using connection string: " + connectionString);
 		AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 		AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
-		options.UseNpgsql(string.IsNullOrEmpty(_connectionString) ? appConfig.GetConnectionString("App") : _connectionString);
+		options.UseNpgsql(connectionString);
 	}
 }
