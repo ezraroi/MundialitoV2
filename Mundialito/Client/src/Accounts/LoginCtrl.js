@@ -32,4 +32,16 @@ angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope' 
         });
     }
 
+    window.onload = function () {
+        google.accounts.id.initialize({
+          client_id: $scope.mundialitoApp.GoogleClientId,
+          callback: login
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("buttonDiv"),
+          { theme: "filled_blue", size: "large", text: "continue_with", shape: "circle" }  // customization attributes
+        );
+        google.accounts.id.prompt(); // also display the One Tap dialog
+      }
+
 }]);
