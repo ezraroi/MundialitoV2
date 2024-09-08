@@ -157,7 +157,7 @@ if (!builder.Environment.IsDevelopment())
 {
 	builder.Logging.AddApplicationInsights(
 			configureTelemetryConfiguration: (config) =>
-				config.ConnectionString = builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS"),
+				config.ConnectionString = builder.Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING"),
 				configureApplicationInsightsLoggerOptions: (options) => { }
 		);
 }
