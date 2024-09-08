@@ -126,7 +126,8 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 		var connectionString = string.IsNullOrEmpty(_connectionString) ? appConfig.GetConnectionString("App") : _connectionString;
 		if (logger != null)
 		{
-			logger.LogInformation("_connectionString: " + _connectionString);
+			appConfig.GetSection("App").AsEnumerable().ToList().ForEach(kvp => logger.LogInformation("Key: {0}, Value: {1}", kvp.Key, kvp.Value));
+			appConfig.GetSection("ConnectionStrings").AsEnumerable().ToList().ForEach(kvp => logger.LogInformation("Key: {0}, Value: {1}", kvp.Key, kvp.Value));
 			logger.LogInformation("Using connection string: " + connectionString);
 		}
 		AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
