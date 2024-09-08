@@ -30,6 +30,12 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 	private readonly string _connectionString;
 	private readonly ILogger<MundialitoDbContext> logger;
 
+	public MundialitoDbContext(IConfiguration config)
+	{
+		appConfig = config;
+		this.logger = null;
+	}
+
 	public MundialitoDbContext(IConfiguration config, ILogger<MundialitoDbContext> logger)
 	{
 		appConfig = config;
@@ -117,9 +123,12 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 
 	protected override void OnConfiguring(DbContextOptionsBuilder options)
 	{
-		logger.LogInformation("_connectionString: " + _connectionString);
 		var connectionString = string.IsNullOrEmpty(_connectionString) ? appConfig.GetConnectionString("App") : _connectionString;
-		logger.LogInformation("Using connection string: " + connectionString);
+		if (logger != null)
+		{
+			logger.LogInformation("_connectionString: " + _connectionString);
+			logger.LogInformation("Using connection string: " + connectionString);
+		}
 		AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 		AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 		options.UseNpgsql(connectionString);
