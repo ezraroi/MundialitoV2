@@ -180,7 +180,7 @@ public class NewGameModel
     {
         get
         {
-            return Date.Subtract(TimeSpan.FromMinutes(30));
+            return Date.Subtract(TimeSpan.FromMinutes(15));
         }
     }
 }
@@ -256,7 +256,7 @@ public class PutGameModelResult : PutGameModel
     {
         get
         {
-            return Date.Subtract(TimeSpan.FromMinutes(30));
+            return Date.Subtract(TimeSpan.FromMinutes(15));
         }
     }
 
