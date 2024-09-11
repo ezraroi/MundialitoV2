@@ -4,10 +4,11 @@
         <div class="list-group">
             <a href="{{game.getUrl()}}" class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}" ng-repeat="game in games track by game.GameId" title="At {{game.Stadium.Name}} Stadium">
                 <div class="row">
-                    <div class="col-md-2 col-xs-2">
-                        <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']" tooltip="{{game.HomeTeam.Name}}"></i> <span class="hidden-xs">{{game.HomeTeam.Name}}</span>
+                    <div class="col-md-3 col-xs-2">
+                        <team-flag team="game.HomeTeam"></team-flag>
+                        <span class="hidden-xs">{{game.HomeTeam.Name}}</span>
                     </div>
-                    <div class="col-md-5 col-xs-8">
+                    <div class="col-md-3 col-xs-8">
                         <div ng-if="game.IsPendingUpdate" class="text-center">
                             <span class="label label-info"><i class="fa fa-clock"></i> Pending Update</span>
                         </div>
@@ -16,8 +17,9 @@
                         </div>
                         <div ng-if="game.IsOpen" class="text-center">-</div>
                     </div>
-                    <div class="col-md-2 col-xs-2">
-                        <i ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']" tooltip="{{::game.AwayTeam.Name}}"></i> <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
+                    <div class="col-md-3 col-xs-2">
+                        <team-flag team="game.AwayTeam"></team-flag>
+                        <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
                     </div>
                     <div class="col-md-3 hidden-xs">
                         <span class="pull-right">
