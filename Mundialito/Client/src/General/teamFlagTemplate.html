@@ -1,0 +1,2 @@
+<img ng-if="useFlagsCss !== 'true'" ng-src="{{::team.Flag}}" style="width: 28px; height: 28px; padding-left: 3px; padding-right: 3px;" class="img-reponsive img-rounded" />
+<i ng-if="useFlagsCss === 'true'" ng-class="['flag','flag-fifa-{{team.ShortName | lowercase}}']" tooltip="{{team.Name}}"></i>&nbsp;&nbsp;

@@ -27,16 +27,14 @@
                             tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                             <div class="row">
                                 <div class="col-md-5 col-xs-3">
-                                    <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
-                                        tooltip="{{::game.HomeTeam.Name}}"></i> <span
-                                        class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                    <team-flag team="game.HomeTeam"></team-flag>
+                                    <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
                                 </div>
                                 <div class="col-md-2 col-xs-6 text-center"> - </div>
                                 <div class="col-md-5 col-xs-3">
                                     <span class="pull-right">
-                                        <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i
-                                            ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
-                                            tooltip="{{::game.AwayTeam.Name}}"></i>
+                                        <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
+                                        <team-flag team="game.AwayTeam"></team-flag>
                                     </span>
                                 </div>
                             </div>
@@ -47,14 +45,15 @@
                                     <div class="table-responsive">
                                         <table class="table table-striped">
                                             <tbody>
-                                                <tr
-                                                    ng-repeat="bet in pendingUpdateGamesFolloweesBets[game.GameId]">
+                                                <tr ng-repeat="bet in pendingUpdateGamesFolloweesBets[game.GameId]">
                                                     <td>{{::getUserPlace(bet.User)}}</td>
                                                     <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                             {{::bet.User.LastName}}</a></td>
                                                     <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                    <td title="Cards"><i class="fa fa-stop" style="color: #ffff00"></i> {{::bet.CardsMark}}</td>
-                                                    <td title="Corners"><i class="fa fa-flag"></i> {{::bet.CornersMark}}</td>
+                                                    <td title="Cards"><i class="fa fa-stop" style="color: #ffff00"></i>
+                                                        {{::bet.CardsMark}}</td>
+                                                    <td title="Corners"><i class="fa fa-flag"></i> {{::bet.CornersMark}}
+                                                    </td>
                                                     <td><span class="label label-{{bet.getClass()}}"
                                                             ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                                 </tr>
@@ -65,7 +64,10 @@
                             </div>
                             <div class="row" style="margin-bottom: 10px">
                                 <div class="col-md-12">
-                                    <toggle ng-model="toggleValue[game.GameId]" size="btn-sm" off-class="btn-success" on-class="btn-info" ng-change="changed(game)" off="<i class='fa fa-bullseye'></i> Result" on="<i class='fa fa-check'></i> Mark"></toggle>
+                                    <toggle ng-model="toggleValue[game.GameId]" size="btn-sm" off-class="btn-success"
+                                        on-class="btn-info" ng-change="changed(game)"
+                                        off="<i class='fa fa-bullseye'></i> Result"
+                                        on="<i class='fa fa-check'></i> Mark"></toggle>
                                 </div>
                             </div>
                             <div class="row">
@@ -79,17 +81,20 @@
                                                         <span class="badge">{{item[0]}}</span>
                                                     </div>
                                                     <div class="col-md-10 col-xs-9">
-                                                        <uib-progressbar max="100" min="0" value="selectedPercentage[game.GameId][item[0]]"
+                                                        <uib-progressbar max="100" min="0"
+                                                            value="selectedPercentage[game.GameId][item[0]]"
                                                             type="info"><span
                                                                 style="color:white; white-space:nowrap;">{{item[1].length}}</span></uib-progressbar>
                                                     </div>
                                                     <div class="col-md-1 col-xs-1">
-                                                        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status[item[0]].open, 'glyphicon-chevron-right': !status[item[0]].open}"></i>
+                                                        <i class="pull-right glyphicon"
+                                                            ng-class="{'glyphicon-chevron-down': status[item[0]].open, 'glyphicon-chevron-right': !status[item[0]].open}"></i>
                                                     </div>
                                                 </div>
                                             </uib-accordion-heading>
                                             <div class="list-group">
-                                                <a href="/users/{{::bet.User.Username}}" class="list-group-item" ng-repeat="bet in item[1]">
+                                                <a href="/users/{{::bet.User.Username}}" class="list-group-item"
+                                                    ng-repeat="bet in item[1]">
                                                     {{bet.User.FirstName}} {{bet.User.LastName}}
                                                 </a>
                                             </div>
@@ -116,16 +121,14 @@
                         tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">
-                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
-                                    tooltip="{{::game.HomeTeam.Name}}"></i> <span
-                                    class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <team-flag team="game.HomeTeam"></team-flag>
+                                <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
                             </div>
                             <div class="col-md-2 col-xs-6 text-center"> - </div>
                             <div class="col-md-5 col-xs-3">
                                 <span class="pull-right">
-                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i
-                                        ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
-                                        tooltip="{{::game.AwayTeam.Name}}"></i>
+                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
+                                    <team-flag team="game.AwayTeam"></team-flag>
                                 </span>
                             </div>
                         </div>
@@ -137,7 +140,8 @@
     <div class="col-md-6 col-xs-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-futbol" aria-hidden="true"></i> Last scores <span
-                    class="pull-right badge" uib-tooltip="Total Finished Games">{{(games | filter:isDecided).length}}</span>
+                    class="pull-right badge" uib-tooltip="Total Finished Games">{{(games |
+                    filter:isDecided).length}}</span>
             </div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="getGamesPromise">
@@ -146,17 +150,15 @@
                         href="{{game.getUrl()}}">
                         <div class="row">
                             <div class="col-md-5 col-xs-3">
-                                <i ng-class="['flag','flag-fifa-{{game.HomeTeam.ShortName | lowercase}}']"
-                                    tooltip="{{::game.HomeTeam.Name}}"></i> <span
-                                    class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <team-flag team="game.HomeTeam"></team-flag>
+                                <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
                             </div>
                             <div class="col-md-2 col-xs-6 text-center"> {{::game.HomeScore}} - {{::game.AwayScore}}
                             </div>
                             <div class="col-md-5 col-xs-3">
                                 <span class="pull-right">
-                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span> <i
-                                        ng-class="['flag','flag-fifa-{{game.AwayTeam.ShortName | lowercase}}']"
-                                        tooltip="{{::game.AwayTeam.Name}}"></i>
+                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
+                                    <team-flag team="game.AwayTeam"></team-flag>
                                 </span>
                             </div>
                         </div>
@@ -173,38 +175,45 @@
             <div class="panel-heading">
                 <i class="fa fa-calculator" aria-hidden="true"></i> Ranking Table
                 <span class="pull-right">
-                    <toggle ng-model="tableToggleValue" size="btn-xs" off-class="btn-success" on-class="btn-info" on="<i class='fa-solid fa-table'></i> Detailed" off="<i class='fa-solid fa-list'></i> Slim"></toggle>
+                    <toggle ng-model="tableToggleValue" size="btn-xs" off-class="btn-success" on-class="btn-info"
+                        on="<i class='fa-solid fa-table'></i> Detailed" off="<i class='fa-solid fa-list'></i> Slim">
+                    </toggle>
                 </span>
             </div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-12" ng-if="tableToggleValue">
                         <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
-                            ng-style="getTableHeight()" ui-grid-save-state
-                            ui-if="gridOptions.data.length > 0"></div>
+                            ng-style="getTableHeight()" ui-grid-save-state ui-if="gridOptions.data.length > 0"></div>
                     </div>
                     <div class="col-md-12" ng-if="!tableToggleValue">
                         <ul class="media-list">
                             <li class="media" ng-repeat="user in users">
-                              <div class="media-left">
-                                <a href="{{user.getUrl()}}">
-                                  <img referrerpolicy="no-referrer" class="img-circle media-object" style="width: 64px; height: 64px;" ng-src="{{user.ProfilePicture}}" alt="{{user.Name}}">
-                                </a>
-                              </div>
-                              <div class="media-body">
-                                <h4 class="media-heading"><a href="{{user.getUrl()}}">{{user.Place}}. {{user.Name}}</a> <span class="label label-info pull-right">{{user.Points}}</span></h4>
-                                <span ng-if="user.GeneralBet != null && generalBetsAreOpen == false">
-                                    <i class="fa-solid fa-trophy"></i> <i ng-class="['flag','flag-fifa-{{user.GeneralBet.WinningTeam.ShortName | lowercase}}']" tooltip="{{::user.GeneralBet.WinningTeam.Name}}"></i> <span>{{::user.GeneralBet.WinningTeam.Name}}</span><br/>
-                                    <i class="fa-solid fa-crown"></i> {{::user.GeneralBet.GoldenBootPlayer.Name}}
-                                </span> 
-                                <span ng-if="user.GeneralBet == null || generalBetsAreOpen == true">
-                                    <i class="fa-solid fa-trophy"></i> <span>Not placed</span><br/>
-                                    <i class="fa-solid fa-crown"></i> <span>Not placed</span>
-                                </span>
-                                
-                              </div>
+                                <div class="media-left">
+                                    <a href="{{user.getUrl()}}">
+                                        <img referrerpolicy="no-referrer" class="img-circle media-object"
+                                            style="width: 64px; height: 64px;" ng-src="{{user.ProfilePicture}}"
+                                            alt="{{user.Name}}">
+                                    </a>
+                                </div>
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="{{user.getUrl()}}">{{user.Place}}.
+                                            {{user.Name}}</a> <span
+                                            class="label label-info pull-right">{{user.Points}}</span></h4>
+                                    <span ng-if="user.GeneralBet != null && generalBetsAreOpen == false">
+                                        <i class="fa-solid fa-trophy"></i> 
+                                        <team-flag team="user.GeneralBet.WinningTeam"></team-flag>
+                                        <span>{{::user.GeneralBet.WinningTeam.Name}}</span><br />
+                                        <i class="fa-solid fa-crown"></i> {{::user.GeneralBet.GoldenBootPlayer.Name}}
+                                    </span>
+                                    <span ng-if="user.GeneralBet == null || generalBetsAreOpen == true">
+                                        <i class="fa-solid fa-trophy"></i> <span>Not placed</span><br />
+                                        <i class="fa-solid fa-crown"></i> <span>Not placed</span>
+                                    </span>
+
+                                </div>
                             </li>
-                          </ul>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -265,8 +274,9 @@
                         <div class="pull-right">
                             <form class="form-inline">
                                 <div class="form-group">
-                                  <label class="sr-only" for="search">Search</label>
-                                  <input type="text" ng-model="searchText" class="form-control" id="search" placeholder="Player">
+                                    <label class="sr-only" for="search">Search</label>
+                                    <input type="text" ng-model="searchText" class="form-control" id="search"
+                                        placeholder="Player">
                                 </div>
                             </form>
                         </div>

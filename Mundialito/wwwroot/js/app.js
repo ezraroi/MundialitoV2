@@ -1517,7 +1517,7 @@ angular.module('mundialitoApp').directive('accessLevel', ['$log','security', fun
 
             function updateCSS() {
                 if (userRole && accessLevel) {
-                    if (userRole === accessLevel)
+                    if (userRole !== accessLevel)
                         element.css('display', prevDisp);
                     else
                         element.css('display', 'none');
@@ -1578,6 +1578,18 @@ angular.module('mundialitoApp').directive('mundialitoToggleText', [function () {
         link: link
     };
 }]);
+'use strict';
+angular.module('mundialitoApp').directive('teamFlag', ['$rootScope', ($rootScope) => ({
+    restrict: 'E',
+    scope: {
+        team: '='
+    },
+    templateUrl: 'App/General/teamFlagTemplate.html',
+    link: (scope) => {
+        scope.useFlagsCss = $rootScope.mundialitoApp.clientConfig.UseFlagsCss;
+    }
+})]);
+
 'use strict';
 angular.module('mundialitoApp').factory('GeneralBet', ['$http','$log', function($http,$log) {
     function GeneralBet(betData) {
