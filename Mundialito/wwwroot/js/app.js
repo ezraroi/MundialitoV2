@@ -1517,7 +1517,7 @@ angular.module('mundialitoApp').directive('accessLevel', ['$log','security', fun
 
             function updateCSS() {
                 if (userRole && accessLevel) {
-                    if (userRole !== accessLevel)
+                    if (userRole === accessLevel)
                         element.css('display', prevDisp);
                     else
                         element.css('display', 'none');
