@@ -53,13 +53,25 @@ public class GeneralBetViewModel
 public class NewGeneralBetModel
 {
     [JsonPropertyName("WinningTeam")]
-    public Team WinningTeam { get; set; }
+    public NewGeneralBetModelWinningTeam WinningTeam { get; set; }
 
     [JsonPropertyName("GoldenBootPlayer")]
-    public Player GoldenBootPlayer { get; set; }
+    public NewGeneralBetModelGoldenBootPlayer GoldenBootPlayer { get; set; }
 
     [JsonPropertyName("GeneralBetId")]
     public int GeneralBetId { get; set; }   
+}
+
+public class NewGeneralBetModelWinningTeam
+{
+    [JsonPropertyName("TeamId")]
+    public int TeamId { get; set; }
+}
+
+public class NewGeneralBetModelGoldenBootPlayer
+{
+    [JsonPropertyName("PlayerId")]
+    public int PlayerId { get; set; }
 }
 
 public class UpdateGenralBetModel

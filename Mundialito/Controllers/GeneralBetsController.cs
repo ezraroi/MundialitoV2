@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.GeneralBets;
+using Mundialito.DAL.Players;
+using Mundialito.DAL.Teams;
 using Mundialito.Logic;
 using Mundialito.Models;
 
@@ -21,16 +23,20 @@ public class GeneralBetsController : ControllerBase
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly UserManager<MundialitoUser> userManager;
+    private readonly ITeamsRepository teamsRepository;
+    private readonly IPlayersRepository playersRepository;
     private readonly ILogger logger;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository)
     {
-        this.httpContextAccessor = httpContextAccessor;
-        this.dateTimeProvider = dateTimeProvider;
         this.generalBetsRepository = generalBetsRepository;
+        this.dateTimeProvider = dateTimeProvider;
         this.actionLogsRepository = actionLogsRepository;
+        this.httpContextAccessor = httpContextAccessor;
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.userManager = userManager;
+        this.teamsRepository = teamsRepository;
+        this.playersRepository = playersRepository;
         this.logger = logger;
     }
 
@@ -81,6 +87,8 @@ public class GeneralBetsController : ControllerBase
     [Authorize(Roles = "Active,Admin")]
     public async Task<ActionResult<NewGeneralBetModel>> PostBet(NewGeneralBetModel newBet)
     {
+        if (generalBetsRepository.IsGeneralBetExists(httpContextAccessor.HttpContext?.User.Identity.Name))
+            return BadRequest(new ErrorMessage { Message = "You have already submitted your general bet, only update is permitted"});
         var validate = Validate();
         if (!string.IsNullOrEmpty(validate))
         {
@@ -90,11 +98,23 @@ public class GeneralBetsController : ControllerBase
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
             return Unauthorized();
+        var winningTeam = teamsRepository.GetTeam(newBet.WinningTeam.TeamId);
+        if (winningTeam == null)
+        {
+            AddLog(ActionType.ERROR, string.Format("Team with id '{0}' dosen't exits", newBet.WinningTeam.TeamId));
+            return NotFound(new ErrorMessage { Message = string.Format("Team with id '{0}' dosen't exits", newBet.WinningTeam.TeamId)});
+        }
+        var goldenBootPlayer = playersRepository.GetPlayer(newBet.GoldenBootPlayer.PlayerId);
+        if (goldenBootPlayer == null)
+        {
+            AddLog(ActionType.ERROR, string.Format("Player with id '{0}' dosen't exits", newBet.GoldenBootPlayer.PlayerId));
+            return NotFound(new ErrorMessage { Message = string.Format("Player with id '{0}' dosen't exits", newBet.GoldenBootPlayer.PlayerId)});
+        }
         var generalBet = new GeneralBet
         {
             User = user,
-            WinningTeam = newBet.WinningTeam,
-            GoldBootPlayer = newBet.GoldenBootPlayer
+            WinningTeam = winningTeam,
+            GoldBootPlayer = goldenBootPlayer
         };
         var res = generalBetsRepository.InsertGeneralBet(generalBet);
         logger.LogInformation("Posting new general bet {} from {}", generalBet, user.UserName);
@@ -156,11 +176,6 @@ public class GeneralBetsController : ControllerBase
 
     private string Validate()
     {
-        if (generalBetsRepository.IsGeneralBetExists(httpContextAccessor.HttpContext?.User.Identity.Name))
-        {
-            AddLog(ActionType.ERROR, "You have already submitted your general bet, only update is permitted");
-            return "You have already submitted your general bet, only update is permitted";
-        }
         if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
             AddLog(ActionType.ERROR, "General bets are already closed for betting");
