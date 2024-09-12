@@ -235,7 +235,10 @@ public class BetGameTeam
         TeamId = team.TeamId;
         Name = team.Name;
         ShortName = team.ShortName;
+        Logo = team.Logo;
+        Flag = team.Flag;
     }
+
     [JsonPropertyName("TeamId")]
     public int TeamId { get; set; }
 
@@ -244,5 +247,11 @@ public class BetGameTeam
 
     [JsonPropertyName("ShortName")]
     public string ShortName { get; set; }
+
+    [JsonPropertyName("Flag")]
+    public string Flag { get; set; }
+
+    [JsonPropertyName("Logo")]
+    public string Logo { get; set; }
 
 }
