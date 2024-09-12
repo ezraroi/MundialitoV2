@@ -13,13 +13,13 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="user in users">
-                            <td><a href="{{user.getUrl()}}">{{user.Name}}</a></td>
+                            <td><a href="{{user.getUrl()}}">{{::user.Name}}</a><span style="margin-left: 5px;" class="badge" ng-class="{'badge-success': user.Roles === 'Admin', 'label-default': user.Roles === 'Active', 'label-danger':user.Roles === 'Disabled'}">{{::user.Roles}}</span> </td>
                             <td>{{user.Email}}</td>
                             <td>
                                 <button title="delete" type="button" class="btn btn-danger btn-sm" ng-click="deleteUser(user)" tooltip="Delete User"><i class="fa fa-times-circle"></i> <span class="hidden-xs">Delete</span></button>
-                                <button title="makeadmin" ng-show="!user.IsAdmin" type="button" class="btn btn-primary btn-sm" ng-click="makeAdmin(user)" tooltip="Make Admin"><i class="fa fa-gear"></i> <span class="hidden-xs">Admin</span></button>
-                                <button title="activate" ng-show="user.Roles === Disabled && !user.IsAdmin" type="button" class="btn btn-success btn-sm" ng-click="activate(user)" tooltip="Activate"><i class="fa-solid fa-user-check"></i> <span class="hidden-xs">Activate</span></button>
-                                <button title="deactivate" ng-show="user.Roles === Active && !user.IsAdmin" type="button" class="btn btn-warning btn-sm" ng-click="deactivate(user)" tooltip="Deactivate"><i class="fa-solid fa-user-minus"></i> <span class="hidden-xs">Deactivate</span></button>
+                                <button title="makeadmin" ng-show="user.Roles !== 'Admin'" type="button" class="btn btn-primary btn-sm" ng-click="makeAdmin(user)" tooltip="Make Admin"><i class="fa fa-gear"></i> <span class="hidden-xs">Admin</span></button>
+                                <button title="activate" ng-show="user.Roles === 'Disabled'" type="button" class="btn btn-success btn-sm" ng-click="activate(user)" tooltip="Activate"><i class="fa-solid fa-user-check"></i> <span class="hidden-xs">Activate</span></button>
+                                <button title="deactivate" ng-show="user.Roles === 'Active'" type="button" class="btn btn-warning btn-sm" ng-click="deactivate(user)" tooltip="Deactivate"><i class="fa-solid fa-user-minus"></i> <span class="hidden-xs">Deactivate</span></button>
                             </td>
                         </tr>
                         </tbody>

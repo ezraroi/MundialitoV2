@@ -2306,8 +2306,8 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
 
     $scope.makeAdmin = (user) => {
         user.makeAdmin().then(() => {
-            Alert.success('User was is now admin');
-            user.IsAdmin = true;
+            Alert.success('User is now admin');
+            user.Roles = "Admin";
         });
     };
 
