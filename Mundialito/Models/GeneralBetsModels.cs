@@ -12,7 +12,15 @@ public class GeneralBetViewModel
     {
         OwnerId = bet.User.Id;
         GeneralBetId = bet.GeneralBetId;
-        WinningTeam = bet.WinningTeam;
+        WinningTeam = new Team {
+            TeamId = bet.WinningTeam.TeamId,
+            Name = bet.WinningTeam.Name,
+            Flag = bet.WinningTeam.Flag,
+            Logo = bet.WinningTeam.Logo,
+            ShortName = bet.WinningTeam.ShortName,
+            TeamPage = bet.WinningTeam.TeamPage,
+            IntegrationsData = bet.WinningTeam.IntegrationsData
+        };
         GoldenBootPlayer = bet.GoldBootPlayer;
         IsResolved = bet.IsResolved;
         if (IsResolved)

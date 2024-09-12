@@ -79,3 +79,7 @@ input.ng-invalid.ng-dirty, textarea.ng-invalid.ng-dirty, select.ng-invalid.ng-di
     width: 40px;
     height: 40px;
 }
+
+.label-as-badge {
+    border-radius: 1em;
+}

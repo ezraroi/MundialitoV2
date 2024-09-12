@@ -13,7 +13,7 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="user in users">
-                            <td><a href="{{user.getUrl()}}">{{::user.Name}}</a><span style="margin-left: 5px;" class="badge" ng-class="{'badge-success': user.Roles === 'Admin', 'label-default': user.Roles === 'Active', 'label-danger':user.Roles === 'Disabled'}">{{::user.Roles}}</span> </td>
+                            <td><a href="{{user.getUrl()}}">{{::user.Name}}</a><span style="margin-left: 5px;" class="label label-as-badge" ng-class="{'label-success': user.Roles === 'Admin', 'label-default': user.Roles === 'Active', 'label-danger':user.Roles === 'Disabled'}">{{::user.Roles}}</span> </td>
                             <td>{{user.Email}}</td>
                             <td>
                                 <button title="delete" type="button" class="btn btn-danger btn-sm" ng-click="deleteUser(user)" tooltip="Delete User"><i class="fa fa-times-circle"></i> <span class="hidden-xs">Delete</span></button>
