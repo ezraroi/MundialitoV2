@@ -19,6 +19,8 @@ public class UserModel
     [JsonPropertyName("Id")]
     public string Id { get; private set; }
 
+    [JsonPropertyName("Roles")]
+    public string Roles { get; set; }
 
     [JsonPropertyName("ProfilePicture")]
     public string? ProfilePicture { get; private set; }
@@ -91,6 +93,7 @@ public class UserWithPointsModel : UserModel
     {
         Points = 0;
         Place = string.Empty;
+        Roles = user.Role.ToString();
     }
 
     [JsonPropertyName("Place")]

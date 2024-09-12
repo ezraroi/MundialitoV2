@@ -47,7 +47,6 @@ public class UsersController : ControllerBase
     public ActionResult<IEnumerable<UserWithPointsModel>> GetAllUsers()
     {
         var res = GetTableDetails(userManager.Users.ToList()).ToList();
-        res.ForEach(user => IsAdmin(user));
         return Ok(res);
     }
 
@@ -143,7 +142,7 @@ public class UsersController : ControllerBase
         var generalBet = generalBetsRepository.GetUserGeneralBet(username);
         if (generalBet != null)
             userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
-        return await IsAdmin(userModel);
+        return userModel;
     }
 
     [HttpGet("me")]
@@ -306,15 +305,6 @@ public class UsersController : ControllerBase
 
         }
         return resEntries;
-    }
-
-    private async Task<ActionResult<UserModel>> IsAdmin(UserModel param)
-    {
-        var user = await userManager.FindByIdAsync(param.Id);
-        if (user == null)
-            return NotFound();
-        param.IsAdmin = user.Role == Role.Admin;
-        return Ok(param);
     }
 
     private void AddLog(ActionType actionType, string message)
