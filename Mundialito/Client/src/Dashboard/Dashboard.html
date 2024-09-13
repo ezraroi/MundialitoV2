@@ -29,12 +29,16 @@
                                 <div class="col-md-5 col-xs-3">
                                     <team-flag team="game.HomeTeam"></team-flag>
                                     <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                    <span class="visible-xs">
+                                        <h5><small>{{::game.HomeTeam.Name}}</small></h5>
+                                    </span>
                                 </div>
                                 <div class="col-md-2 col-xs-6 text-center"> - </div>
                                 <div class="col-md-5 col-xs-3">
-                                    <span class="pull-right">
-                                        <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
-                                        <team-flag team="game.AwayTeam"></team-flag>
+                                    <team-flag class="pull-right" team="game.AwayTeam"></team-flag>
+                                    <span class="pull-right hidden-xs">{{::game.AwayTeam.Name}}</span>
+                                    <span class="pull-right visible-xs">
+                                        <h6><small>{{::game.AwayTeam.Name}}</small></h6>
                                     </span>
                                 </div>
                             </div>
@@ -123,12 +127,16 @@
                             <div class="col-md-5 col-xs-3">
                                 <team-flag team="game.HomeTeam"></team-flag>
                                 <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <span class="visible-xs">
+                                    <h5><small>{{::game.HomeTeam.Name}}</small></h5>
+                                </span>
                             </div>
                             <div class="col-md-2 col-xs-6 text-center"> - </div>
                             <div class="col-md-5 col-xs-3">
-                                <span class="pull-right">
-                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
-                                    <team-flag team="game.AwayTeam"></team-flag>
+                                <team-flag class="pull-right" team="game.AwayTeam"></team-flag>
+                                <span class="pull-right hidden-xs">{{::game.AwayTeam.Name}}</span>
+                                <span class="pull-right visible-xs">
+                                    <h6><small>{{::game.AwayTeam.Name}}</small></h6>
                                 </span>
                             </div>
                         </div>
@@ -152,13 +160,17 @@
                             <div class="col-md-5 col-xs-3">
                                 <team-flag team="game.HomeTeam"></team-flag>
                                 <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
+                                <span class="visible-xs">
+                                    <h5><small>{{::game.HomeTeam.Name}}</small></h5>
+                                </span>
                             </div>
                             <div class="col-md-2 col-xs-6 text-center"> {{::game.HomeScore}} - {{::game.AwayScore}}
                             </div>
                             <div class="col-md-5 col-xs-3">
-                                <span class="pull-right">
-                                    <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
-                                    <team-flag team="game.AwayTeam"></team-flag>
+                                <team-flag class="pull-right" team="game.AwayTeam"></team-flag>
+                                <span class="pull-right hidden-xs">{{::game.AwayTeam.Name}}</span>
+                                <span class="pull-right visible-xs">
+                                    <h6><small>{{::game.AwayTeam.Name}}</small></h6>
                                 </span>
                             </div>
                         </div>
@@ -201,7 +213,7 @@
                                             {{user.Name}}</a> <span
                                             class="label label-info pull-right">{{user.Points}}</span></h4>
                                     <span ng-if="user.GeneralBet != null && generalBetsAreOpen == false">
-                                        <i class="fa-solid fa-trophy"></i> 
+                                        <i class="fa-solid fa-trophy"></i>
                                         <team-flag team="user.GeneralBet.WinningTeam"></team-flag>
                                         <span>{{::user.GeneralBet.WinningTeam.Name}}</span><br />
                                         <i class="fa-solid fa-crown"></i> {{::user.GeneralBet.GoldenBootPlayer.Name}}
