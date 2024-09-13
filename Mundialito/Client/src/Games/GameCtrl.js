@@ -111,12 +111,6 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         $log.debug('GameCtrl: simulating game');
         $scope.simulateGamePromise = GamesManager.simulateGame($scope.game.GameId, $scope.simulatedGame).then((data) => {
             $scope.users = data;
-            $scope.users.forEach((user) => {
-                if (user.GeneralBet !== null) {
-                    user.GeneralBet.WinningTeam = $scope.teamsDic[user.GeneralBet.WinningTeamId].Name;
-                    user.GeneralBet.GoldenBootPlayer = MundialitoUtils.shortName($scope.playersDic[user.GeneralBet.GoldenBootPlayerId].Name);
-                }
-            });
             Alert.success('Table updated with simulation result');
         }).catch((err) => {
             Alert.error('Failed to simulate game, please try again');
