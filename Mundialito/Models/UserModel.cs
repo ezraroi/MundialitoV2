@@ -14,6 +14,7 @@ public class UserModel
         Email = user.Email;
         Points = 0;
         ProfilePicture = user.ProfilePicture == null ? "../../../icons/user.webp" :user.ProfilePicture;
+        Roles = user.Role.ToString();
     }
 
     [JsonPropertyName("Id")]
@@ -27,10 +28,7 @@ public class UserModel
 
     [JsonPropertyName("Email")]
     public string Email { get; set; }
-
-    [JsonPropertyName("IsAdmin")]
-    public bool IsAdmin { get; set; }
-
+    
     [JsonPropertyName("Username")]
     public string Username { get; set; }
 
