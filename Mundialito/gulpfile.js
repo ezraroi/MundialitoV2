@@ -1,7 +1,13 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const gulp = require('gulp');
 const concat = require('gulp-concat');
 const cleanCss = require('gulp-minify-css');
 const minify = require('gulp-minify');
+const hash = require('gulp-hash-filename');
+const replace = require('gulp-replace');
+const clean = require('gulp-clean');
+const { console } = require('node:inspector');
 
 const allCss = [
     "Client/css/angular-busy.css",
@@ -69,6 +75,7 @@ gulp.task('compress-lib', function () {
     ])
         .pipe(concat('lib.js'))
         .pipe(minify())
+        .pipe(hash())
         .pipe(gulp.dest('wwwroot/lib'))
 });
 
@@ -80,6 +87,7 @@ gulp.task('compress-app', function () {
     ])
         .pipe(concat('app.js'))
         .pipe(minify())
+        .pipe(hash())
         .pipe(gulp.dest('wwwroot/js'))
 });
 
@@ -93,4 +101,59 @@ gulp.task('copy-templates', function () {
         .pipe(gulp.dest('wwwroot/'));
 });
 
-gulp.task('default', gulp.series(['build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates']));
+gulp.task('cache-bust-lib', () => {
+    const libPattern = /^lib-[a-z0-9]+\.js$/;
+    let lib = fs.readdirSync('wwwroot/lib').filter(fileName => {
+        return libPattern.test(fileName);
+    });
+    if (lib.length != 1) {
+        throw new Error('There should be exactly one lib file');
+    }
+    return gulp.src('Views/Home/Index.cshtml')
+        .pipe(replace(/lib-[a-z0-9]+\.js/, lib[0]))
+        .pipe(gulp.dest('Views/Home'));
+});
+
+gulp.task('cache-bust-lib-min', () => {
+    const libMinPattern = /^lib-min-[a-z0-9]+\.js$/;
+    let libMinified = fs.readdirSync('wwwroot/lib').filter(fileName => {
+        return libMinPattern.test(fileName);
+    });
+    if (libMinified.length != 1) {
+        throw new Error('There should be exactly one lib-min file');
+    }
+    return gulp.src('Views/Home/Index.cshtml')
+        .pipe(replace(/lib-min-[a-z0-9]+\.js/, libMinified[0]))
+        .pipe(gulp.dest('Views/Home'));
+});
+
+gulp.task('cache-bust-app', () => {
+    const appPattern = /^app-[a-z0-9]+\.js$/;
+    let app = fs.readdirSync('wwwroot/js').filter(fileName => {
+        return appPattern.test(fileName);
+    });
+    if (app.length != 1) {
+        throw new Error('There should be exactly one app file');
+    }
+    return gulp.src('Views/Home/Index.cshtml')
+        .pipe(replace(/app-[a-z0-9]+\.js/, app[0]))
+        .pipe(gulp.dest('Views/Home'));
+});
+
+gulp.task('cache-bust-app-min', () => {
+    const appMinPattern = /^app-min-[a-z0-9]+\.js$/;
+    let appMinified = fs.readdirSync('wwwroot/js').filter(fileName => {
+        return appMinPattern.test(fileName);
+    });
+    if (appMinified.length != 1) {
+        throw new Error('There should be exactly one app-min file');
+    }
+    return gulp.src('Views/Home/Index.cshtml')
+        .pipe(replace(/app-min-[a-z0-9]+\.js/, appMinified[0]))
+        .pipe(gulp.dest('Views/Home'));
+});
+
+gulp.task('clean', () => gulp.src(['wwwroot/js/*.js', 'wwwroot/lib/*.js'], { read: false })
+    .pipe(clean()));
+
+gulp.task('default', gulp.series(['clean', 'build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates', 'cache-bust-lib', 'cache-bust-lib-min', 'cache-bust-app', 'cache-bust-app-min']));

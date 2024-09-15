@@ -1,4 +1,5 @@
-﻿@model Mundialito.Configuration.Config
+@inject Microsoft.AspNetCore.Hosting.IHostingEnvironment env
+@model Mundialito.Configuration.Config
 
 <!DOCTYPE html>
 <html lang="en" ng-app="mundialitoApp">
@@ -141,8 +142,15 @@
             <!-- End of Content Loading message -->
         </div>
         <!-- End of Main Content -->
-        <script src="lib/lib.js"></script>
-        <script src="js/app.js"></script>
+        @if (env.IsProduction())
+        {
+            <script src="lib/lib-min-2d5e40df8764ea1d842fca768d139b58.js"></script>
+            <script src="js/app-min-6c10cabb3a2ab76eb865c995f6947679.js"></script>
+        }
+        else {
+            <script src="lib/lib-77990d6df268e8d3d432fb52597000f9.js"></script>
+            <script src="js/app-5e44a1b15c1cfae702ee2652dd5f5edc.js"></script>
+        }
     </div>
 </body>
 
