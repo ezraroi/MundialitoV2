@@ -1583,7 +1583,8 @@ angular.module('mundialitoApp').directive('mundialitoToggleText', [function () {
 angular.module('mundialitoApp').directive('teamFlag', ['$rootScope', ($rootScope) => ({
     restrict: 'E',
     scope: {
-        team: '='
+        team: '=',
+        style: '='
     },
     templateUrl: 'App/General/teamFlagTemplate.html',
     link: (scope) => {

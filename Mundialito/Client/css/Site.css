@@ -83,3 +83,13 @@ input.ng-invalid.ng-dirty, textarea.ng-invalid.ng-dirty, select.ng-invalid.ng-di
 .label-as-badge {
     border-radius: 1em;
 }
+
+.team-icon {
+    width: 28px; 
+    height: 28px;
+}
+
+.logo-margin {
+    margin-left: 3px; 
+    margin-right: 3px;
+}
