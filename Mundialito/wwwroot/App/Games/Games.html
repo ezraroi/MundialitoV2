@@ -4,10 +4,10 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-md-3 col-xs-12">
-                        <select ui-select2="{allowClear: false}" class="form-control" ng-model="gamesFilter">
-                            <option value="All" selected="selected">All Games</option>
-                            <option value="OnlyOpen">Only Open</option>
-                        </select>
+                        <toggle ng-model="gamesToggle" size="btn-sm" off-class="btn-success"
+                                        on-class="btn-info" ng-change="changed()"
+                                        on="<i class='fa-solid fa-list'></i> All"
+                                        off="<i class='fa-regular fa-folder-open'></i> Open"></toggle>
                     </div>
                 </div>
             </div>
