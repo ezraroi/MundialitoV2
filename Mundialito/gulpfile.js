@@ -106,8 +106,8 @@ gulp.task('cache-bust-lib', () => {
     let lib = fs.readdirSync('wwwroot/lib').filter(fileName => {
         return libPattern.test(fileName);
     });
-    if (lib.length != 1) {
-        throw new Error('There should be exactly one lib file');
+    if (lib.length !== 1) {
+        throw new Error('There should be exactly one lib file: ' + lib.join(', '));
     }
     return gulp.src('Views/Home/Index.cshtml')
         .pipe(replace(/lib-[a-z0-9]+\.js/, lib[0]))
@@ -119,8 +119,8 @@ gulp.task('cache-bust-lib-min', () => {
     let libMinified = fs.readdirSync('wwwroot/lib').filter(fileName => {
         return libMinPattern.test(fileName);
     });
-    if (libMinified.length != 1) {
-        throw new Error('There should be exactly one lib-min file');
+    if (libMinified.length !== 1) {
+        throw new Error('There should be exactly one lib file: ' + libMinified.join(', '));
     }
     return gulp.src('Views/Home/Index.cshtml')
         .pipe(replace(/lib-min-[a-z0-9]+\.js/, libMinified[0]))
@@ -132,8 +132,8 @@ gulp.task('cache-bust-app', () => {
     let app = fs.readdirSync('wwwroot/js').filter(fileName => {
         return appPattern.test(fileName);
     });
-    if (app.length != 1) {
-        throw new Error('There should be exactly one app file');
+    if (app.length !== 1) {
+        throw new Error('There should be exactly one app file: ' + app.join(', '));
     }
     return gulp.src('Views/Home/Index.cshtml')
         .pipe(replace(/app-[a-z0-9]+\.js/, app[0]))
@@ -145,8 +145,8 @@ gulp.task('cache-bust-app-min', () => {
     let appMinified = fs.readdirSync('wwwroot/js').filter(fileName => {
         return appMinPattern.test(fileName);
     });
-    if (appMinified.length != 1) {
-        throw new Error('There should be exactly one app-min file');
+    if (appMinified.length !== 1) {
+        throw new Error('There should be exactly one app file: ' + appMinified.join(', '));
     }
     return gulp.src('Views/Home/Index.cshtml')
         .pipe(replace(/app-min-[a-z0-9]+\.js/, appMinified[0]))
