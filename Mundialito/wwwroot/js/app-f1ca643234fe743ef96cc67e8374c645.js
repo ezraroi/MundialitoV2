@@ -1065,10 +1065,17 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
 'use strict';
 angular.module('mundialitoApp').controller('GamesCtrl', ['$scope','$log','GamesManager','games','teams', 'StadiumsManager' ,'Alert',function ($scope,$log, GamesManager, games, teams, StadiumsManager, Alert) {
     $scope.newGame = null;
-    $scope.gamesFilter = "All";
+    $scope.gamesFilter = "Open";
+    $scope.gamesToggle = false;
     $scope.games = games;
     $scope.teams = teams;
-    
+    $scope.changed = () => {
+        if ($scope.gamesFilter === "Open") {
+            $scope.gamesFilter = "All"
+        } else {
+            $scope.gamesFilter = "Open"
+        }
+    }
 
     StadiumsManager.loadAllStadiums().then(function (res) {
         $scope.stadiums = res;
