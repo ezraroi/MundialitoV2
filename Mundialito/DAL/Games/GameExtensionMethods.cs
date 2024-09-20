@@ -2,34 +2,34 @@
 
 public static class GameExtensionMethods
 {
-    public static Boolean IsOpen(this Game game)
+    public static bool IsOpen(this Game game)
     {
         return game.IsOpen(DateTime.UtcNow);
     }
 
-    public static Boolean IsOpen(this Game game, DateTime now)
+    public static bool IsOpen(this Game game, DateTime now)
     {
         return now < game.CloseTime;
     }
 
-    public static Boolean IsPendingUpdate(this Game game)
+    public static bool IsPendingUpdate(this Game game)
     {
         return game.IsPendingUpdate(DateTime.UtcNow);
     }
 
-    public static Boolean IsPendingUpdate(this Game game, DateTime now)
+    public static bool IsPendingUpdate(this Game game, DateTime now)
     {
         if (game.IsOpen(now))
             return false;
         return game.HomeScore == null || game.AwayScore == null || game.CardsMark == null || game.CornersMark == null;
     }
 
-    public static Boolean IsBetResolved(this Game game)
+    public static bool IsBetResolved(this Game game)
     {
         return game.IsBetResolved(DateTime.UtcNow);
     }
 
-    public static Boolean IsBetResolved(this Game game, DateTime now)
+    public static bool IsBetResolved(this Game game, DateTime now)
     {
             return !game.IsOpen(now) && !game.IsPendingUpdate(now);
     }
@@ -40,7 +40,7 @@ public static class GameExtensionMethods
         return game.Mark(DateTime.UtcNow);
     }
 
-    public static String Mark(this Game game, DateTime now)
+    public static string Mark(this Game game, DateTime now)
     {
         if (!game.IsOpen(now))
         {
