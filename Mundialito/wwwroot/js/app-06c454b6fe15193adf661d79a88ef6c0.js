@@ -673,6 +673,19 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.toggleValue = {};
         $scope.players = players;
 
+        // Function to group teams by ShortName
+        function groupTeamsByShortName(teams) {
+            return teams.reduce((acc, team) => {
+                const shortName = team.ShortName;
+                if (!acc[shortName]) {
+                    acc[shortName] = [];
+                }
+                acc[shortName].push(team);
+                return acc;
+            }, {});
+        }
+        $scope.groupedTeams = groupTeamsByShortName(teams);
+
         $scope.changed = (game) => {
             if ($scope.toggleValue[game.GameId]) {
                 $scope.selectedDic[game.GameId] = $scope.marksDic[game.GameId];
