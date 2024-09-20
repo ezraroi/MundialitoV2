@@ -64,7 +64,7 @@ public class StatsController : ControllerBase
 
     private async Task<ActionResult<StatsModel>> CalcStats(MundialitoUser requestedUser, MundialitoUser loggedUser, IEnumerable<MundialitoUser> followees)
     {
-        var games = (float)gamesRepository.GetGames().Count();
+        var games = (float)gamesRepository.GetGames().Where((game) => game.IsBetResolved()).Count();
         var users = (float)userManager.Users.Count();
         var bets = betsRepository.GetBets().Where((bet) => bet.IsResolved()).ToList();
         var table = tableBuilder.GetTable(userManager.Users.Select((user) => new UserWithPointsModel(user)), bets, generalBetsRepository.GetGeneralBets());
