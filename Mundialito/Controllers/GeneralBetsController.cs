@@ -25,9 +25,10 @@ public class GeneralBetsController : ControllerBase
     private readonly UserManager<MundialitoUser> userManager;
     private readonly ITeamsRepository teamsRepository;
     private readonly IPlayersRepository playersRepository;
+    private readonly GeneralBetsService generalBetsService;
     private readonly ILogger logger;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService)
     {
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
@@ -37,17 +38,18 @@ public class GeneralBetsController : ControllerBase
         this.userManager = userManager;
         this.teamsRepository = teamsRepository;
         this.playersRepository = playersRepository;
+        this.generalBetsService = generalBetsService;
         this.logger = logger;
     }
 
     [HttpGet]
     public ActionResult<IEnumerable<GeneralBetViewModel>> GetAllGeneralBets()
     {
-        if (!User.IsInRole("Admin") && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
+        if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
             return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet" });
         }
-        return Ok(generalBetsRepository.GetGeneralBets().Select(bet =>
+        return Ok(generalBetsService.GetGeneralBets().Select(bet =>
             new GeneralBetViewModel(bet, tournamentTimesUtils.GetGeneralBetsCloseTime())).OrderBy(bet => bet.OwnerName));
     }
 
@@ -68,7 +70,7 @@ public class GeneralBetsController : ControllerBase
     {
         if (httpContextAccessor.HttpContext?.User.Identity.Name != username && dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
             return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet" });
-        var item = generalBetsRepository.GetUserGeneralBet(username);
+        var item = generalBetsService.GetUserGeneralBet(username);
         if (item == null)
             return NotFound(string.Format("User '{0}' dosen't have a general bet yet", username));
         return Ok(new GeneralBetViewModel(item, tournamentTimesUtils.GetGeneralBetsCloseTime()));

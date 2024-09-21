@@ -139,6 +139,7 @@ builder.Services.AddScoped<AuthService, AuthService>();
 builder.Services.AddScoped<TableBuilder, TableBuilder>();
 builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+builder.Services.AddScoped<GeneralBetsService, GeneralBetsService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddCors(options =>
 		{

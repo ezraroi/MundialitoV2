@@ -1,9 +1,6 @@
 using Mundialito.Models;
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.GeneralBets;
-using Mundialito.DAL.Accounts;
-using Mundialito.DAL.Teams;
-using Mundialito.DAL.Players;
 
 namespace Mundialito.Logic;
 

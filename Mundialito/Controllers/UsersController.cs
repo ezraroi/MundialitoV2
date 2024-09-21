@@ -24,12 +24,12 @@ public class UsersController : ControllerBase
     private readonly UserManager<MundialitoUser> userManager;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly TournamentTimesUtils tournamentTimesUtils;
-    private readonly IGeneralBetsRepository generalBetsRepository;
+    private readonly GeneralBetsService generalBetsService;
     private readonly TableBuilder tableBuilder;
     private readonly MundialitoDbContext mundialitoDbContext;
     private readonly ILogger logger;
 
-    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, IGeneralBetsRepository generalBetsRepository, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
+    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, GeneralBetsService generalBetsService, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
     {
         this.actionLogsRepository = actionLogsRepository;
         this.httpContextAccessor = httpContextAccessor;
@@ -37,7 +37,7 @@ public class UsersController : ControllerBase
         this.betsRepository = betsRepository;
         this.dateTimeProvider = dateTimeProvider;
         this.tournamentTimesUtils = tournamentTimesUtils;
-        this.generalBetsRepository = generalBetsRepository;
+        this.generalBetsService = generalBetsService;
         this.logger = logger;
         this.tableBuilder = tableBuilder;
         this.mundialitoDbContext = mundialitoDbContext;
@@ -139,7 +139,7 @@ public class UsersController : ControllerBase
             return NotFound(new ErrorMessage { Message = string.Format("No such user '{0}'", username) });
         var userModel = new UserModel(user);
         betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
-        var generalBet = generalBetsRepository.GetUserGeneralBet(username);
+        var generalBet = generalBetsService.GetUserGeneralBet(username);
         if (generalBet != null)
             userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
         return userModel;
@@ -285,7 +285,7 @@ public class UsersController : ControllerBase
         }
         if (betsByDate.Count() > 0)
         {
-            var generalBets = generalBetsRepository.GetGeneralBets();
+            var generalBets = generalBetsService.GetGeneralBets();
             allUsers = tableBuilder.GetTable(allUsers, [], generalBets.Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList()).ToList();
             var finalTable = tableBuilder.GetTable(allUsers, [], generalBets);
             var finalUserEntries = users.Select(user => finalTable.FirstOrDefault(tableUser => tableUser.Id == user.Id)).Where(entry => entry != null).ToList();
@@ -322,7 +322,7 @@ public class UsersController : ControllerBase
 
     private IEnumerable<UserWithPointsModel> GetTableDetails(IEnumerable<MundialitoUser> users)
     {
-        return tableBuilder.GetTable(users.Select((user) => new UserWithPointsModel(user)), betsRepository.GetBets().ToList(), generalBetsRepository.GetGeneralBets().Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList());
+        return tableBuilder.GetTable(users.Select((user) => new UserWithPointsModel(user)), betsRepository.GetBets().ToList(), generalBetsService.GetGeneralBets().Where(bet => users.Select(user => user.Id).Contains(bet.User.Id)).ToList());
     }
 }
 
