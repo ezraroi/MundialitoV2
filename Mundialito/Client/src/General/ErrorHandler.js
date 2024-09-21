@@ -47,12 +47,10 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
 }])
     .factory('myHttpInterceptor', ['ErrorHandler', '$q', function (ErrorHandler, $q) {
         return {
-            response: function (response) {
-                return response;
-            },
-            responseError: function (response) {
+            response: (response) => response,
+            responseError: (response) => {
                 ErrorHandler.handle(response.data, response.status, response.headers, response.config);
-
+                Sentry.captureException(response.data);
                 // do something on error
                 return $q.reject(response);
             }
