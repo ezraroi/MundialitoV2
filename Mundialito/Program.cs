@@ -22,6 +22,7 @@ using Mundialito.Mail;
 // https://medium.com/medialesson/how-to-send-emails-at-scale-in-net-with-the-azure-communication-service-14565d84147f
 // https://www.telerik.com/blogs/new-net-8-aspnet-core-identity-how-implement
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseSentry();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
