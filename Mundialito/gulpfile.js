@@ -101,6 +101,12 @@ gulp.task('copy-templates', function () {
         .pipe(gulp.dest('wwwroot/'));
 });
 
+gulp.task('copy-sentry', function () {
+    return gulp.src(['Client/lib/sentry/*.js'])
+        .pipe(gulp.dest('wwwroot/sentry'));
+});
+
+
 gulp.task('cache-bust-lib', () => {
     const libPattern = /^lib-[a-z0-9]+\.js$/;
     let lib = fs.readdirSync('wwwroot/lib').filter(fileName => {
@@ -156,4 +162,4 @@ gulp.task('cache-bust-app-min', () => {
 gulp.task('clean', () => gulp.src(['wwwroot/js/*.js', 'wwwroot/lib/*.js'], { read: false })
     .pipe(clean()));
 
-gulp.task('default', gulp.series(['clean', 'build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates', 'cache-bust-lib', 'cache-bust-lib-min', 'cache-bust-app', 'cache-bust-app-min']));
+gulp.task('default', gulp.series(['clean', 'build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates', 'copy-sentry', 'cache-bust-lib', 'cache-bust-lib-min', 'cache-bust-app', 'cache-bust-app-min']));

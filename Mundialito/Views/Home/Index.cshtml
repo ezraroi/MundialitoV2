@@ -9,7 +9,7 @@
     <title>@Model.ApplicationName</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <meta name="google-signin-client_id" content="@Model.GoogleClientId">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="cache-control" content="max-age=0" />
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
@@ -33,6 +33,7 @@
 </head>
 
 <body>
+   
     <script src="//accounts.google.com/gsi/client"></script>
     <div class="container body-content">
         <!-- App Loading message -->
@@ -141,16 +142,26 @@
             </div>
             <!-- End of Content Loading message -->
         </div>
+        <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
+        <!-- If you include the integration it will be available under Sentry.Integrations.Angular -->
+        <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
         <!-- End of Main Content -->
         @if (env.IsProduction())
         {
             <script src="lib/lib-min-2d5e40df8764ea1d842fca768d139b58.js"></script>
-            <script src="js/app-min-edab6c6f8348e96ec77828311e34fb09.js"></script>
+            <script src="js/app-min-dbea857653a57fb18c602c8a4373eee2.js"></script>
         }
         else {
             <script src="lib/lib-77990d6df268e8d3d432fb52597000f9.js"></script>
-            <script src="js/app-3aca63029d88fd16639d2f211875992c.js"></script>
+            <script src="js/app-d59627e3e8cd8f2d05420f29a89370ce.js"></script>
         }
+         
+<script>
+  Sentry.init({
+    dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
+    integrations: [new Sentry.Integrations.Angular()],
+  });
+</script>
     </div>
 </body>
 

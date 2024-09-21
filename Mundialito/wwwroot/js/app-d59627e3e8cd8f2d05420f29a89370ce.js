@@ -1,5 +1,5 @@
 angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', 'ngRoute', 'ngAnimate', 'ui.bootstrap', 'autofields.bootstrap', 'cgBusy', 'ajoslin.promise-tracker', 'ui.select',
-    'ui.bootstrap.datetimepicker', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns','ui.toggle'])
+    'ui.bootstrap.datetimepicker', 'ui.grid', 'ui.grid.autoResize', 'googlechart', 'toaster', 'ui.grid.saveState', 'ui.grid.resizeColumns','ui.toggle', 'ngSentry'])
     .value('cgBusyTemplateName', 'App/Partials/angular-busy.html')
     .config(['$routeProvider', '$httpProvider', '$locationProvider', '$parseProvider', 'securityProvider', 'Constants', function ($routeProvider, $httpProvider, $locationProvider, $parseProvider, securityProvider, Constants) {
         $locationProvider.html5Mode(true);
@@ -1432,12 +1432,10 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$rootScope', '$log', '
 }])
     .factory('myHttpInterceptor', ['ErrorHandler', '$q', function (ErrorHandler, $q) {
         return {
-            response: function (response) {
-                return response;
-            },
-            responseError: function (response) {
+            response: (response) => response,
+            responseError: (response) => {
                 ErrorHandler.handle(response.data, response.status, response.headers, response.config);
-
+                Sentry.captureException(response.data);
                 // do something on error
                 return $q.reject(response);
             }
