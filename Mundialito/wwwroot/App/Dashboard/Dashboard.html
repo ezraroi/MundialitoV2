@@ -268,8 +268,8 @@
                                         <tr ng-repeat="bet in generalBets">
                                             <td>{{bet.OwnerName}}</td>
                                             <td>{{usersDic[bet.OwnerId].Points}}</td>
-                                            <td>{{teamsDic[bet.WinningTeamId].Name}}</td>
-                                            <td>{{playersDic[bet.GoldenBootPlayerId].Name}}</td>
+                                            <td>{{bet.WinningTeam.Name}}</td>
+                                            <td>{{bet.GoldenBootPlayer.Name}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
