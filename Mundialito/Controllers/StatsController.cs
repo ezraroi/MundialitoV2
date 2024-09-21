@@ -64,7 +64,7 @@ public class StatsController : ControllerBase
 
     private async Task<ActionResult<StatsModel>> CalcStats(MundialitoUser requestedUser, MundialitoUser loggedUser, IEnumerable<MundialitoUser> followees)
     {
-        var games = (float)gamesRepository.GetGames().Count();
+        var games = (float)gamesRepository.GetGames().Where((game) => game.IsBetResolved()).Count();
         var users = (float)userManager.Users.Count();
         var bets = betsRepository.GetBets().Where((bet) => bet.IsResolved()).ToList();
         var table = tableBuilder.GetTable(userManager.Users.Select((user) => new UserWithPointsModel(user)), bets, generalBetsRepository.GetGeneralBets());
@@ -198,12 +198,12 @@ public class StatsController : ControllerBase
 
     private PerGameModel getNumOfBingo(float games, float users, List<Bet> bets, MundialitoUser user, MundialitoUser loggedUser, MundialitoUser leader, IEnumerable<MundialitoUser> followees)
     {
-        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.Points == 7).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
-        var requested = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.Points == 7).Count();
-        var followeesRes = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.Points == 7).Count();
-        var logged = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.Points == 7).Count();
-        var leaderBingo = bets.Where((bet) => bet.User.UserName == leader.UserName).Where((bet) => bet.Points == 7).Count();
-        var all = bets.Where((bet) => bet.Points == 7).Count();
+        var best = bets.GroupBy((bet) => bet.User.FirstName + " " + bet.User.LastName).ToDictionary(g => g.Key, g => g.Where((bet) => bet.MaxPoints).Count()).OrderByDescending(x => x.Value).FirstOrDefault();
+        var requested = bets.Where((bet) => bet.User.UserName == user.UserName).Where((bet) => bet.MaxPoints).Count();
+        var followeesRes = bets.Where((bet) => followees.Where((fol) => fol.UserName == bet.User.UserName).Any()).Where((bet) => bet.MaxPoints).Count();
+        var logged = bets.Where((bet) => bet.User.UserName == loggedUser.UserName).Where((bet) => bet.MaxPoints).Count();
+        var leaderBingo = bets.Where((bet) => bet.User.UserName == leader.UserName).Where((bet) => bet.MaxPoints).Count();
+        var all = bets.Where((bet) => bet.MaxPoints).Count();
         return new PerGameModel
         {
             You = logged,

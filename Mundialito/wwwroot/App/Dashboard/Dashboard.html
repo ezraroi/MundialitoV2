@@ -82,7 +82,12 @@
                                             <uib-accordion-heading>
                                                 <div class="row">
                                                     <div class="col-md-1 col-xs-2 text-center">
-                                                        <span class="badge">{{item[0]}}</span>
+                                                        <div ng-if="groupedTeams[item[0]] === undefined">
+                                                            <span class="badge">{{item[0]}}</span>
+                                                        </div>
+                                                        <div ng-if="groupedTeams[item[0]] !== undefined">
+                                                            <team-flag team="groupedTeams[item[0]][0]"></team-flag>
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-10 col-xs-9">
                                                         <uib-progressbar max="100" min="0"
@@ -263,8 +268,8 @@
                                         <tr ng-repeat="bet in generalBets">
                                             <td>{{bet.OwnerName}}</td>
                                             <td>{{usersDic[bet.OwnerId].Points}}</td>
-                                            <td>{{teamsDic[bet.WinningTeamId].Name}}</td>
-                                            <td>{{playersDic[bet.GoldenBootPlayerId].Name}}</td>
+                                            <td>{{bet.WinningTeam.Name}}</td>
+                                            <td>{{bet.GoldenBootPlayer.Name}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
