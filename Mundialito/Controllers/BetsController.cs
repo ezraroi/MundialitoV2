@@ -69,7 +69,7 @@ public class BetsController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Active,Admin")]
-    public async Task<ActionResult<NewBetModel>> PostBet(NewBetModel bet)
+    public async Task<ActionResult<BetViewModel>> PostBet(NewBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
@@ -99,12 +99,12 @@ public class BetsController : ControllerBase
         if (ShouldSendMail())
             SendBetMail(newBet, user);
         logger.LogInformation("Bet os user {} was saved", user.UserName);
-        return Ok(bet);
+        return Ok(new BetViewModel(res, dateTimeProvider.UTCNow));
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Active,Admin")]
-    public async Task<ActionResult<NewBetModel>> UpdateBet(int id, UpdateBetModel bet)
+    public async Task<ActionResult<BetViewModel>> UpdateBet(int id, UpdateBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
@@ -132,7 +132,7 @@ public class BetsController : ControllerBase
         if (ShouldSendMail())
             SendBetMail(betToUpdate, user);
         logger.LogInformation("Bet {} of {} was updated", id, user.UserName);
-        return Ok(new NewBetModel(id, bet));
+        return Ok(new BetViewModel(betToUpdate, dateTimeProvider.UTCNow));
     }
 
     [HttpDelete("{id}")]
