@@ -697,8 +697,6 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         }
 
         $scope.getGamesPromise = GamesManager.loadAllGames().then((games) => {
-            games.forEach(game => {
-                game.IsPendingUpdate = true });
             $scope.games = games;
             $scope.resultsDic = {};
             $scope.marksDic = {};
