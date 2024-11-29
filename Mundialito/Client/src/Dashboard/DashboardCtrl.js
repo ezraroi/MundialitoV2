@@ -10,17 +10,17 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.players = players;
 
         // Function to group teams by ShortName
-        function groupTeamsByShortName(teams) {
+        function groupTeamsByName(teams) {
             return teams.reduce((acc, team) => {
-                const shortName = team.ShortName;
-                if (!acc[shortName]) {
-                    acc[shortName] = [];
+                const name = team.Name;
+                if (!acc[name]) {
+                    acc[name] = [];
                 }
-                acc[shortName].push(team);
+                acc[name].push(team);
                 return acc;
             }, {});
         }
-        $scope.groupedTeams = groupTeamsByShortName(teams);
+        $scope.groupedTeams = groupTeamsByName(teams);
 
         $scope.changed = (game) => {
             if ($scope.toggleValue[game.GameId]) {
@@ -33,6 +33,8 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         }
 
         $scope.getGamesPromise = GamesManager.loadAllGames().then((games) => {
+            games.forEach(game => {
+                game.IsPendingUpdate = true });
             $scope.games = games;
             $scope.resultsDic = {};
             $scope.marksDic = {};
@@ -51,9 +53,9 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
                             return 'X';
                         }
                         if (bet.HomeScore > bet.AwayScore) {
-                            return bet.Game.HomeTeam.ShortName;
+                            return bet.Game.HomeTeam.Name;
                         }
-                        return bet.Game.AwayTeam.ShortName;
+                        return bet.Game.AwayTeam.Name;
                     });
                     $scope.resultsDic[game.GameId] = Object.entries(resulsGrouped).sort((a, b) => b[1].length - a[1].length);
                     $scope.marksDic[game.GameId] = Object.entries(marksGrouped).sort((a, b) => b[1].length - a[1].length);
