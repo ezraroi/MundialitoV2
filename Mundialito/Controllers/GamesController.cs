@@ -104,7 +104,7 @@ public class GamesController : ControllerBase
         if (game == null)
             return NotFound(new ErrorMessage { Message = string.Format("Game with id '{0}' not found", id) });
         if (game.IsOpen(dateTimeProvider.UTCNow))
-            return BadRequest(new ErrorMessage { Message = String.Format("Game '{0}' is stil open for betting", id) });
+            return BadRequest(new ErrorMessage { Message = string.Format("Game '{0}' is stil open for betting", id) });
         return Ok(betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points));
     }
 
