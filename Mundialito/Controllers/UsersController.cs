@@ -139,7 +139,7 @@ public class UsersController : ControllerBase
         var userModel = new UserModel(user);
         betsRepository.GetUserBets(user.UserName).Where(bet => httpContextAccessor.HttpContext?.User.Identity.Name == username || !bet.IsOpenForBetting(dateTimeProvider.UTCNow)).ToList().ForEach(bet => userModel.AddBet(new BetViewModel(bet, dateTimeProvider.UTCNow)));
         var generalBet = generalBetsService.GetUserGeneralBet(username);
-        if ((generalBet != null) && (dateTimeProvider.UTCNow >= tournamentTimesUtils.GetGeneralBetsCloseTime())
+        if ((generalBet != null) && (dateTimeProvider.UTCNow >= tournamentTimesUtils.GetGeneralBetsCloseTime()))
             userModel.SetGeneralBet(new GeneralBetViewModel(generalBet, tournamentTimesUtils.GetGeneralBetsCloseTime()));
         return userModel;
     }
