@@ -23,8 +23,6 @@ public class GeneralBetsService {
 
     public GeneralBet? GetUserGeneralBet(string username)
     {
-        if (_dateTimeProvider.UTCNow >= _tournamentTimesUtils.GetGeneralBetsCloseTime())
-            return _generalBetsRepository.GetUserGeneralBet(username);
-        return null;
+        return _generalBetsRepository.GetUserGeneralBet(username);
     }
 }
