@@ -45,7 +45,7 @@ public class GeneralBetsController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<GeneralBetViewModel>> GetAllGeneralBets()
     {
-        if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime())
+        if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime() && httpContextAccessor.HttpContext?.User.IsInRole("Admin") == false)
         {
             return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet" });
         }
