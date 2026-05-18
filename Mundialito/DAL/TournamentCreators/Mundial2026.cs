@@ -217,8 +217,8 @@ public class Mundial2026 : ITournamentCreator
         {
             Name = name,
             ShortName = shortName,
-            Flag = string.Format("https://api.fifa.com/api/v1/picture/flags-sq-2/{0}", shortName),
-            Logo = string.Format("https://api.fifa.com/api/v1/picture/flags-sq-2/{0}", shortName),
+            Flag = string.Format("https://api.fifa.com/api/v3/picture/flags-sq-4/{0}", shortName),
+            Logo = string.Format("https://api.fifa.com/api/v3/picture/flags-sq-4/{0}", shortName),
             TeamPage = string.Empty,
         };
 }
