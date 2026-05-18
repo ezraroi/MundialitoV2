@@ -31,18 +31,47 @@ public class DatabaseInitilaizer
             {
                 logger.LogInformation("No users found. will populate the database");
                 CreateFirstUsers(config, userManager, logger);
-                if (!string.IsNullOrEmpty(config.TournamentDBCreatorName))
-                {
-                    Type t = Type.GetType("Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName);
-                    ITournamentCreator tournamentCreator = Activator.CreateInstance(t) as ITournamentCreator;
-                    logger.LogInformation("Using tournament creator {0}", config.TournamentDBCreatorName);
-                    SetupTeams(context, tournamentCreator);
-                    SetupStadiums(context, tournamentCreator);
-                    SetupPlayers(context, tournamentCreator);
-                    SetupGames(context, tournamentCreator, config, userManager);
-                }
+            }
+
+            if (context.Teams.Count() == 0)
+            {
+                SeedTournamentData(context, config, userManager, logger);
             }
         }
+    }
+
+    private static void SeedTournamentData(
+        MundialitoDbContext context,
+        Config config,
+        UserManager<MundialitoUser> userManager,
+        ILogger<DatabaseInitilaizer> logger)
+    {
+        if (string.IsNullOrEmpty(config.TournamentDBCreatorName))
+        {
+            logger.LogWarning("Tournament seed skipped: App:TournamentDBCreatorName is not set");
+            return;
+        }
+
+        var typeName = "Mundialito.DAL.DBCreators." + config.TournamentDBCreatorName;
+        var creatorType = typeof(ITournamentCreator).Assembly.GetType(typeName);
+        if (creatorType == null)
+        {
+            logger.LogError("Tournament creator type not found: {TypeName}", typeName);
+            return;
+        }
+
+        var tournamentCreator = Activator.CreateInstance(creatorType) as ITournamentCreator;
+        if (tournamentCreator == null)
+        {
+            logger.LogError("Failed to create tournament creator: {TypeName}", typeName);
+            return;
+        }
+
+        logger.LogInformation("Using tournament creator {Creator}", config.TournamentDBCreatorName);
+        SetupTeams(context, tournamentCreator);
+        SetupStadiums(context, tournamentCreator);
+        SetupPlayers(context, tournamentCreator);
+        SetupGames(context, tournamentCreator, config, userManager);
     }
 
     private static void CreateFirstUsers(Config config, UserManager<MundialitoUser> userManager, ILogger<DatabaseInitilaizer> logger)
