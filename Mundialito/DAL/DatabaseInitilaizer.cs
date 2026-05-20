@@ -33,6 +33,8 @@ public class DatabaseInitilaizer
                 CreateFirstUsers(config, userManager, logger);
             }
 
+            EnsureMonkeyUser(context, config, userManager, logger);
+
             if (context.Teams.Count() == 0)
             {
                 SeedTournamentData(context, config, userManager, logger);
@@ -89,20 +91,35 @@ public class DatabaseInitilaizer
             logger.LogInformation("Creating admin user {0}", user);
             userManager.CreateAsync(user, "123456").Wait();
         }
-        if (!string.IsNullOrEmpty(config.MonkeyUserName))
+    }
+
+    private static void EnsureMonkeyUser(
+        MundialitoDbContext context,
+        Config config,
+        UserManager<MundialitoUser> userManager,
+        ILogger<DatabaseInitilaizer> logger)
+    {
+        if (string.IsNullOrEmpty(config.MonkeyUserName))
         {
-            var monkey = new MundialitoUser
-            {
-                UserName = config.MonkeyUserName,
-                FirstName = "Monkey",
-                LastName = "Monk",
-                Email = "monkey@zoo.com",
-                Role = Role.Active,
-                ProfilePicture = "../../../icons/monkey.png"
-            };
-            logger.LogInformation("Creating user {0}", monkey);
-            userManager.CreateAsync(monkey, "monkey").Wait();
+            return;
         }
+
+        if (context.Users.Any(u => u.UserName == config.MonkeyUserName))
+        {
+            return;
+        }
+
+        var monkey = new MundialitoUser
+        {
+            UserName = config.MonkeyUserName,
+            FirstName = "Monkey",
+            LastName = "Monk",
+            Email = "monkey@zoo.com",
+            Role = Role.Active,
+            ProfilePicture = "../../../icons/monkey.png"
+        };
+        logger.LogInformation("Creating missing monkey user {UserName}", config.MonkeyUserName);
+        userManager.CreateAsync(monkey, "monkey").Wait();
     }
 
     private static void SetupPlayers(MundialitoDbContext context, ITournamentCreator tournamentCreator)
