@@ -2,6 +2,7 @@ using Mundialito.DAL.Accounts;
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.Games;
 using Mundialito.DAL.Teams;
+using Mundialito.Logic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -202,7 +203,7 @@ public class BetGame
         HomeTeam = new BetGameTeam(game.HomeTeam);
         AwayTeam = new BetGameTeam(game.AwayTeam);
         IsOpen = game.IsOpen();
-        Date = game.Date.ToLocalTime();
+        Date = GameDateTime.ToUtc(game.Date);
     }
     [JsonPropertyName("GameId")]
     public int GameId { get; set; }

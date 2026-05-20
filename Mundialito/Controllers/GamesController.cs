@@ -146,7 +146,7 @@ public class GamesController : ControllerBase
             HomeTeamId = game.HomeTeam.TeamId,
             AwayTeamId = game.AwayTeam.TeamId,
             StadiumId = game.Stadium.StadiumId,
-            Date = game.Date,
+            Date = GameDateTime.ToUtc(game.Date),
             IntegrationsData = game.IntegrationsData,
             Type = game.Type
         };
@@ -176,7 +176,7 @@ public class GamesController : ControllerBase
         item.HomeScore = game.HomeScore;
         item.CardsMark = game.CardsMark;
         item.CornersMark = game.CornersMark;
-        item.Date = game.Date;
+        item.Date = GameDateTime.ToUtc(game.Date);
         item.IntegrationsData = game.IntegrationsData;
         item.Type = game.Type;
         gamesRepository.Save();

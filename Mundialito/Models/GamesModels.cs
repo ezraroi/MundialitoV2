@@ -1,6 +1,7 @@
 using Mundialito.DAL.Games;
 using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
+using Mundialito.Logic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -14,7 +15,7 @@ public class GameViewModel
         HomeTeam = new GameTeamModel(game.HomeTeam);
         AwayTeam = new GameTeamModel(game.AwayTeam);
         Type = game.Type;
-        Date = game.Date.ToLocalTime();
+        Date = GameDateTime.ToUtc(game.Date);
         HomeScore = game.HomeScore;
         AwayScore = game.AwayScore;
         CornersMark = game.CornersMark;
