@@ -2,6 +2,7 @@ using Mundialito.DAL.Games;
 using Mundialito.DAL.Players;
 using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
+using Mundialito.Logic;
 
 namespace Mundialito.DAL.DBCreators;
 
@@ -192,9 +193,9 @@ public class Mundial2026 : ITournamentCreator
         };
     }
 
-    /// <summary>Kickoff in Israel local time (UTC+3). Values are pre-converted from the official FIFA schedule (US Eastern).</summary>
+    /// <summary>Israel local kickoff from FIFA schedule (US Eastern +7h), stored as UTC.</summary>
     private static DateTime IsraelKickoff(int year, int month, int day, int hour, int minute = 0) =>
-        new DateTime(year, month, day, hour, minute, 0);
+        GameDateTime.FromIsraelLocal(year, month, day, hour, minute);
 
     private static Game GroupGame(
         Dictionary<string, Team> teams,

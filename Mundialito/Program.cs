@@ -35,6 +35,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 builder.Services.AddControllers().AddJsonOptions(opt =>
 {
+	opt.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+	opt.JsonSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
 	opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 	opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });

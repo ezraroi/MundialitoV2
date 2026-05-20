@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Mundialito.Logic;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
@@ -57,6 +59,14 @@ public class MundialitoDbContext : IdentityDbContext<MundialitoUser>
 				.HasForeignKey(m => m.HomeTeamId)
 				.OnDelete(DeleteBehavior.NoAction)
 				.IsRequired();
+
+		var utcDateTimeConverter = new ValueConverter<DateTime, DateTime>(
+			v => GameDateTime.ToUtc(v),
+			v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+		modelBuilder.Entity<Game>()
+			.Property(g => g.Date)
+			.HasConversion(utcDateTimeConverter);
 
 		var dictionaryComparer = new ValueComparer<Dictionary<string, string>>(
 			(c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions)null),
