@@ -53,6 +53,7 @@
                     <a ng-show="game.GameStatsPage !== null" class="btn btn-default btn-sm" target="_blank"
                         ng-href="{{game.GameStatsPage}}"><i class="fa fa-bar-chart"></i> Head to Head</a>
                     <button type="button" class="btn btn-info btn-sm" data-access-level="Admin"
+                        ng-if="security.user && security.user.Roles === 'Admin'"
                         ng-click="goToAdminTab()">
                         <i class="fa fa-pencil-square"></i> Admin
                     </button>
@@ -435,7 +436,7 @@
 </div>
 <!-- End of Teams Last Games-->
 <!-- Simulate Game -->
-<div class="row" ng-if="game.IsPendingUpdate">
+<div class="row" ng-if="game.IsPendingUpdate && security.user && security.user.Roles === 'Admin'">
     <div class="col-md-12">
         <div class="panel panel-info" cg-busy="simulateGamePromise">
             <div class="panel-heading"><i class="fa fa-calculator"></i> Simulate Game</div>
@@ -522,7 +523,8 @@
                 </div>
             </uib-tab>
 
-            <uib-tab index="adminTabIndex" heading="Admin" ng-if="security.user.Roles === 'Admin'">
+            <uib-tab index="adminTabIndex" heading="Admin"
+                ng-if="security.user && security.user.Roles === 'Admin'">
                 <div class="mu-tab-pane">
 <div class="row" cg-busy="updateGamePromise">
     <div class="col-md-12">

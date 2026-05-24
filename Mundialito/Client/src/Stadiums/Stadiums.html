@@ -21,7 +21,9 @@
                                 </div>
                             </a>
                             <a href="" class="list-group-item mu-entity-row mu-entity-row--add"
-                                data-access-level="Admin" ng-click="addNewStadium()">
+                                data-access-level="Admin"
+                                ng-if="security.user && security.user.Roles === 'Admin'"
+                                ng-click="addNewStadium()">
                                 <i class="fa fa-plus-circle"></i> Add new stadium
                             </a>
                             <p class="mu-empty-state text-muted text-center" ng-if="stadiums.length === 0">
@@ -29,7 +31,8 @@
                             </p>
                         </div>
                     </div>
-                    <div class="col-md-1 col-xs-2 mu-entities-list__admin" data-access-level="Admin">
+                    <div class="col-md-1 col-xs-2 mu-entities-list__admin" data-access-level="Admin"
+                        ng-if="security.user && security.user.Roles === 'Admin'">
                         <div class="list-group mu-entities-list__admin-list">
                             <a href="" title="Delete stadium" ng-click="deleteStadium(stadium)"
                                 class="list-group-item mu-entities-list__delete"
@@ -45,7 +48,8 @@
         </div>
     </div>
 </div>
-<div class="row" data-access-level="Admin" ng-show="newStadium">
+<div class="row" data-access-level="Admin"
+    ng-if="security.user && security.user.Roles === 'Admin'" ng-show="newStadium">
     <div class="col-xs-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-plus"></i> Add new stadium</div>

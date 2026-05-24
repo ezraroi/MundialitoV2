@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', 'security', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players, security) {
     $scope.game = game;
     $scope.teamsDic = {};
     $scope.playersDic = {};
@@ -13,6 +13,16 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.showMoreTab = game.IsPendingUpdate;
     $scope.adminTabIndex = game.IsPendingUpdate ? 2 : 1;
 
+    function isAdminUser() {
+        return security.user && security.user.Roles === 'Admin';
+    }
+
+    function clampActiveTab() {
+        if (!isAdminUser() && $scope.gameActiveTab === $scope.adminTabIndex) {
+            $scope.gameActiveTab = 0;
+        }
+    }
+
     function updateShowMoreTab() {
         var hasOdds = $scope.plugins['odds'] && $scope.plugins['odds'].template;
         var homeTeamId = $scope.game.HomeTeam.TeamId;
@@ -24,11 +34,21 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         if (!$scope.showMoreTab && $scope.gameActiveTab === 1) {
             $scope.gameActiveTab = 0;
         }
+        clampActiveTab();
     }
 
     $scope.goToAdminTab = function () {
+        if (!isAdminUser()) {
+            return;
+        }
         $scope.gameActiveTab = $scope.adminTabIndex;
     };
+
+    $scope.$watch(function () {
+        return security.user && security.user.Roles;
+    }, function () {
+        clampActiveTab();
+    });
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };

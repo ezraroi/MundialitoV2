@@ -46,10 +46,33 @@
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    users: ['UsersManager', (UsersManager) => UsersManager.loadAllUsers()],
-                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
-                    generalBets: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
-                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
+                    ensureAdmin: ['security', '$location', '$q', '$rootScope', function (security, $location, $q, $rootScope) {
+                        function checkUser(user) {
+                            if (user && user.Roles === 'Admin') {
+                                return $q.resolve(user);
+                            }
+                            $location.path('/');
+                            return $q.reject('Not authorized');
+                        }
+                        if (security.user) {
+                            return checkUser(security.user);
+                        }
+                        return $q(function (resolve, reject) {
+                            var deregister = $rootScope.$watch(function () {
+                                return security.user;
+                            }, function (user) {
+                                if (!user) {
+                                    return;
+                                }
+                                deregister();
+                                checkUser(user).then(resolve, reject);
+                            });
+                        });
+                    }],
+                    users: ['UsersManager', 'ensureAdmin', (UsersManager) => UsersManager.loadAllUsers()],
+                    teams: ['TeamsManager', 'ensureAdmin', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    generalBets: ['GeneralBetsManager', 'ensureAdmin', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
+                    players: ['PlayersManager', 'ensureAdmin', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
             }).
             when('/teams', {

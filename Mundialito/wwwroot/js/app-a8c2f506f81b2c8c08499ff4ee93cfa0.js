@@ -46,10 +46,33 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    users: ['UsersManager', (UsersManager) => UsersManager.loadAllUsers()],
-                    teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
-                    generalBets: ['GeneralBetsManager', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
-                    players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
+                    ensureAdmin: ['security', '$location', '$q', '$rootScope', function (security, $location, $q, $rootScope) {
+                        function checkUser(user) {
+                            if (user && user.Roles === 'Admin') {
+                                return $q.resolve(user);
+                            }
+                            $location.path('/');
+                            return $q.reject('Not authorized');
+                        }
+                        if (security.user) {
+                            return checkUser(security.user);
+                        }
+                        return $q(function (resolve, reject) {
+                            var deregister = $rootScope.$watch(function () {
+                                return security.user;
+                            }, function (user) {
+                                if (!user) {
+                                    return;
+                                }
+                                deregister();
+                                checkUser(user).then(resolve, reject);
+                            });
+                        });
+                    }],
+                    users: ['UsersManager', 'ensureAdmin', (UsersManager) => UsersManager.loadAllUsers()],
+                    teams: ['TeamsManager', 'ensureAdmin', (TeamsManager) => TeamsManager.loadAllTeams()],
+                    generalBets: ['GeneralBetsManager', 'ensureAdmin', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
+                    players: ['PlayersManager', 'ensureAdmin', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
             }).
             when('/teams', {
@@ -926,7 +949,7 @@ angular.module('mundialitoApp').factory('Game', ['$http','$log', function($http,
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', 'security', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players, security) {
     $scope.game = game;
     $scope.teamsDic = {};
     $scope.playersDic = {};
@@ -940,6 +963,16 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.showMoreTab = game.IsPendingUpdate;
     $scope.adminTabIndex = game.IsPendingUpdate ? 2 : 1;
 
+    function isAdminUser() {
+        return security.user && security.user.Roles === 'Admin';
+    }
+
+    function clampActiveTab() {
+        if (!isAdminUser() && $scope.gameActiveTab === $scope.adminTabIndex) {
+            $scope.gameActiveTab = 0;
+        }
+    }
+
     function updateShowMoreTab() {
         var hasOdds = $scope.plugins['odds'] && $scope.plugins['odds'].template;
         var homeTeamId = $scope.game.HomeTeam.TeamId;
@@ -951,11 +984,21 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         if (!$scope.showMoreTab && $scope.gameActiveTab === 1) {
             $scope.gameActiveTab = 0;
         }
+        clampActiveTab();
     }
 
     $scope.goToAdminTab = function () {
+        if (!isAdminUser()) {
+            return;
+        }
         $scope.gameActiveTab = $scope.adminTabIndex;
     };
+
+    $scope.$watch(function () {
+        return security.user && security.user.Roles;
+    }, function () {
+        clampActiveTab();
+    });
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
@@ -1557,51 +1600,62 @@ angular.module('mundialitoApp').factory('MundialitoUtils', [ 'Constants', functi
     return Utils;
 }]);
 'use strict';
-angular.module('mundialitoApp').directive('accessLevel', ['$log','security', function ($log,Security) {
+angular.module('mundialitoApp').directive('accessLevel', ['$log', 'security', function ($log, Security) {
     return {
         restrict: 'A',
         link: function ($scope, element, attrs) {
             var prevDisp = element.css('display')
-                , userRole = ""
-                , accessLevel;
+                , userRole = ''
+                , accessLevel = attrs.accessLevel;
 
-            
+            if (accessLevel === 'Admin') {
+                element.css('display', 'none');
+                element.addClass('mu-access-denied');
+            }
+
             $scope.$watch(
-              function () {
-                  return Security.user;
-              },
-
-              function (newValue) {
-                  $scope.user = newValue;
-                  if (($scope.user === undefined) || ($scope.user === null)) {
-                      userRole = "Active"
-                  } else if ($scope.user.Roles) {
-                      //$log.debug('Security.user has been changed:' + $scope.user.Username);
-                      userRole = $scope.user.Roles;
-                  } else {
-                      userRole = "Active"
-                  }
-                  updateCSS();
-              },
-              true
+                function () {
+                    return Security.user;
+                },
+                function (newValue) {
+                    $scope.user = newValue;
+                    if (($scope.user === undefined) || ($scope.user === null)) {
+                        userRole = 'Active';
+                    } else if ($scope.user.Roles) {
+                        userRole = $scope.user.Roles;
+                    } else {
+                        userRole = 'Active';
+                    }
+                    updateCSS();
+                },
+                true
             );
-           
+
             attrs.$observe('accessLevel', function (al) {
-                if (al) accessLevel = al;
+                if (al) {
+                    accessLevel = al;
+                }
                 updateCSS();
             });
 
             function updateCSS() {
-                if (userRole && accessLevel) {
-                    if (userRole === accessLevel)
-                        element.css('display', prevDisp);
-                    else
-                        element.css('display', 'none');
+                if (!accessLevel) {
+                    return;
+                }
+                if (userRole === accessLevel) {
+                    element.removeClass('mu-access-denied');
+                    element.css('display', prevDisp);
+                } else {
+                    element.addClass('mu-access-denied');
+                    element.css('display', 'none');
                 }
             }
+
+            updateCSS();
         }
     };
 }]);
+
 'use strict';
 angular.module('mundialitoApp').directive('activeNav', ['$location', function ($location) {
     return {

@@ -1,3 +1,4 @@
+<div ng-if="security.user && security.user.Roles === 'Admin'">
 <!-- Users list -->
 <div class="row">
     <div class="col-md-12">
@@ -80,3 +81,11 @@
     </div>
 </div>
 <!-- End of General Bets -->
+</div>
+<div class="row" ng-if="security.user && security.user.Roles !== 'Admin'">
+    <div class="col-md-12">
+        <div class="alert alert-warning" role="alert">
+            <i class="fa fa-exclamation-triangle"></i> You don't have access to this page.
+        </div>
+    </div>
+</div>

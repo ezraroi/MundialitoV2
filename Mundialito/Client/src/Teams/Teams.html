@@ -19,7 +19,9 @@
                                 </div>
                             </a>
                             <a href="" class="list-group-item mu-entity-row mu-entity-row--add"
-                                data-access-level="Admin" ng-click="addNewTeam()">
+                                data-access-level="Admin"
+                                ng-if="security.user && security.user.Roles === 'Admin'"
+                                ng-click="addNewTeam()">
                                 <i class="fa fa-plus-circle"></i> Add new team
                             </a>
                             <p class="mu-empty-state text-muted text-center" ng-if="teams.length === 0">
@@ -27,7 +29,8 @@
                             </p>
                         </div>
                     </div>
-                    <div class="col-md-1 col-xs-2 mu-entities-list__admin" data-access-level="Admin">
+                    <div class="col-md-1 col-xs-2 mu-entities-list__admin" data-access-level="Admin"
+                        ng-if="security.user && security.user.Roles === 'Admin'">
                         <div class="list-group mu-entities-list__admin-list">
                             <a href="" title="Delete team" ng-click="deleteTeam(team)"
                                 class="list-group-item mu-entities-list__delete"
@@ -43,7 +46,8 @@
         </div>
     </div>
 </div>
-<div class="row" data-access-level="Admin" ng-show="newTeam">
+<div class="row" data-access-level="Admin"
+    ng-if="security.user && security.user.Roles === 'Admin'" ng-show="newTeam">
     <div class="col-xs-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-plus"></i> Add new team</div>
