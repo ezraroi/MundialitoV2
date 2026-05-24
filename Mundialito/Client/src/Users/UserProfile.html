@@ -19,7 +19,8 @@
         </div>
     </div>
 </div>
-<div class="row" data-access-level="Admin">
+<div class="row" data-access-level="Admin"
+    ng-if="security.user && security.user.Roles === 'Admin'">
     <dic class="col-md-12">
         <div class="panel panel-info" cg-busy="getSocialPromise">
             <div class="panel-heading"><i class="fa-solid fa-user-tie"></i> Admin Actions</div>

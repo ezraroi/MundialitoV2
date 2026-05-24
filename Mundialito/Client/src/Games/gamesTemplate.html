@@ -12,7 +12,8 @@
                 </div>
             </a>
             <a href="" class="list-group-item mu-game-row mu-game-row--add" data-access-level="Admin"
-                ng-click="onAdd()" ng-if="!showOnly">
+                ng-if="security.user && security.user.Roles === 'Admin'"
+                ng-click="onAdd()">
                 <i class="fa fa-plus-circle"></i> Add new game
             </a>
             <p class="mu-empty-state text-muted text-center" ng-if="games.length === 0">
@@ -20,7 +21,8 @@
             </p>
         </div>
     </div>
-    <div class="col-md-1 col-xs-2 mu-games-template__admin" data-access-level="Admin" ng-if="!showOnly">
+    <div class="col-md-1 col-xs-2 mu-games-template__admin" data-access-level="Admin"
+        ng-if="security.user && security.user.Roles === 'Admin'">
         <div class="list-group mu-games-template__admin-list">
             <a href="" title="Delete game" ng-click="deleteGame(game)"
                 class="list-group-item mu-games-template__delete"
@@ -28,7 +30,7 @@
                 <i class="fa fa-times-circle"></i>
             </a>
             <span class="list-group-item mu-games-template__delete mu-games-template__delete--spacer"
-                ng-if="!showOnly" aria-hidden="true"></span>
+                ng-if="security.user && security.user.Roles === 'Admin'" aria-hidden="true"></span>
         </div>
     </div>
 </div>

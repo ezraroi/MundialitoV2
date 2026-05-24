@@ -10,6 +10,7 @@
                     Capacity: {{ stadium.Capacity | number }}
                 </p>
                 <button type="button" class="btn btn-info btn-sm" data-access-level="Admin"
+                    ng-if="security.user && security.user.Roles === 'Admin'"
                     ng-click="showEditForm = !showEditForm">
                     <i class="fa fa-pencil-square"></i>
                     <span mundialito-toggle-text true-label="Hide edit" false-label="Edit stadium"
@@ -19,7 +20,8 @@
         </div>
     </div>
 </div>
-<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="editStadiumPromise">
+<div class="row" data-access-level="Admin"
+    ng-if="security.user && security.user.Roles === 'Admin'" ng-show="showEditForm" cg-busy="editStadiumPromise">
     <div class="col-xs-12">
         <div class="panel panel-info">
             <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit stadium</div>
