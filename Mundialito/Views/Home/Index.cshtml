@@ -60,21 +60,20 @@
                     </div>
                     <div ng-if="security.user" class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li active-nav><a href="/"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
+                            <li active-nav><a href="/" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
                             <li ng-show="security.user.Roles !== 'Disabled'" active-nav><a href="/bets_center"
-                                    class="hidden-xs"><i class="fa fa-money"></i> Bets
-                                    Center</a></li>
-                            <li active-nav><a href="/games"><i class="fa-solid fa-futbol"></i> Games</a></li>
-                            <li active-nav><a href="/teams"><i class="fa-solid fa-users"></i> Teams</a></li>
-                            <li active-nav><a href="/stadiums"><i class="fa-solid fa-home"></i> Stadiums</a></li>
+                                    data-toggle="collapse" data-target=".navbar-collapse"><i class="fa fa-money"></i> Bets Center</a></li>
+                            <li active-nav><a href="/games" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-futbol"></i> Games</a></li>
+                            <li active-nav><a href="/teams" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-users"></i> Teams</a></li>
+                            <li active-nav><a href="/stadiums" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-home"></i> Stadiums</a></li>
                             <li active-nav access-level="Admin" class="hidden-xs"><a href="/manage_users"><i
                                         class="fa-solid fa-tasks"></i> Admin Panel</a></li>
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                             <li uib-dropdown on-toggle="toggled(open)">
                                 <a href="#" uib-dropdown-toggle id="userDropdown">
-                                    <img referrerpolicy="no-referrer" ng-show="{{security.user.ProfilePicture != null}}" src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;">
-                                    <i class="fa fa-solid fa-user" ng-show="{{security.user.ProfilePicture == null}}"></i> {{security.user.Username}} <b class="caret"></b></a>
+                                    <img referrerpolicy="no-referrer" ng-show="security.user.ProfilePicture" ng-src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;" alt="">
+                                    <i class="fa-solid fa-user" ng-show="!security.user.ProfilePicture"></i> {{security.user.Username}} <b class="caret"></b></a>
                                 <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="userDropdown">
                                     <li><a href="/users/{{security.user.Username}}"><span
                                                 class="fa-solid fa-book"></span>
@@ -140,10 +139,10 @@
         <!-- End of Main Content -->
         @if (env.IsProduction())
         {
-            <script src="lib/lib-min-8fd68a161fad85c947f2f5028c677f7a.js"></script>
+            <script src="lib/lib-min-3cbf6acf2e20bb605c0df871cb6ab29a.js"></script>
         }
         else {
-            <script src="lib/lib-145b9201b74f007c81b8a051e0989f02.js"></script>
+            <script src="lib/lib-79b1a897e7539961e2feb9f19aa139ac.js"></script>
         }
         <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
         <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
@@ -155,10 +154,10 @@
         </script>
         @if (env.IsProduction())
         {
-            <script src="js/app-min-9a4e3f0c540d50908c4384ae9b29cce0.js"></script>
+            <script src="js/app-min-e0cc938ae15cc2391bd1a4de40e3b13a.js"></script>
         }
         else {
-            <script src="js/app-9adb6ca826a346fabfb40202c8d4845a.js"></script>
+            <script src="js/app-6b86bf38c8299ce23f6ce0212e6e7bfa.js"></script>
         }
     </div>
 </body>

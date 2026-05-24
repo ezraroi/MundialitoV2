@@ -1569,19 +1569,30 @@ angular.module('mundialitoApp').directive('activeNav', ['$location', function ($
         restrict: 'A',
         link: function (scope, element) {
             var nestedA = element.find('a')[0];
-            var path = nestedA.href;
+            var linkPath = nestedA.pathname.replace(/\/$/, '') || '/';
 
-            scope.location = $location;
-            scope.$watch('location.absUrl()', function (newPath) {
-                if (path === newPath) {
+            function isActive(currentPath) {
+                var current = currentPath.replace(/\/$/, '') || '/';
+                if (linkPath === '/') {
+                    return current === '/';
+                }
+                return current === linkPath || current.indexOf(linkPath + '/') === 0;
+            }
+
+            function updateActive() {
+                if (isActive($location.path())) {
                     element.addClass('active');
                 } else {
                     element.removeClass('active');
                 }
-            });
+            }
+
+            updateActive();
+            scope.$on('$locationChangeSuccess', updateActive);
         }
     };
 }]);
+
 'use strict';
 angular.module('mundialitoApp').directive('confirmPassword', [function () {
     return {

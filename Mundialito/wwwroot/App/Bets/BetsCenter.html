@@ -1,61 +1,110 @@
 <div class="row">
-    <div class="col-md-12">
-        <form name="betsForm" novalidate>
-                    <div class="table-responsive">
-                        <table class="table table-striped" cg-busy="getUserBetsPromise">
+    <div class="col-xs-12">
+        <div class="panel panel-info mu-panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-money"></i> Bets Center
+                <span class="pull-right badge" ng-if="games">{{games.length}}</span>
+            </div>
+            <div class="panel-body" cg-busy="getUserBetsPromise">
+                <p class="text-muted mu-bets-center-hint">
+                    <i class="fa fa-info-circle"></i> Open games only — place or update all your bets here.
+                </p>
+                <p class="mu-empty-state text-muted text-center" ng-if="games && games.length === 0">
+                    <i class="fa fa-info-circle"></i> No open games for betting right now.
+                </p>
+                <div class="table-responsive mu-bets-center-table" ng-if="games.length > 0">
+                    <form name="betsForm" novalidate>
+                        <table class="table table-striped mu-bets-center-table__grid">
                             <thead>
-                                <th class="col-md-2 text-center">Game</th>
-                                <th class="col-md-2 text-center">Home Score</th>
-                                <th class="col-md-2 text-center">Away Score</th>
-                                <th class="col-md-1 text-center"><i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i> Cards</th>
-                                <th class="col-md-1 text-center"><i class="fa fa-flag" tooltip="Corners Mark"></i> Corners</th>
-                                <th class="col-md-2 text-center"><i class="fa fa-clock-o" tooltip="Close Time"></i></th>
-                                <th class="col-md-1 text-center">Shuffle</th>
-								<th class="col-md-1 text-center">Save</th>
-							</thead>
+                                <tr>
+                                    <th class="text-center mu-bets-center-table__game">Game</th>
+                                    <th class="text-center">Home</th>
+                                    <th class="text-center">Away</th>
+                                    <th class="text-center">
+                                        <i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i>
+                                        <span class="hidden-xs"> Cards</span>
+                                    </th>
+                                    <th class="text-center">
+                                        <i class="fa fa-flag" tooltip="Corners Mark"></i>
+                                        <span class="hidden-xs"> Corners</span>
+                                    </th>
+                                    <th class="text-center">
+                                        <i class="fa fa-clock" tooltip="Close Time"></i>
+                                        <span class="hidden-xs"> Closes</span>
+                                    </th>
+                                    <th class="text-center">
+                                        <span class="sr-only">Shuffle</span>
+                                        <i class="fa fa-random" tooltip="Shuffle"></i>
+                                    </th>
+                                    <th class="text-center">
+                                        <span class="sr-only">Save</span>
+                                        <i class="fa fa-save" tooltip="Save"></i>
+                                    </th>
+                                </tr>
+                            </thead>
                             <tbody>
-                            <tr ng-repeat="game in games">
-                                <ng-form name="betFromIn">
-                                    <td class="text-center">
-                                        <a href="{{game.getUrl()}}">
-                                            <team-flag team="game.HomeTeam"></team-flag>
-                                            {{game.HomeTeam.ShortName}}
-                                            <team-flag team="game.AwayTeam"></team-flag>
-                                            {{game.AwayTeam.ShortName}}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" name="homeScore" id="homeScore" type="number" ng-model="bets[game.GameId].HomeScore" placeholder="{{game.HomeTeam.Name}}" required min="0">
-                                    </td>
-                                    <td>
-                                        <input class="form-control" name="awayScore" id="awayScore" type="number" ng-model="bets[game.GameId].AwayScore" placeholder="{{game.AwayTeam.Name}}" required min="0">
-                                    </td>
-                                    <td>
-                                        <select id="cards" name="cards" ui-select2="{allowClear: false}" class="form-control" ng-model="bets[game.GameId].CardsMark" required>
-                                            <option value="1">{{game.HomeTeam.ShortName}}</option>
-                                            <option value="X">X</option>
-                                            <option value="2">{{game.AwayTeam.ShortName}}</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <select id="corners" name="corners" ui-select2="{allowClear: false}" class="form-control" ng-model="bets[game.GameId].CornersMark" required>
-                                            <option value="1">{{game.HomeTeam.ShortName}}</option>
-                                            <option value="X">X</option>
-                                            <option value="2">{{game.AwayTeam.ShortName}}</option>
-                                        </select>
-                                    </td>
-                                    <td class="text-center">{{game.CloseTime | date:'dd/MM/yy @ H:mm' }}</td>
-									<td class="text-center">
-                                        <button type="button" class="btn btn-info btn-sm" ng-click="shuffleBet(game.GameId)"><i class="fa fa-random"></i></button>
-                                    </td>
-                                    <td class="text-center">
-                                        <button type="button" ng-disabled="betFromIn.$invalid" class="btn btn-success btn-sm" ng-click="updateBet(game.GameId)"><i class="fa fa-save"></i></button>
-                                    </td>
-                                </ng-form>
-                            </tr>
+                                <tr ng-repeat="game in games"
+                                    ng-class="{'warning': bets[game.GameId].BetId === -1}">
+                                    <ng-form name="betFromIn">
+                                        <td class="text-center mu-bets-center-table__game">
+                                            <a href="{{game.getUrl()}}">
+                                                <team-flag team="game.HomeTeam"></team-flag>
+                                                {{game.HomeTeam.ShortName}}
+                                                <team-flag team="game.AwayTeam"></team-flag>
+                                                {{game.AwayTeam.ShortName}}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <input class="form-control" name="homeScore" type="number"
+                                                ng-model="bets[game.GameId].HomeScore"
+                                                placeholder="{{game.HomeTeam.Name}}" required min="0"
+                                                inputmode="numeric">
+                                        </td>
+                                        <td>
+                                            <input class="form-control" name="awayScore" type="number"
+                                                ng-model="bets[game.GameId].AwayScore"
+                                                placeholder="{{game.AwayTeam.Name}}" required min="0"
+                                                inputmode="numeric">
+                                        </td>
+                                        <td>
+                                            <select name="cards" ui-select2="{allowClear: false}"
+                                                class="form-control" ng-model="bets[game.GameId].CardsMark" required>
+                                                <option value="1">{{game.HomeTeam.ShortName}}</option>
+                                                <option value="X">X</option>
+                                                <option value="2">{{game.AwayTeam.ShortName}}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="corners" ui-select2="{allowClear: false}"
+                                                class="form-control" ng-model="bets[game.GameId].CornersMark" required>
+                                                <option value="1">{{game.HomeTeam.ShortName}}</option>
+                                                <option value="X">X</option>
+                                                <option value="2">{{game.AwayTeam.ShortName}}</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center mu-bets-center-table__close">
+                                            {{game.CloseTime | date:'dd/MM/yy @ H:mm' }}
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-info btn-sm mu-bets-center-table__action"
+                                                ng-click="shuffleBet(game.GameId)" title="Shuffle">
+                                                <i class="fa fa-random"></i>
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" ng-disabled="betFromIn.$invalid"
+                                                class="btn btn-success btn-sm mu-bets-center-table__action"
+                                                ng-click="updateBet(game.GameId)" title="Save">
+                                                <i class="fa fa-save"></i>
+                                            </button>
+                                        </td>
+                                    </ng-form>
+                                </tr>
                             </tbody>
                         </table>
-                    </div>
-                </form>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

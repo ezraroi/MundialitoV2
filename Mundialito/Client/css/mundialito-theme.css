@@ -1099,3 +1099,129 @@
 .mundialito-ui .mu-bets-highlights .panel-body.collapse.in {
   display: block;
 }
+
+/* --- Phase 2: Bets Center --- */
+
+.mundialito-ui .mu-bets-center-hint {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-bets-center-table {
+  margin-bottom: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mundialito-ui .mu-bets-center-table__grid {
+  min-width: 720px;
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-bets-center-table__game {
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.mundialito-ui .mu-bets-center-table__close {
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.mundialito-ui .mu-bets-center-table__action {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+.mundialito-ui .mu-bets-center-table tbody tr.warning > td {
+  background-color: #fcf8e3;
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui .mu-bets-center-table__grid {
+    min-width: 640px;
+  }
+
+  .mundialito-ui .mu-bets-center-table__game {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--mu-bg-card, #fff);
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
+  }
+
+  .mundialito-ui .mu-bets-center-table tbody tr.warning .mu-bets-center-table__game {
+    background-color: #fcf8e3;
+  }
+}
+
+/* --- Phase 2: Navbar --- */
+
+.mundialito-ui .navbar-toggle {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+}
+
+.mundialito-ui .navbar-nav > li > a {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui .navbar-collapse.in .navbar-nav > li > a {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 15px;
+  }
+}
+
+.mundialito-ui .navbar-brand {
+  font-weight: 700;
+}
+
+.mundialito-ui .navbar-nav > li.active > a,
+.mundialito-ui .navbar-nav > li.active > a:hover,
+.mundialito-ui .navbar-nav > li.active > a:focus {
+  font-weight: 600;
+}
+
+/* --- Phase 2: Loading (global + cg-busy) --- */
+
+.mundialito-ui .loading {
+  padding: 48px 16px;
+}
+
+.mundialito-ui .loading h3 {
+  margin-top: 16px;
+}
+
+.mundialito-ui .loading .fa-spinner {
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .cg-busy-default-sign {
+  background: var(--mu-bg-card, #fff);
+  border: 1px solid var(--mu-border);
+  border-radius: var(--mu-radius);
+  box-shadow: var(--mu-shadow);
+  padding: 20px 28px;
+  min-width: 140px;
+}
+
+.mundialito-ui .cg-busy-default-text {
+  color: var(--mu-text-muted);
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.mundialito-ui .cg-busy-default-spinner .fa-spinner {
+  font-size: 28px;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .datetimepicker .fa-chevron-left,
+.mundialito-ui .datetimepicker .fa-chevron-right {
+  font-size: 12px;
+}
