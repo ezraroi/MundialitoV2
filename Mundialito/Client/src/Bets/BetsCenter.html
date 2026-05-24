@@ -12,7 +12,9 @@
                 <p class="mu-empty-state text-muted text-center" ng-if="games && games.length === 0">
                     <i class="fa fa-info-circle"></i> No open games for betting right now.
                 </p>
-                <div class="table-responsive mu-bets-center-table" ng-if="games.length > 0">
+
+                <!-- Desktop: table -->
+                <div class="table-responsive mu-bets-center-table hidden-xs" ng-if="games.length > 0">
                     <form name="betsForm" novalidate>
                         <table class="table table-striped mu-bets-center-table__grid">
                             <thead>
@@ -22,15 +24,15 @@
                                     <th class="text-center">Away</th>
                                     <th class="text-center">
                                         <i class="fa fa-stop" style="color: #ffff00" tooltip="Yellow Cards Mark"></i>
-                                        <span class="hidden-xs"> Cards</span>
+                                        Cards
                                     </th>
                                     <th class="text-center">
                                         <i class="fa fa-flag" tooltip="Corners Mark"></i>
-                                        <span class="hidden-xs"> Corners</span>
+                                        Corners
                                     </th>
                                     <th class="text-center">
                                         <i class="fa fa-clock" tooltip="Close Time"></i>
-                                        <span class="hidden-xs"> Closes</span>
+                                        Closes
                                     </th>
                                     <th class="text-center">
                                         <span class="sr-only">Shuffle</span>
@@ -103,6 +105,78 @@
                             </tbody>
                         </table>
                     </form>
+                </div>
+
+                <!-- Mobile: one card per game -->
+                <div class="visible-xs-block mu-bets-center-cards" ng-if="games.length > 0">
+                    <div class="panel mu-bets-center-card"
+                        ng-class="{'panel-warning': bets[game.GameId].BetId === -1, 'panel-default': bets[game.GameId].BetId !== -1}"
+                        ng-repeat="game in games">
+                        <div class="panel-heading mu-bets-center-card__heading">
+                            <a href="{{game.getUrl()}}" class="mu-bets-center-card__match">
+                                <team-flag team="game.HomeTeam"></team-flag>
+                                {{game.HomeTeam.ShortName}}
+                                <span class="text-muted">vs</span>
+                                <team-flag team="game.AwayTeam"></team-flag>
+                                {{game.AwayTeam.ShortName}}
+                            </a>
+                            <div class="mu-bets-center-card__close text-muted">
+                                <i class="fa fa-clock"></i>
+                                {{game.CloseTime | date:'dd MMM, HH:mm'}}
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <ng-form name="betFromMobile" class="mu-bet-form" novalidate>
+                                <div class="mu-bet-form__scores">
+                                    <div class="form-group">
+                                        <label class="sr-only">{{game.HomeTeam.Name}} score</label>
+                                        <input class="form-control" name="homeScoreMobile" type="number"
+                                            ng-model="bets[game.GameId].HomeScore"
+                                            placeholder="{{game.HomeTeam.ShortName}}" required min="0"
+                                            inputmode="numeric">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="sr-only">{{game.AwayTeam.Name}} score</label>
+                                        <input class="form-control" name="awayScoreMobile" type="number"
+                                            ng-model="bets[game.GameId].AwayScore"
+                                            placeholder="{{game.AwayTeam.ShortName}}" required min="0"
+                                            inputmode="numeric">
+                                    </div>
+                                </div>
+                                <div class="mu-bet-form__marks">
+                                    <div class="form-group">
+                                        <label>Yellow cards</label>
+                                        <select name="cardsMobile" ui-select2="{allowClear: false}"
+                                            class="form-control" ng-model="bets[game.GameId].CardsMark" required>
+                                            <option value="1">{{game.HomeTeam.ShortName}}</option>
+                                            <option value="X">Draw (X)</option>
+                                            <option value="2">{{game.AwayTeam.ShortName}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Corners</label>
+                                        <select name="cornersMobile" ui-select2="{allowClear: false}"
+                                            class="form-control" ng-model="bets[game.GameId].CornersMark" required>
+                                            <option value="1">{{game.HomeTeam.ShortName}}</option>
+                                            <option value="X">Draw (X)</option>
+                                            <option value="2">{{game.AwayTeam.ShortName}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mu-bets-center-card__actions">
+                                    <button type="button" class="btn btn-info btn-block"
+                                        ng-click="shuffleBet(game.GameId)">
+                                        <i class="fa fa-random"></i> Shuffle
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-block"
+                                        ng-disabled="betFromMobile.$invalid"
+                                        ng-click="updateBet(game.GameId)">
+                                        <i class="fa fa-save"></i> Save bet
+                                    </button>
+                                </div>
+                            </ng-form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

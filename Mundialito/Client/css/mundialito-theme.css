@@ -1137,22 +1137,49 @@
   background-color: #fcf8e3;
 }
 
-@media (max-width: 767px) {
-  .mundialito-ui .mu-bets-center-table__grid {
-    min-width: 640px;
-  }
+/* Mobile: card per game */
+.mundialito-ui .mu-bets-center-cards {
+  margin-top: 4px;
+}
 
-  .mundialito-ui .mu-bets-center-table__game {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    background: var(--mu-bg-card, #fff);
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
-  }
+.mundialito-ui .mu-bets-center-card {
+  margin-bottom: 12px;
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
 
-  .mundialito-ui .mu-bets-center-table tbody tr.warning .mu-bets-center-table__game {
-    background-color: #fcf8e3;
-  }
+.mundialito-ui .mu-bets-center-card__heading {
+  padding: 10px 12px;
+}
+
+.mundialito-ui .mu-bets-center-card__match {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mundialito-ui .mu-bets-center-card__match:hover,
+.mundialito-ui .mu-bets-center-card__match:focus {
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-bets-center-card__close {
+  font-size: 12px;
+}
+
+.mundialito-ui .mu-bets-center-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mundialito-ui .mu-bets-center-card.panel-warning > .panel-heading {
+  background-color: #fcf8e3;
+  border-color: #faebcc;
 }
 
 /* --- Phase 2: Navbar --- */
