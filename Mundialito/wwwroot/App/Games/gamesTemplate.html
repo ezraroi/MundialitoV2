@@ -1,46 +1,34 @@
-<div class="row">
-    <!-- Normal Panel -->
-    <div ng-class="{'col-md-11 col-xs-10': !showOnly, 'col-md-12 col-xs-12': showOnly}">
+<div class="row mu-games-template">
+    <div ng-class="{'col-md-11 col-xs-10': !showOnly, 'col-xs-12': showOnly}">
         <div class="list-group">
-            <a href="{{game.getUrl()}}" class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}" ng-repeat="game in games track by game.GameId" title="At {{game.Stadium.Name}} Stadium">
-                <div class="row">
-                    <div class="col-md-3 col-xs-2">
-                        <team-flag team="game.HomeTeam"></team-flag>
-                        <span class="hidden-xs">{{game.HomeTeam.Name}}</span>
-                    </div>
-                    <div class="col-md-3 col-xs-8">
-                        <div ng-if="game.IsPendingUpdate" class="text-center">
-                            <span class="label label-info"><i class="fa fa-clock"></i> Pending Update</span>
-                        </div>
-                        <div ng-if="!game.IsOpen && !game.IsPendingUpdate" class="text-center">
-                            {{::game.HomeScore}} - {{::game.AwayScore}} (<i class="fa fa-stop" style="color: #ffff00;"></i> {{::game.CardsMark}}</span>,<i class="fa fa-flag"></i> {{::game.CornersMark}}</span>)
-                        </div>
-                        <div ng-if="game.IsOpen" class="text-center">-</div>
-                    </div>
-                    <div class="col-md-3 col-xs-2">
-                        <team-flag team="game.AwayTeam"></team-flag>
-                        <span class="hidden-xs">{{::game.AwayTeam.Name}}</span>
-                    </div>
-                    <div class="col-md-3 hidden-xs">
-                        <span class="pull-right">
-                            {{::game.Date | date:'dd/MM/yy @ H:mm' }}
-                        </span>
-                    </div>
+            <a href="{{game.getUrl()}}" class="list-group-item mu-game-row"
+                ng-class="{'list-group-item-warning': !game.UserHasBet}"
+                ng-repeat="game in games track by game.GameId"
+                title="At {{game.Stadium.Name}}"
+                ng-init="gameRowMode='auto'">
+                <div class="mu-game-row__stack">
+                    <div ng-include="'App/Partials/game-list-item-inner.html'"></div>
+                    <span class="mu-game-row__meta">{{::game.Date | date:'dd MMM yyyy, HH:mm'}}</span>
                 </div>
             </a>
-            <a href="" class="list-group-item" data-access-level="Admin" ng-click="onAdd()" ng-if="!showOnly">
-                <i class="fa fa-plus-circle"></i> Add New Game
+            <a href="" class="list-group-item mu-game-row mu-game-row--add" data-access-level="Admin"
+                ng-click="onAdd()" ng-if="!showOnly">
+                <i class="fa fa-plus-circle"></i> Add new game
             </a>
+            <p class="mu-empty-state text-muted text-center" ng-if="games.length === 0">
+                <i class="fa fa-info-circle"></i> No games to show.
+            </p>
         </div>
     </div>
-    <!-- End of Normal Panel -->
-    <!-- Admin Panel-->
-    <div class="col-md-1 col-xs-2" data-access-level="Admin" ng-if="!showOnly">
-        <div class="list-group">
-            <a href="" title="Delete Game" ng-click="deleteGame(game)" class="list-group-item text-center" ng-repeat="game in games track by game.GameId">
-                <i class="fa fa-times-circle admin-remove"></i>
+    <div class="col-md-1 col-xs-2 mu-games-template__admin" data-access-level="Admin" ng-if="!showOnly">
+        <div class="list-group mu-games-template__admin-list">
+            <a href="" title="Delete game" ng-click="deleteGame(game)"
+                class="list-group-item mu-games-template__delete"
+                ng-repeat="game in games track by game.GameId">
+                <i class="fa fa-times-circle"></i>
             </a>
+            <span class="list-group-item mu-games-template__delete mu-games-template__delete--spacer"
+                ng-if="!showOnly" aria-hidden="true"></span>
         </div>
     </div>
-    <!-- End of Admin Panel-->
 </div>

@@ -382,7 +382,7 @@
                 </div>
             </uib-tab>
 
-            <uib-tab index="1" heading="More">
+            <uib-tab index="1" heading="More" ng-if="showMoreTab">
                 <div class="mu-tab-pane">
 <div ng-if="plugins['odds'] && plugins['odds'].template">
     <div ng-include="plugins['odds'].template"></div>
@@ -522,7 +522,7 @@
                 </div>
             </uib-tab>
 
-            <uib-tab index="2" heading="Admin" ng-if="security.user.Roles === 'Admin'">
+            <uib-tab index="adminTabIndex" heading="Admin" ng-if="security.user.Roles === 'Admin'">
                 <div class="mu-tab-pane">
 <div class="row" cg-busy="updateGamePromise">
     <div class="col-md-12">

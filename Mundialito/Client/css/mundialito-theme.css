@@ -503,6 +503,114 @@
   font-weight: 600;
 }
 
+.mundialito-ui .mu-game-row__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mundialito-ui .mu-game-row__meta {
+  font-size: 11px;
+  color: var(--mu-text-muted);
+  text-align: center;
+}
+
+.mundialito-ui .mu-game-row__status {
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.mundialito-ui .mu-game-row__result {
+  display: block;
+  line-height: 1.3;
+}
+
+.mundialito-ui .mu-game-row__marks {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--mu-text-muted);
+  margin-top: 2px;
+}
+
+.mundialito-ui .mu-game-row--add {
+  text-align: center;
+  font-weight: 600;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-game-row--add:hover,
+.mundialito-ui .mu-game-row--add:focus {
+  color: var(--mu-primary-dark);
+}
+
+/* --- D4: Games list (gamesTemplate) --- */
+
+.mundialito-ui .mu-games-template__admin-list .list-group-item {
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui .mu-games-template__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68px;
+  padding: 12px 8px;
+  color: var(--mu-danger, #d9534f);
+  text-decoration: none;
+}
+
+.mundialito-ui .mu-games-template__delete:hover,
+.mundialito-ui .mu-games-template__delete:focus {
+  background: #fdf0f0;
+  color: #c9302c;
+}
+
+.mundialito-ui .mu-games-template__delete--spacer {
+  visibility: hidden;
+  pointer-events: none;
+  min-height: 44px;
+}
+
+.mundialito-ui .mu-games-filter {
+  margin-left: 8px;
+}
+
+.mundialito-ui .mu-games-filter--mobile {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .mundialito-ui .mu-game-row__stack {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mundialito-ui .mu-game-row__stack .mu-game-row__inner {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .mundialito-ui .mu-game-row__meta {
+    flex: 0 0 auto;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .mundialito-ui .mu-game-row__marks {
+    display: inline;
+    margin-top: 0;
+    margin-left: 4px;
+  }
+
+  .mundialito-ui .mu-game-row__result {
+    display: inline;
+  }
+}
+
 @media (max-width: 767px) {
   .mundialito-ui section#body {
     padding-top: 16px;
