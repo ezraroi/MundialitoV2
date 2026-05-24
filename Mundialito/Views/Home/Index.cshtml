@@ -137,26 +137,29 @@
             </div>
             <!-- End of Content Loading message -->
         </div>
-        <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
-        <!-- If you include the integration it will be available under Sentry.Integrations.Angular -->
-        <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
         <!-- End of Main Content -->
         @if (env.IsProduction())
         {
             <script src="lib/lib-min-8fd68a161fad85c947f2f5028c677f7a.js"></script>
-            <script src="js/app-min-c5fa64cf5d492a8bfd3d5f8a45ca67d5.js"></script>
         }
         else {
             <script src="lib/lib-145b9201b74f007c81b8a051e0989f02.js"></script>
-            <script src="js/app-f19819dfee43f85b5ff9235f0500f384.js"></script>
         }
-         
-<script>
-  Sentry.init({
-    dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
-    integrations: [new Sentry.Integrations.Angular()],
-  });
-</script>
+        <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
+        <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
+        <script>
+          Sentry.init({
+            dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
+            integrations: [new Sentry.Integrations.Angular()],
+          });
+        </script>
+        @if (env.IsProduction())
+        {
+            <script src="js/app-min-f7eec2a358ada7098279817fe6cc7bb9.js"></script>
+        }
+        else {
+            <script src="js/app-bd3ea4e034934580bf3666d9741518ae.js"></script>
+        }
     </div>
 </body>
 

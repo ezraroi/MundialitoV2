@@ -706,3 +706,157 @@
     font-size: 36px;
   }
 }
+
+/* --- D3: Dashboard hierarchy --- */
+
+.mundialito-ui .mu-empty-state {
+  margin: 16px 8px;
+  font-size: 14px;
+}
+
+.mundialito-ui .mu-ranking-list .media {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--mu-border);
+  margin-top: 0;
+}
+
+.mundialito-ui .mu-ranking-list .media:last-child {
+  border-bottom: none;
+}
+
+.mundialito-ui .mu-ranking-avatar {
+  width: 48px;
+  height: 48px;
+}
+
+@media (min-width: 768px) {
+  .mundialito-ui .mu-ranking-avatar {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.mundialito-ui .mu-ranking-meta {
+  font-size: 13px;
+  color: var(--mu-text-muted);
+}
+
+.mundialito-ui .mu-ranking-meta-sep {
+  margin: 0 6px;
+}
+
+.mundialito-ui .mu-pending-hint {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-pending-toggle {
+  margin: 10px 0;
+}
+
+.mundialito-ui .mu-accordion-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.mundialito-ui .mu-accordion-heading-icon {
+  flex: 0 0 32px;
+  text-align: center;
+}
+
+.mundialito-ui .mu-accordion-heading-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mundialito-ui .mu-progress-label {
+  color: #fff;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.mundialito-ui .panel.mu-panel-more {
+  border-style: dashed;
+  border-color: var(--mu-border-strong);
+  box-shadow: none;
+}
+
+.mundialito-ui .panel.mu-panel-more > .panel-body {
+  background: transparent;
+}
+
+.mundialito-ui .mu-more-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 16px 0 10px;
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-player-search {
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-players-list {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+/* --- G3: Game page tabs --- */
+
+.mundialito-ui .mu-game-tabs {
+  margin-bottom: 16px;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 2px solid var(--mu-border);
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs > li {
+  float: none;
+  flex: 1 0 auto;
+  text-align: center;
+  min-width: 72px;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs > li > a {
+  margin-right: 0;
+  border-radius: var(--mu-radius-sm) var(--mu-radius-sm) 0 0;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs > li.active > a,
+.mundialito-ui .mu-game-tabs > .nav-tabs > li.active > a:hover,
+.mundialito-ui .mu-game-tabs > .nav-tabs > li.active > a:focus {
+  background: var(--mu-bg-card);
+  border-color: var(--mu-border) var(--mu-border) transparent;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-tab-pane {
+  padding-top: 12px;
+}
+
+.mundialito-ui .mu-tab-hint {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-game-tabs .tab-content {
+  background: var(--mu-bg-card);
+  border: 1px solid var(--mu-border);
+  border-top: none;
+  border-radius: 0 0 var(--mu-radius) var(--mu-radius);
+  padding: 4px 8px 12px;
+}

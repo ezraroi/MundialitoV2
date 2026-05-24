@@ -53,17 +53,23 @@
                     <a ng-show="game.GameStatsPage !== null" class="btn btn-default btn-sm" target="_blank"
                         ng-href="{{game.GameStatsPage}}"><i class="fa fa-bar-chart"></i> Head to Head</a>
                     <button type="button" class="btn btn-info btn-sm" data-access-level="Admin"
-                        ng-click="showEditForm = !showEditForm">
-                        <i class="fa fa-pencil-square"></i>
-                        <span mundialito-toggle-text true-label="Hide" false-label="Edit" varieble="showEditForm"></span>
+                        ng-click="goToAdminTab()">
+                        <i class="fa fa-pencil-square"></i> Admin
                     </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- Your Bet (mobile: directly under header) -->
-<div class="row" ng-show="security.user.Roles !== 'Disabled'">
+<!-- Game sections (tabs) -->
+<div class="row">
+    <div class="col-xs-12">
+        <uib-tabset active="gameActiveTab" class="mu-game-tabs" justified="true">
+
+            <uib-tab index="0" heading="Bet" ng-if="security.user.Roles !== 'Disabled'">
+                <div class="mu-tab-pane">
+<!-- Your Bet -->
+<div class="row">
     <div class="col-xs-12">
         <div ng-class="{ 'panel-default': !userBet.IsMaxPoints, 'panel-success': userBet.IsMaxPoints, 'panel-danger': userBet.IsResolved && userBet.Points == 0, 'mu-panel-bet': game.IsOpen }"
             class="panel">
@@ -156,162 +162,14 @@
         </div>
     </div>
 </div>
-<!-- Bets chart when game is closed -->
-<div class="row" ng-if="!game.IsOpen">
-    <div class="col-xs-12">
-        <div class="panel panel-default mu-chart-panel">
-            <div class="panel-heading"><i class="fa fa-pie-chart"></i> Bets distribution</div>
-            <div class="panel-body">
-                <div google-chart chart="chart"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Edit Panel -->
-<div class="row" data-access-level="Admin" ng-show="showEditForm" cg-busy="updateGamePromise">
-    <div class="col-md-12">
-        <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit Game Details</div>
-            <div class="panel-body">
-                <form role="form" name="editGameForm" class="form-horizontal" novalidate>
-                    <div class="form-group" ng-if="!game.IsOpen">
-                        <label class="col-md-3 control-label" for="GameHomeScore">
-                            <team-flag team="game.HomeTeam"></team-flag>
-                            {{game.HomeTeam.Name}} Score
-                        </label>
-                        <div class="col-md-2">
-                            <input id="GameHomeScore" name="GameHomeScore" type="number" ng-model="game.HomeScore"
-                                class="form-control" placeholder="{{game.HomeTeam.Name}} Score" required min="0">
-                        </div>
-                    </div>
-                    <div class="form-group" ng-if="!game.IsOpen">
-                        <label class="col-md-3 control-label" for="GameAwayScore">
-                            <team-flag team="game.AwayTeam"></team-flag>
-                            {{game.AwayTeam.Name}} Score
-                        </label>
-                        <div class="col-md-2">
-                            <input id="GameAwayScore" name="GameAwayScore" type="number" ng-model="game.AwayScore"
-                                class="form-control" placeholder="{{game.AwayTeam.Name}} Score" required min="0">
-                        </div>
-                    </div>
-                    <div class="form-group" ng-if="!game.IsOpen">
-                        <label class="col-md-3 control-label" for="game_cards">Yellow Cards</label>
-                        <div class="col-md-2">
-                            <select id="game_cards" name="game_cards" ui-select2="{allowClear: false}"
-                                class="form-control" ng-model="game.CardsMark" required placeholder="Game Cards Mark">
-                                <option value="1">{{game.HomeTeam.Name}}</option>
-                                <option value="X">X</option>
-                                <option value="2">{{game.AwayTeam.Name}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-if="!game.IsOpen">
-                        <label class="col-md-3 control-label" for="game_corners">Corners</label>
-                        <div class="col-md-2">
-                            <select id="game_corners" name="game_corners" ui-select2="{allowClear: false}"
-                                class="form-control" ng-model="game.CornersMark" required
-                                placeholder="Game Corners Mark">
-                                <option value="1">{{game.HomeTeam.Name}}</option>
-                                <option value="X">X</option>
-                                <option value="2">{{game.AwayTeam.Name}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-if="game.IsOpen">
-                        <label class="col-md-3 control-label" for="game_type">Type</label>
-                        <div class="col-md-2">
-                            <select id="game_type" name="game_type" ui-select2="{allowClear: false}"
-                                class="form-control" ng-model="game.Type" required placeholder="Game Type">
-                                <option value="Groups">Groups Stage</option>
-                                <option value="Knockouts">Knockouts Stage</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group select" ng-if="game.IsOpen">
-                        <div class="dropdown dropdown1-parent">
-                            <label class="col-md-3 control-label" for="Date">Date & Time</label>
-                            <a class="dropdown-toggle" id="datedropdown" role="button" data-toggle="dropdown"
-                                data-target=".dropdown1-parent" href="#">
-                                <div class="input-group">
-                                    <input type="text" id="Date" class="form-control" data-ng-model="game.Date"
-                                        required>
-                                    <span class="input-group-addon">
-                                        <i class="fa fa-calendar"></i>
-                                    </span>
-                                </div>
-                            </a>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                                <datetimepicker data-ng-model="game.Date"
-                                    data-datetimepicker-config="{ dropdownSelector: '#datedropdown'}">
-                                </datetimepicker>
-                            </ul>
-                        </div>
-                    </div>
+                </div>
+            </uib-tab>
 
-                    <div class="row">
-                        <label class="col-md-3 control-label" for="integrationsData">Integrations</label>
-                        <div class="col-md-9">
-                            <key-value-editor entries="integrationsData" cannot-sort
-                                add-row-link="Add Integration Key-Value"></key-value-editor>
-                        </div>
-                    </div>
-                    <button type="button" ng-click="updateGame()" class="btn btn-primary btn-lg btn-block"
-                        ng-disabled="editGameForm.$invalid" tabindex="100"><i class="fa-solid fa-floppy-disk"></i>
-                        Save</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- End of Edit Panel -->
-<div ng-include="plugins['odds'].template"></div>
-<!-- Teams Last Games-->
-<div class="row" ng-if="teamsForm[game.HomeTeam.TeamId].form.length > 0">
-    <div class="col-md-12">
-        <div class="panel panel-info">
-            <div class="panel-heading" cg-busy="getTeamGamesPromise">
-                <i class="fa-solid fa-chart-line"></i> Teams Form
-            </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <team-flag team="game.HomeTeam"></team-flag>
-                                {{game.HomeTeam.Name}}
-                                <span ng-repeat="mark in teamsForm[game.HomeTeam.TeamId].form"><span
-                                        ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}"
-                                        class="label">{{mark.mark}}</span> </span>
-                            </div>
-                            <div class="panel-body">
-                                <mundialito-games info="teamsForm[game.HomeTeam.TeamId].games"
-                                    show-only="true"></mundialito-games>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <team-flag team="game.AwayTeam"></team-flag>
-                                {{game.AwayTeam.Name}}
-                                <span ng-repeat="mark in teamsForm[game.AwayTeam.TeamId].form"><span
-                                        ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}"
-                                        class="label">{{mark.mark}}</span> </span>
-                            </div>
-                            <div class="panel-body">
-                                <mundialito-games info="teamsForm[game.AwayTeam.TeamId].games"
-                                    show-only="true"></mundialito-games>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- End of Teams Last Games-->
+            <uib-tab index="1" heading="Community">
+                <div class="mu-tab-pane">
+<p class="text-muted mu-tab-hint" ng-if="game.IsOpen">
+    <i class="fa fa-info-circle"></i> Community bets appear after the game closes.
+</p>
 <!-- Bets Highlights-->
 <div class="row" ng-if="(!game.IsOpen && usersMap)">
     <div class="col-md-12">
@@ -512,8 +370,72 @@
     </div>
 </div>
 <!-- End of Other users bets -->
+                </div>
+            </uib-tab>
+
+            <uib-tab index="2" heading="Stats">
+                <div class="mu-tab-pane">
+<div class="row" ng-if="!game.IsOpen">
+    <div class="col-xs-12">
+        <div class="panel panel-default mu-chart-panel">
+            <div class="panel-heading"><i class="fa fa-pie-chart"></i> Bets distribution</div>
+            <div class="panel-body">
+                <div google-chart chart="chart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div ng-if="plugins['odds'] && plugins['odds'].template">
+    <div ng-include="plugins['odds'].template"></div>
+</div>
+<!-- Teams Last Games-->
+<div class="row" ng-if="teamsForm[game.HomeTeam.TeamId].form.length > 0">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading" cg-busy="getTeamGamesPromise">
+                <i class="fa-solid fa-chart-line"></i> Teams Form
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <team-flag team="game.HomeTeam"></team-flag>
+                                {{game.HomeTeam.Name}}
+                                <span ng-repeat="mark in teamsForm[game.HomeTeam.TeamId].form"><span
+                                        ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}"
+                                        class="label">{{mark.mark}}</span> </span>
+                            </div>
+                            <div class="panel-body">
+                                <mundialito-games info="teamsForm[game.HomeTeam.TeamId].games"
+                                    show-only="true"></mundialito-games>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <team-flag team="game.AwayTeam"></team-flag>
+                                {{game.AwayTeam.Name}}
+                                <span ng-repeat="mark in teamsForm[game.AwayTeam.TeamId].form"><span
+                                        ng-class="{'label-success': mark.mark === 'W', 'label-default': mark.mark === 'D', 'label-danger': mark.mark === 'L'}"
+                                        class="label">{{mark.mark}}</span> </span>
+                            </div>
+                            <div class="panel-body">
+                                <mundialito-games info="teamsForm[game.AwayTeam.TeamId].games"
+                                    show-only="true"></mundialito-games>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Teams Last Games-->
 <!-- Simulate Game -->
-<!-- Result Form -->
 <div class="row" ng-if="game.IsPendingUpdate">
     <div class="col-md-12">
         <div class="panel panel-info" cg-busy="simulateGamePromise">
@@ -598,4 +520,108 @@
 </div>
 <!-- End of Table -->
 <!-- End of Simulate Game-->
-<br />
+                </div>
+            </uib-tab>
+
+            <uib-tab index="3" heading="Admin" ng-if="security.user.Roles === 'Admin'">
+                <div class="mu-tab-pane">
+<div class="row" cg-busy="updateGamePromise">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"><i class="fa fa-pencil-square"></i> Edit Game Details</div>
+            <div class="panel-body">
+                <form role="form" name="editGameForm" class="form-horizontal" novalidate>
+                    <div class="form-group" ng-if="!game.IsOpen">
+                        <label class="col-md-3 control-label" for="GameHomeScore">
+                            <team-flag team="game.HomeTeam"></team-flag>
+                            {{game.HomeTeam.Name}} Score
+                        </label>
+                        <div class="col-md-2">
+                            <input id="GameHomeScore" name="GameHomeScore" type="number" ng-model="game.HomeScore"
+                                class="form-control" placeholder="{{game.HomeTeam.Name}} Score" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!game.IsOpen">
+                        <label class="col-md-3 control-label" for="GameAwayScore">
+                            <team-flag team="game.AwayTeam"></team-flag>
+                            {{game.AwayTeam.Name}} Score
+                        </label>
+                        <div class="col-md-2">
+                            <input id="GameAwayScore" name="GameAwayScore" type="number" ng-model="game.AwayScore"
+                                class="form-control" placeholder="{{game.AwayTeam.Name}} Score" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!game.IsOpen">
+                        <label class="col-md-3 control-label" for="game_cards">Yellow Cards</label>
+                        <div class="col-md-2">
+                            <select id="game_cards" name="game_cards" ui-select2="{allowClear: false}"
+                                class="form-control" ng-model="game.CardsMark" required placeholder="Game Cards Mark">
+                                <option value="1">{{game.HomeTeam.Name}}</option>
+                                <option value="X">X</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!game.IsOpen">
+                        <label class="col-md-3 control-label" for="game_corners">Corners</label>
+                        <div class="col-md-2">
+                            <select id="game_corners" name="game_corners" ui-select2="{allowClear: false}"
+                                class="form-control" ng-model="game.CornersMark" required
+                                placeholder="Game Corners Mark">
+                                <option value="1">{{game.HomeTeam.Name}}</option>
+                                <option value="X">X</option>
+                                <option value="2">{{game.AwayTeam.Name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="game.IsOpen">
+                        <label class="col-md-3 control-label" for="game_type">Type</label>
+                        <div class="col-md-2">
+                            <select id="game_type" name="game_type" ui-select2="{allowClear: false}"
+                                class="form-control" ng-model="game.Type" required placeholder="Game Type">
+                                <option value="Groups">Groups Stage</option>
+                                <option value="Knockouts">Knockouts Stage</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group select" ng-if="game.IsOpen">
+                        <div class="dropdown dropdown1-parent">
+                            <label class="col-md-3 control-label" for="Date">Date & Time</label>
+                            <a class="dropdown-toggle" id="datedropdown" role="button" data-toggle="dropdown"
+                                data-target=".dropdown1-parent" href="#">
+                                <div class="input-group">
+                                    <input type="text" id="Date" class="form-control" data-ng-model="game.Date"
+                                        required>
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                <datetimepicker data-ng-model="game.Date"
+                                    data-datetimepicker-config="{ dropdownSelector: '#datedropdown'}">
+                                </datetimepicker>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-md-3 control-label" for="integrationsData">Integrations</label>
+                        <div class="col-md-9">
+                            <key-value-editor entries="integrationsData" cannot-sort
+                                add-row-link="Add Integration Key-Value"></key-value-editor>
+                        </div>
+                    </div>
+                    <button type="button" ng-click="updateGame()" class="btn btn-primary btn-lg btn-block"
+                        ng-disabled="editGameForm.$invalid" tabindex="100"><i class="fa-solid fa-floppy-disk"></i>
+                        Save game</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+                </div>
+            </uib-tab>
+
+        </uib-tabset>
+    </div>
+</div>

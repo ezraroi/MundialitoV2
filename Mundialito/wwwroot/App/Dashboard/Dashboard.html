@@ -1,3 +1,4 @@
+<!-- 1. Action alert -->
 <div class="row mu-page-hero" ng-show="!submittedGeneralBet && generalBetsAreOpen">
     <div class="col-md-12">
         <div class="alert alert-warning" role="alert">
@@ -6,234 +7,231 @@
         </div>
     </div>
 </div>
-<div class="row" ng-show="pendingUpdateGames">
-    <div class="col-md-12 col-xs-12">
-        <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-clock"></i> Pending Update Games</div>
-            <div class="panel-body">
-                <div class="list-group" cg-busy="getGamesPromise">
-                    <div ng-repeat="game in games | filter:isPendingUpdate">
-                        <a class="list-group-item mu-game-row" href="{{game.getUrl()}}"
-                            tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
-                            <div class="mu-game-row__inner">
-                                <div class="mu-game-row__team mu-game-row__team--home">
-                                    <team-flag team="game.HomeTeam"></team-flag>
-                                    <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
-                                </div>
-                                <div class="mu-game-row__center mu-game-row__center--dash">–</div>
-                                <div class="mu-game-row__team mu-game-row__team--away">
-                                    <team-flag team="game.AwayTeam"></team-flag>
-                                    <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
-                                </div>
-                            </div>
-                        </a>
-                        <div class="list-group-item">
-                            <div class="row" ng-if="hasBets(game)">
-                                <div class="col-md-12">
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <tbody>
-                                                <tr ng-repeat="bet in pendingUpdateGamesFolloweesBets[game.GameId]">
-                                                    <td>{{::getUserPlace(bet.User)}}</td>
-                                                    <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
-                                                            {{::bet.User.LastName}}</a></td>
-                                                    <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                    <td title="Cards"><i class="fa fa-stop" style="color: #ffff00"></i>
-                                                        {{::bet.CardsMark}}</td>
-                                                    <td title="Corners"><i class="fa fa-flag"></i> {{::bet.CornersMark}}
-                                                    </td>
-                                                    <td><span class="label label-{{bet.getClass()}}"
-                                                            ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row" style="margin-bottom: 10px">
-                                <div class="col-md-12">
-                                    <toggle ng-model="toggleValue[game.GameId]" size="btn-sm" off-class="btn-success"
-                                        on-class="btn-info" ng-change="changed(game)"
-                                        off="<i class='fa fa-bullseye'></i> Result"
-                                        on="<i class='fa fa-check'></i> Mark"></toggle>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <uib-accordion close-others="oneAtATime">
-                                        <div uib-accordion-group class="panel-info" is-open="status[item[0]].open"
-                                            ng-repeat="item in selectedDic[game.GameId]">
-                                            <uib-accordion-heading>
-                                                <div class="row">
-                                                    <div class="col-md-1 col-xs-2 text-center">
-                                                        <div ng-if="groupedTeams[item[0]] === undefined">
-                                                            <span class="badge">{{item[0]}}</span>
-                                                        </div>
-                                                        <div ng-if="groupedTeams[item[0]] !== undefined">
-                                                            <team-flag team="groupedTeams[item[0]][0]"></team-flag>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-10 col-xs-9">
-                                                        <uib-progressbar max="100" min="0"
-                                                            value="selectedPercentage[game.GameId][item[0]]"
-                                                            type="info"><span
-                                                                style="color:white; white-space:nowrap;">{{item[1].length}}</span></uib-progressbar>
-                                                    </div>
-                                                    <div class="col-md-1 col-xs-1">
-                                                        <i class="pull-right glyphicon"
-                                                            ng-class="{'glyphicon-chevron-down': status[item[0]].open, 'glyphicon-chevron-right': !status[item[0]].open}"></i>
-                                                    </div>
-                                                </div>
-                                            </uib-accordion-heading>
-                                            <div class="list-group">
-                                                <a href="/users/{{::bet.User.Username}}" class="list-group-item"
-                                                    ng-repeat="bet in item[1]">
-                                                    {{bet.User.FirstName}} {{bet.User.LastName}}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </uib-accordion>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+<!-- 2. Open games (primary) -->
 <div class="row">
-    <div class="col-md-6 col-xs-12">
-        <div class="panel panel-info mu-panel-primary">
-            <div class="panel-heading"><i class="fa fa-folder-open"></i> Open Games for Betting <span
-                    class="pull-right badge">{{(games | filter:isOpenForBetting).length }}</span></div>
-            <div class="panel-body">
-                <div class="list-group" cg-busy="getGamesPromise">
-                    <a class="list-group-item mu-game-row" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
-                        ng-repeat="game in games | filter:isOpenForBetting | limitTo:10" href="{{game.getUrl()}}"
-                        tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
-                        <div class="mu-game-row__inner">
-                            <div class="mu-game-row__team mu-game-row__team--home">
-                                <team-flag team="game.HomeTeam"></team-flag>
-                                <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
-                            </div>
-                            <div class="mu-game-row__center mu-game-row__center--dash">–</div>
-                            <div class="mu-game-row__team mu-game-row__team--away">
-                                <team-flag team="game.AwayTeam"></team-flag>
-                                <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xs-12">
-        <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-futbol" aria-hidden="true"></i> Last scores <span
-                    class="pull-right badge" uib-tooltip="Total Finished Games">{{(games |
-                    filter:isDecided).length}}</span>
-            </div>
-            <div class="panel-body">
-                <div class="list-group" cg-busy="getGamesPromise">
-                    <a class="list-group-item mu-game-row" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
-                        ng-repeat="game in games| filter:isDecided | orderBy:'Date':true | limitTo:10"
-                        href="{{game.getUrl()}}">
-                        <div class="mu-game-row__inner">
-                            <div class="mu-game-row__team mu-game-row__team--home">
-                                <team-flag team="game.HomeTeam"></team-flag>
-                                <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
-                            </div>
-                            <div class="mu-game-row__center">{{::game.HomeScore}}–{{::game.AwayScore}}</div>
-                            <div class="mu-game-row__team mu-game-row__team--away">
-                                <team-flag team="game.AwayTeam"></team-flag>
-                                <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Ranking Table -->
-<div class="row" cg-busy="getUsersPromise">
-    <div class="col-md-12">
+    <div class="col-xs-12">
         <div class="panel panel-info mu-panel-primary">
             <div class="panel-heading">
-                <i class="fa fa-calculator" aria-hidden="true"></i> Ranking Table
+                <i class="fa fa-folder-open"></i> Open Games for Betting
+                <span class="pull-right badge">{{(games | filter:isOpenForBetting).length }}</span>
+            </div>
+            <div class="panel-body">
+                <div class="list-group" cg-busy="getGamesPromise">
+                    <a class="list-group-item mu-game-row" ng-class="{'list-group-item-warning': !game.UserHasBet}"
+                        ng-repeat="game in games | filter:isOpenForBetting | limitTo:10"
+                        href="{{game.getUrl()}}"
+                        tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}"
+                        ng-init="gameRowMode='dash'">
+                        <div ng-include="'App/Partials/game-list-item-inner.html'"></div>
+                    </a>
+                </div>
+                <p class="mu-empty-state text-muted text-center"
+                    ng-if="games && (games | filter:isOpenForBetting).length === 0">
+                    <i class="fa fa-info-circle"></i> No open games for betting right now.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Ranking (default: slim list) -->
+<div class="row" cg-busy="getUsersPromise">
+    <div class="col-xs-12">
+        <div class="panel panel-info mu-panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-calculator"></i> Ranking
                 <span class="pull-right">
                     <toggle ng-model="tableToggleValue" size="btn-xs" off-class="btn-success" on-class="btn-info"
-                        on="<i class='fa-solid fa-table'></i> Detailed" off="<i class='fa-solid fa-list'></i> Slim">
+                        on="<i class='fa-solid fa-table'></i> Detailed table"
+                        off="<i class='fa-solid fa-list'></i> Slim list">
                     </toggle>
                 </span>
             </div>
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-12" ng-if="tableToggleValue">
-                        <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
-                            ng-style="getTableHeight()" ui-grid-save-state ui-if="gridOptions.data.length > 0"></div>
-                    </div>
-                    <div class="col-md-12" ng-if="!tableToggleValue">
-                        <ul class="media-list">
-                            <li class="media" ng-repeat="user in users">
-                                <div class="media-left">
-                                    <a href="{{user.getUrl()}}">
-                                        <img referrerpolicy="no-referrer" class="img-circle media-object"
-                                            style="width: 64px; height: 64px;" ng-src="{{user.ProfilePicture}}"
-                                            alt="{{user.Name}}">
-                                    </a>
-                                </div>
-                                <div class="media-body">
-                                    <h4 class="media-heading"><a href="{{user.getUrl()}}">{{user.Place}}.
-                                            {{user.Name}}</a> <span
-                                            class="label label-info pull-right">{{user.Points}}</span></h4>
-                                    <span ng-if="user.GeneralBet != null && generalBetsAreOpen == false">
-                                        <i class="fa-solid fa-trophy"></i>
-                                        <team-flag team="user.GeneralBet.WinningTeam"></team-flag>
-                                        <span>{{::user.GeneralBet.WinningTeam.Name}}</span><br />
-                                        <i class="fa-solid fa-crown"></i> {{::user.GeneralBet.GoldenBootPlayer.Name}}
-                                    </span>
-                                    <span ng-if="user.GeneralBet == null || generalBetsAreOpen == true">
-                                        <i class="fa-solid fa-trophy"></i> <span>Not placed</span><br />
-                                        <i class="fa-solid fa-crown"></i> <span>Not placed</span>
-                                    </span>
+                <div ng-if="tableToggleValue">
+                    <div ui-grid="gridOptions" class="myGrid" ui-grid-resize-columns ui-grid-auto-resize
+                        ng-style="getTableHeight()" ui-grid-save-state ui-if="gridOptions.data.length > 0"></div>
+                </div>
+                <ul class="media-list mu-ranking-list" ng-if="!tableToggleValue">
+                    <li class="media" ng-repeat="user in users">
+                        <div class="media-left">
+                            <a href="{{user.getUrl()}}">
+                                <img referrerpolicy="no-referrer" class="img-circle media-object mu-ranking-avatar"
+                                    ng-src="{{user.ProfilePicture}}" alt="{{user.Name}}">
+                            </a>
+                        </div>
+                        <div class="media-body">
+                            <h4 class="media-heading">
+                                <a href="{{user.getUrl()}}">{{user.Place}}. {{user.Name}}</a>
+                                <span class="label label-info pull-right">{{user.Points}}</span>
+                            </h4>
+                            <span ng-if="user.GeneralBet != null && generalBetsAreOpen == false" class="mu-ranking-meta">
+                                <i class="fa-solid fa-trophy"></i>
+                                <team-flag team="user.GeneralBet.WinningTeam"></team-flag>
+                                {{::user.GeneralBet.WinningTeam.Name}}
+                                <span class="mu-ranking-meta-sep">·</span>
+                                <i class="fa-solid fa-crown"></i> {{::user.GeneralBet.GoldenBootPlayer.Name}}
+                            </span>
+                            <span ng-if="user.GeneralBet == null || generalBetsAreOpen == true" class="text-muted mu-ranking-meta">
+                                General bet not placed
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- 4. Last scores -->
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <i class="fa fa-futbol"></i> Last scores
+                <span class="pull-right badge" uib-tooltip="Total finished games">{{(games | filter:isDecided).length}}</span>
+            </div>
+            <div class="panel-body">
+                <div class="list-group" cg-busy="getGamesPromise">
+                    <a class="list-group-item mu-game-row" ng-class="{'list-group-item-warning': !game.UserHasBet}"
+                        ng-repeat="game in games | filter:isDecided | orderBy:'Date':true | limitTo:10"
+                        href="{{game.getUrl()}}"
+                        ng-init="gameRowMode='score'">
+                        <div ng-include="'App/Partials/game-list-item-inner.html'"></div>
+                    </a>
+                </div>
+                <p class="mu-empty-state text-muted text-center"
+                    ng-if="games && (games | filter:isDecided).length === 0">
+                    <i class="fa fa-info-circle"></i> No finished games yet.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Pending update (when needed) -->
+<div class="row" ng-show="pendingUpdateGames">
+    <div class="col-xs-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"><i class="fa fa-clock"></i> Pending update</div>
+            <div class="panel-body">
+                <p class="text-muted mu-pending-hint">
+                    <i class="fa fa-info-circle"></i>
+                    <b>Result</b> = exact score · <b>Mark</b> = winner only
+                </p>
+                <div class="list-group" cg-busy="getGamesPromise">
+                    <div ng-repeat="game in games | filter:isPendingUpdate">
+                        <a class="list-group-item mu-game-row" href="{{game.getUrl()}}"
+                            tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}"
+                            ng-init="gameRowMode='dash'">
+                            <div ng-include="'App/Partials/game-list-item-inner.html'"></div>
+                        </a>
+                        <div class="list-group-item">
+                            <div ng-if="hasBets(game)">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>User</th>
+                                                <th>Score</th>
+                                                <th><i class="fa fa-stop" style="color: #ffff00"></i></th>
+                                                <th><i class="fa fa-flag"></i></th>
+                                                <th>Pts</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="bet in pendingUpdateGamesFolloweesBets[game.GameId]">
+                                                <td>{{::getUserPlace(bet.User)}}</td>
+                                                <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
+                                                        {{::bet.User.LastName}}</a></td>
+                                                <td>{{::bet.HomeScore}}–{{::bet.AwayScore}}</td>
+                                                <td>{{::bet.CardsMark}}</td>
+                                                <td>{{::bet.CornersMark}}</td>
+                                                <td><span class="label label-{{bet.getClass()}}"
+                                                        ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </li>
-                        </ul>
+                            </div>
+                            <div class="mu-pending-toggle">
+                                <toggle ng-model="toggleValue[game.GameId]" size="btn-sm" off-class="btn-success"
+                                    on-class="btn-info" ng-change="changed(game)"
+                                    off="<i class='fa fa-bullseye'></i> Result"
+                                    on="<i class='fa fa-check'></i> Mark"></toggle>
+                            </div>
+                            <uib-accordion close-others="oneAtATime">
+                                <div uib-accordion-group class="panel-info" is-open="status[item[0]].open"
+                                    ng-repeat="item in selectedDic[game.GameId]">
+                                    <uib-accordion-heading>
+                                        <div class="mu-accordion-heading-row">
+                                            <span class="mu-accordion-heading-icon">
+                                                <span ng-if="groupedTeams[item[0]] === undefined"
+                                                    class="badge">{{item[0]}}</span>
+                                                <team-flag ng-if="groupedTeams[item[0]] !== undefined"
+                                                    team="groupedTeams[item[0]][0]"></team-flag>
+                                            </span>
+                                            <span class="mu-accordion-heading-bar">
+                                                <uib-progressbar max="100" min="0"
+                                                    value="selectedPercentage[game.GameId][item[0]]"
+                                                    type="info">
+                                                    <span class="mu-progress-label">{{item[1].length}}</span>
+                                                </uib-progressbar>
+                                            </span>
+                                            <i class="fa-solid pull-right"
+                                                ng-class="{'fa-chevron-down': status[item[0]].open, 'fa-chevron-right': !status[item[0]].open}"></i>
+                                        </div>
+                                    </uib-accordion-heading>
+                                    <div class="list-group">
+                                        <a href="/users/{{::bet.User.Username}}" class="list-group-item"
+                                            ng-repeat="bet in item[1]">
+                                            {{bet.User.FirstName}} {{bet.User.LastName}}
+                                        </a>
+                                    </div>
+                                </div>
+                            </uib-accordion>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- End of Ranking Table-->
-<div class="row" ng-show="!generalBetsAreOpen">
-    <div class="col-md-12">
-        <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa-solid fa-money-bill"></i> General Bets</div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="row">
-                            <div class="col-md-6 col-xs-12">
-                                <div google-chart chart="chart">
+
+<!-- 6. More stats (collapsed by default) -->
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel panel-default mu-panel-more">
+            <div class="panel-body" style="padding: 0;">
+                <uib-accordion>
+                    <div uib-accordion-group is-open="moreStatsOpen" class="panel-default">
+                        <uib-accordion-heading>
+                            <i class="fa fa-bar-chart"></i> More stats &amp; players
+                            <i class="fa-solid pull-right"
+                                ng-class="{'fa-chevron-down': moreStatsOpen, 'fa-chevron-right': !moreStatsOpen}"></i>
+                        </uib-accordion-heading>
+
+                        <div ng-show="!generalBetsAreOpen">
+                            <h5 class="mu-more-section-title"><i class="fa-solid fa-money-bill"></i> General bets</h5>
+                            <div class="row">
+                                <div class="col-xs-12 col-md-6">
+                                    <div google-chart chart="chart"></div>
+                                </div>
+                                <div class="col-xs-12 col-md-6">
+                                    <div google-chart chart="playersChart"></div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-xs-12">
-                                <div google-chart chart="playersChart">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="table-responsive">
-                                <table class="table table-striped">
+                                <table class="table table-striped table-condensed">
                                     <thead>
-                                        <th>Name</th>
-                                        <th>Points</th>
-                                        <th>Winning Team</th>
-                                        <th>Golden Boot Player</th>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Pts</th>
+                                            <th>Team</th>
+                                            <th>Player</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="bet in generalBets">
@@ -246,41 +244,22 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="panel panel-info">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-md-12">
-                        <i class="fa-solid fa-crown"></i> Golden Boot Players
-                        <div class="pull-right">
-                            <form class="form-inline">
-                                <div class="form-group">
-                                    <label class="sr-only" for="search">Search</label>
-                                    <input type="text" ng-model="searchText" class="form-control" id="search"
-                                        placeholder="Player">
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="list-group" cg-busy="{tracker:'getPlayers'}">
+
+                        <h5 class="mu-more-section-title"><i class="fa-solid fa-crown"></i> Golden boot players</h5>
+                        <form class="form-inline mu-player-search">
+                            <div class="form-group">
+                                <label class="sr-only" for="search">Search</label>
+                                <input type="text" ng-model="searchText" class="form-control input-sm" id="search"
+                                    placeholder="Search player">
+                            </div>
+                        </form>
+                        <div class="list-group mu-players-list" cg-busy="{tracker:'getPlayers'}">
                             <span class="list-group-item" ng-repeat="player in players | filter:searchText">
                                 {{player.Name}}
                             </span>
                         </div>
                     </div>
-                </div>
+                </uib-accordion>
             </div>
         </div>
     </div>

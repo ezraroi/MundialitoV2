@@ -8,6 +8,15 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.userBet = userBet;
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
+    $scope.gameActiveTab = 0;
+    $scope.goToAdminTab = function () {
+        $scope.gameActiveTab = 3;
+    };
+    $scope.$watch('security.user', function (user) {
+        if (user && user.Roles === 'Disabled') {
+            $scope.gameActiveTab = 1;
+        }
+    });
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
