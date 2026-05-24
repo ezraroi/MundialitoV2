@@ -1,34 +1,58 @@
 <div class="row">
-    <div class="col-md-11 col-xs-10">
-        <div class="list-group">
-            <a href="/teams/{{::team.TeamId}}" class="list-group-item" ng-repeat="team in teams">
-                <span class="pull-left">
-                    <team-flag team="team"></team-flag>
-                </span>
-                {{::team.Name}} ({{::team.ShortName}})
-                <span class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></span>
-            </a>
-            <a href="" class="list-group-item" data-access-level="Admin" ng-click="addNewTeam()">
-                <i class="fa fa-plus-circle"></i> Add New Team
-            </a>
-        </div>
-    </div>
-    <div class="col-md-1 col-xs-2" data-access-level="Admin">
-        <div class="list-group">
-            <a href="" title="Delete Team" ng-click="deleteTeam(team)" class="list-group-item text-center" ng-repeat="team in teams">
-                <i class="fa fa-times-circle admin-remove"></i>
-            </a>
+    <div class="col-xs-12">
+        <div class="panel panel-info mu-panel-primary">
+            <div class="panel-heading">
+                <i class="fa-solid fa-users"></i> Teams
+                <span class="pull-right badge" ng-if="teams">{{teams.length}}</span>
+            </div>
+            <div class="panel-body">
+                <div class="row mu-entities-list">
+                    <div class="col-md-11 col-xs-10">
+                        <div class="list-group">
+                            <a href="/teams/{{::team.TeamId}}" class="list-group-item mu-entity-row"
+                                ng-repeat="team in teams">
+                                <div class="mu-entity-row__inner">
+                                    <team-flag team="team"></team-flag>
+                                    <span class="mu-entity-row__name">{{::team.Name}}
+                                        <span class="text-muted">({{::team.ShortName}})</span></span>
+                                    <i class="fa fa-chevron-right mu-entity-row__chevron"></i>
+                                </div>
+                            </a>
+                            <a href="" class="list-group-item mu-entity-row mu-entity-row--add"
+                                data-access-level="Admin" ng-click="addNewTeam()">
+                                <i class="fa fa-plus-circle"></i> Add new team
+                            </a>
+                            <p class="mu-empty-state text-muted text-center" ng-if="teams.length === 0">
+                                <i class="fa fa-info-circle"></i> No teams yet.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-1 col-xs-2 mu-entities-list__admin" data-access-level="Admin">
+                        <div class="list-group mu-entities-list__admin-list">
+                            <a href="" title="Delete team" ng-click="deleteTeam(team)"
+                                class="list-group-item mu-entities-list__delete"
+                                ng-repeat="team in teams">
+                                <i class="fa fa-times-circle"></i>
+                            </a>
+                            <span class="list-group-item mu-entities-list__delete mu-entities-list__delete--spacer"
+                                aria-hidden="true"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <div class="row" data-access-level="Admin" ng-show="newTeam">
-    <div class="col-md-10">
+    <div class="col-xs-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-plus"></i> Add New Team</div>
+            <div class="panel-heading"><i class="fa fa-plus"></i> Add new team</div>
             <div class="panel-body">
                 <form name="addTeamForm">
                     <auto:fields fields="schema" data="newTeam"></auto:fields>
-                    <button type="button" ng-click="saveNewTeam()" ng-model="newTeam" class="btn btn-primary btn-lg btn-block" ng-disabled="addTeamForm.$invalid" tabindex="100"><i class="fa fa-plus-circle"></i> Add</button>
+                    <button type="button" ng-click="saveNewTeam()" class="btn btn-primary btn-lg btn-block"
+                        ng-disabled="addTeamForm.$invalid" tabindex="100">
+                        <i class="fa fa-plus-circle"></i> Add</button>
                 </form>
             </div>
         </div>

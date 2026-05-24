@@ -1,32 +1,60 @@
 <div class="row">
-    <div class="col-md-11 col-xs-10">
-        <div class="list-group">
-            <a href="/stadiums/{{stadium.StadiumId}}" class="list-group-item" ng-repeat="stadium in stadiums">
-                <span class="pull-left"><img ng-src="{{team.Flag}}" style="width: 55%;" /></span>
-                {{stadium.Name}}, {{stadium.City}} (Capacity: {{stadium.Capacity | number }})
-                <span class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></span>
-            </a>
-            <a href="" class="list-group-item" data-access-level="Admin" ng-click="addNewStadium()">
-                <i class="fa fa-plus-circle"></i> Add New Stadium
-            </a>
-        </div>
-    </div>
-    <div class="col-md-1 col-xs-2" data-access-level="Admin">
-        <div class="list-group">
-            <a href="" title="Delete Stadium" ng-click="deleteStadium(stadium)" class="list-group-item text-center" ng-repeat="stadium in stadiums">
-                <i class="fa fa-times-circle admin-remove"></i>
-            </a>
+    <div class="col-xs-12">
+        <div class="panel panel-info mu-panel-primary">
+            <div class="panel-heading">
+                <i class="fa-solid fa-home"></i> Stadiums
+                <span class="pull-right badge" ng-if="stadiums">{{stadiums.length}}</span>
+            </div>
+            <div class="panel-body">
+                <div class="row mu-entities-list">
+                    <div class="col-md-11 col-xs-10">
+                        <div class="list-group">
+                            <a href="/stadiums/{{stadium.StadiumId}}" class="list-group-item mu-entity-row"
+                                ng-repeat="stadium in stadiums">
+                                <div class="mu-entity-row__inner">
+                                    <i class="fa-solid fa-home mu-entity-row__icon"></i>
+                                    <span class="mu-entity-row__name">
+                                        {{::stadium.Name}}, {{::stadium.City}}
+                                        <span class="text-muted">({{::stadium.Capacity | number}})</span>
+                                    </span>
+                                    <i class="fa fa-chevron-right mu-entity-row__chevron"></i>
+                                </div>
+                            </a>
+                            <a href="" class="list-group-item mu-entity-row mu-entity-row--add"
+                                data-access-level="Admin" ng-click="addNewStadium()">
+                                <i class="fa fa-plus-circle"></i> Add new stadium
+                            </a>
+                            <p class="mu-empty-state text-muted text-center" ng-if="stadiums.length === 0">
+                                <i class="fa fa-info-circle"></i> No stadiums yet.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-1 col-xs-2 mu-entities-list__admin" data-access-level="Admin">
+                        <div class="list-group mu-entities-list__admin-list">
+                            <a href="" title="Delete stadium" ng-click="deleteStadium(stadium)"
+                                class="list-group-item mu-entities-list__delete"
+                                ng-repeat="stadium in stadiums">
+                                <i class="fa fa-times-circle"></i>
+                            </a>
+                            <span class="list-group-item mu-entities-list__delete mu-entities-list__delete--spacer"
+                                aria-hidden="true"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <div class="row" data-access-level="Admin" ng-show="newStadium">
-    <div class="col-md-10">
+    <div class="col-xs-12">
         <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-plus"></i> Add New Stadium</div>
+            <div class="panel-heading"><i class="fa fa-plus"></i> Add new stadium</div>
             <div class="panel-body">
                 <form name="addStadiumForm">
                     <auto:fields fields="schema" data="newStadium"></auto:fields>
-                    <button type="button" ng-click="saveNewStadium()" ng-model="newTeam" class="btn btn-primary btn-lg btn-block" ng-disabled="addStadiumForm.$invalid" tabindex="100"><i class="fa fa-plus-circle"></i> Add</button>
+                    <button type="button" ng-click="saveNewStadium()" class="btn btn-primary btn-lg btn-block"
+                        ng-disabled="addStadiumForm.$invalid" tabindex="100">
+                        <i class="fa fa-plus-circle"></i> Add</button>
                 </form>
             </div>
         </div>

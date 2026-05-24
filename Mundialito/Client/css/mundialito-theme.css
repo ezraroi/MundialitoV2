@@ -582,6 +582,120 @@
   text-align: center;
 }
 
+/* --- D4: Teams / Stadiums entity lists --- */
+
+.mundialito-ui a.list-group-item.mu-entity-row {
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.mundialito-ui a.list-group-item.mu-entity-row:hover,
+.mundialito-ui a.list-group-item.mu-entity-row:focus {
+  background: var(--mu-grid-hover);
+  color: inherit;
+}
+
+.mundialito-ui .mu-entity-row__inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.mundialito-ui .mu-entity-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.mundialito-ui .mu-entity-row__icon {
+  font-size: 18px;
+  color: var(--mu-primary);
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.mundialito-ui .mu-entity-row__chevron {
+  flex-shrink: 0;
+  color: var(--mu-text-muted);
+  font-size: 12px;
+}
+
+.mundialito-ui .mu-entity-row--add {
+  text-align: center;
+  font-weight: 600;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-entity-row--add:hover,
+.mundialito-ui .mu-entity-row--add:focus {
+  color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .mu-entities-list__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  padding: 12px 8px;
+  color: var(--mu-danger, #d9534f);
+  text-decoration: none;
+}
+
+.mundialito-ui .mu-entities-list__delete:hover,
+.mundialito-ui .mu-entities-list__delete:focus {
+  background: #fdf0f0;
+  color: #c9302c;
+}
+
+.mundialito-ui .mu-entities-list__delete--spacer {
+  visibility: hidden;
+  pointer-events: none;
+  min-height: 44px;
+}
+
+.mundialito-ui .mu-entity-header {
+  margin-bottom: 16px;
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.mundialito-ui .mu-entity-header__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mundialito-ui .mu-entity-header__meta {
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-entity-header__link {
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-entity-header__logo {
+  max-width: 64px;
+  max-height: 64px;
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui .mu-entity-header__title {
+    font-size: 17px;
+  }
+
+  .mundialito-ui .mu-entity-header__logo {
+    max-width: 48px;
+    max-height: 48px;
+  }
+}
+
 @media (min-width: 768px) {
   .mundialito-ui .mu-game-row__stack {
     flex-direction: row;
