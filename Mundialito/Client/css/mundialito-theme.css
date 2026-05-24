@@ -415,3 +415,294 @@
   box-shadow: none;
   background: var(--mu-bg-card);
 }
+
+/* --- D1: Dashboard & lists (mobile-first) --- */
+
+.mundialito-ui .mu-page-hero {
+  margin-bottom: 16px;
+}
+
+.mundialito-ui .mu-page-hero .alert {
+  margin-bottom: 0;
+  border-radius: var(--mu-radius);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.mundialito-ui .panel.mu-panel-primary {
+  border-width: 2px;
+  border-color: var(--mu-primary);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .panel.mu-panel-primary > .panel-heading {
+  background: var(--mu-primary);
+  color: #fff;
+  border-color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .panel.mu-panel-primary > .panel-heading .badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.mundialito-ui a.list-group-item.mu-game-row {
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.mundialito-ui a.list-group-item.mu-game-row:hover,
+.mundialito-ui a.list-group-item.mu-game-row:focus {
+  background: var(--mu-grid-hover);
+  color: inherit;
+}
+
+.mundialito-ui .mu-game-row__inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.mundialito-ui .mu-game-row__team {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mundialito-ui .mu-game-row__team--away {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.mundialito-ui .mu-game-row__name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mundialito-ui .mu-game-row__center {
+  flex: 0 0 auto;
+  min-width: 52px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-game-row__center--dash {
+  color: var(--mu-text-muted);
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui section#body {
+    padding-top: 16px;
+  }
+
+  .mundialito-ui .panel-body {
+    padding: 12px;
+  }
+
+  .mundialito-ui .mu-game-row__name {
+    font-size: 12px;
+  }
+
+  .mundialito-ui .mu-game-row__center {
+    min-width: 44px;
+    font-size: 14px;
+  }
+}
+
+/* --- G1: Game match header & bet (mobile-first) --- */
+
+.mundialito-ui .mu-match-header {
+  margin-bottom: 16px;
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .mu-match-header > .panel-body {
+  padding: 16px;
+}
+
+.mundialito-ui .mu-match-header__teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-match-header__team {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.mundialito-ui .mu-match-header__team-name {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.3;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mundialito-ui .mu-match-header__team-name a {
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-match-header__score {
+  flex: 0 0 auto;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--mu-primary);
+  padding: 0 4px;
+}
+
+.mundialito-ui .mu-match-header__score--vs {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--mu-text-muted);
+}
+
+.mundialito-ui .mu-match-header__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-match-header__meta {
+  font-size: 13px;
+  color: var(--mu-text-muted);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-match-header__meta i {
+  width: 16px;
+  text-align: center;
+  margin-right: 4px;
+}
+
+.mundialito-ui .mu-match-header__points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-points-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--mu-bg-page);
+  border: 1px solid var(--mu-border);
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-match-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.mundialito-ui .panel.mu-panel-bet {
+  border-width: 2px;
+  border-color: var(--mu-success);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .panel.mu-panel-bet > .panel-heading {
+  background: #e8f6ee;
+  color: #145c32;
+  border-color: #b8e6cc;
+}
+
+.mundialito-ui .mu-bet-form__scores {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-bet-form__scores .form-group {
+  flex: 1 1 0;
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-bet-form__scores label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mu-text-muted);
+  margin-bottom: 6px;
+}
+
+.mundialito-ui .mu-bet-form__scores .form-control {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  height: 48px;
+}
+
+.mundialito-ui .mu-bet-form__marks .form-group {
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-bet-form__marks label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mu-text-muted);
+  margin-bottom: 6px;
+}
+
+.mundialito-ui .mu-bet-closed-banner {
+  margin-bottom: 12px;
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui .mu-sticky-actions {
+  position: sticky;
+  bottom: 12px;
+  z-index: 100;
+  padding: 12px 0 4px;
+  margin-top: 8px;
+  background: linear-gradient(to top, var(--mu-bg-card) 70%, transparent);
+}
+
+.mundialito-ui .mu-sticky-actions .btn {
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .mu-chart-panel {
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .mundialito-ui .mu-match-header__team-name {
+    font-size: 16px;
+  }
+
+  .mundialito-ui .mu-match-header__score {
+    font-size: 36px;
+  }
+}

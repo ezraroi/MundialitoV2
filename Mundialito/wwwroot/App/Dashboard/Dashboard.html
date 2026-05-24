@@ -1,4 +1,4 @@
-<div class="row" ng-show="!submittedGeneralBet && generalBetsAreOpen">
+<div class="row mu-page-hero" ng-show="!submittedGeneralBet && generalBetsAreOpen">
     <div class="col-md-12">
         <div class="alert alert-warning" role="alert">
             <i class="fa fa-exclamation-triangle"></i> You haven't placed a bet on the <b>Winning Team</b> and the
@@ -13,23 +13,17 @@
             <div class="panel-body">
                 <div class="list-group" cg-busy="getGamesPromise">
                     <div ng-repeat="game in games | filter:isPendingUpdate">
-                        <a class="list-group-item" href="{{game.getUrl()}}"
+                        <a class="list-group-item mu-game-row" href="{{game.getUrl()}}"
                             tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
-                            <div class="row">
-                                <div class="col-md-5 col-xs-3">
+                            <div class="mu-game-row__inner">
+                                <div class="mu-game-row__team mu-game-row__team--home">
                                     <team-flag team="game.HomeTeam"></team-flag>
-                                    <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
-                                    <span class="visible-xs">
-                                        <h5><small>{{::game.HomeTeam.Name}}</small></h5>
-                                    </span>
+                                    <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
                                 </div>
-                                <div class="col-md-2 col-xs-6 text-center"> - </div>
-                                <div class="col-md-5 col-xs-3">
-                                    <team-flag class="pull-right" team="game.AwayTeam"></team-flag>
-                                    <span class="pull-right hidden-xs">{{::game.AwayTeam.Name}}</span>
-                                    <span class="pull-right visible-xs">
-                                        <h6><small>{{::game.AwayTeam.Name}}</small></h6>
-                                    </span>
+                                <div class="mu-game-row__center mu-game-row__center--dash">–</div>
+                                <div class="mu-game-row__team mu-game-row__team--away">
+                                    <team-flag team="game.AwayTeam"></team-flag>
+                                    <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
                                 </div>
                             </div>
                         </a>
@@ -110,29 +104,23 @@
 </div>
 <div class="row">
     <div class="col-md-6 col-xs-12">
-        <div class="panel panel-info">
+        <div class="panel panel-info mu-panel-primary">
             <div class="panel-heading"><i class="fa fa-folder-open"></i> Open Games for Betting <span
                     class="pull-right badge">{{(games | filter:isOpenForBetting).length }}</span></div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="getGamesPromise">
-                    <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
+                    <a class="list-group-item mu-game-row" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
                         ng-repeat="game in games | filter:isOpenForBetting | limitTo:10" href="{{game.getUrl()}}"
                         tooltip="{{game.Date | date:'dd/MM/yy @ h:mma'}}">
-                        <div class="row">
-                            <div class="col-md-5 col-xs-3">
+                        <div class="mu-game-row__inner">
+                            <div class="mu-game-row__team mu-game-row__team--home">
                                 <team-flag team="game.HomeTeam"></team-flag>
-                                <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
-                                <span class="visible-xs">
-                                    <h5><small>{{::game.HomeTeam.Name}}</small></h5>
-                                </span>
+                                <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
                             </div>
-                            <div class="col-md-2 col-xs-6 text-center"> - </div>
-                            <div class="col-md-5 col-xs-3">
-                                <team-flag class="pull-right" team="game.AwayTeam"></team-flag>
-                                <span class="pull-right hidden-xs">{{::game.AwayTeam.Name}}</span>
-                                <span class="pull-right visible-xs">
-                                    <h6><small>{{::game.AwayTeam.Name}}</small></h6>
-                                </span>
+                            <div class="mu-game-row__center mu-game-row__center--dash">–</div>
+                            <div class="mu-game-row__team mu-game-row__team--away">
+                                <team-flag team="game.AwayTeam"></team-flag>
+                                <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
                             </div>
                         </div>
                     </a>
@@ -148,25 +136,18 @@
             </div>
             <div class="panel-body">
                 <div class="list-group" cg-busy="getGamesPromise">
-                    <a class="list-group-item" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
+                    <a class="list-group-item mu-game-row" ng-class="{'list-group-item-warning' : !game.UserHasBet}"
                         ng-repeat="game in games| filter:isDecided | orderBy:'Date':true | limitTo:10"
                         href="{{game.getUrl()}}">
-                        <div class="row">
-                            <div class="col-md-5 col-xs-3">
+                        <div class="mu-game-row__inner">
+                            <div class="mu-game-row__team mu-game-row__team--home">
                                 <team-flag team="game.HomeTeam"></team-flag>
-                                <span class="hidden-xs">{{::game.HomeTeam.Name}}</span>
-                                <span class="visible-xs">
-                                    <h5><small>{{::game.HomeTeam.Name}}</small></h5>
-                                </span>
+                                <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
                             </div>
-                            <div class="col-md-2 col-xs-6 text-center"> {{::game.HomeScore}} - {{::game.AwayScore}}
-                            </div>
-                            <div class="col-md-5 col-xs-3">
-                                <team-flag class="pull-right" team="game.AwayTeam"></team-flag>
-                                <span class="pull-right hidden-xs">{{::game.AwayTeam.Name}}</span>
-                                <span class="pull-right visible-xs">
-                                    <h6><small>{{::game.AwayTeam.Name}}</small></h6>
-                                </span>
+                            <div class="mu-game-row__center">{{::game.HomeScore}}–{{::game.AwayScore}}</div>
+                            <div class="mu-game-row__team mu-game-row__team--away">
+                                <team-flag team="game.AwayTeam"></team-flag>
+                                <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
                             </div>
                         </div>
                     </a>
@@ -178,7 +159,7 @@
 <!-- Ranking Table -->
 <div class="row" cg-busy="getUsersPromise">
     <div class="col-md-12">
-        <div class="panel panel-info">
+        <div class="panel panel-info mu-panel-primary">
             <div class="panel-heading">
                 <i class="fa fa-calculator" aria-hidden="true"></i> Ranking Table
                 <span class="pull-right">
