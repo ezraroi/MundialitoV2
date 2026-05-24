@@ -122,7 +122,7 @@ gulp.task('cache-bust-lib', () => {
         throw new Error('There should be exactly one lib file: ' + lib.join(', '));
     }
     return gulp.src('Views/Home/Index.cshtml')
-        .pipe(replace(/lib-[a-z0-9]+\.js/, lib[0]))
+        .pipe(replace(/src="lib\/lib-[a-f0-9]+\.js"/, `src="lib/${lib[0]}"`))
         .pipe(gulp.dest('Views/Home'));
 });
 
@@ -148,7 +148,7 @@ gulp.task('cache-bust-app', () => {
         throw new Error('There should be exactly one app file: ' + app.join(', '));
     }
     return gulp.src('Views/Home/Index.cshtml')
-        .pipe(replace(/app-[a-z0-9]+\.js/, app[0]))
+        .pipe(replace(/src="js\/app-[a-f0-9]+\.js"/, `src="js/${app[0]}"`))
         .pipe(gulp.dest('Views/Home'));
 });
 

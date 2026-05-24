@@ -46,33 +46,31 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    ensureAdmin: ['security', '$location', '$q', '$rootScope', function (security, $location, $q, $rootScope) {
-                        function checkUser(user) {
-                            if (user && user.Roles === 'Admin') {
-                                return $q.resolve(user);
-                            }
-                            $location.path('/');
-                            return $q.reject('Not authorized');
-                        }
-                        if (security.user) {
-                            return checkUser(security.user);
-                        }
-                        return $q(function (resolve, reject) {
-                            var deregister = $rootScope.$watch(function () {
-                                return security.user;
-                            }, function (user) {
-                                if (!user) {
-                                    return;
+                    managePage: ['security', '$location', '$q', '$timeout', 'UsersManager', 'GeneralBetsManager',
+                        function (security, $location, $q, $timeout, UsersManager, GeneralBetsManager) {
+                            function waitForAdminUser(attempt) {
+                                if (security.user) {
+                                    if (security.user.Roles === 'Admin') {
+                                        return $q.resolve(security.user);
+                                    }
+                                    $location.path('/');
+                                    return $q.reject('Not authorized');
                                 }
-                                deregister();
-                                checkUser(user).then(resolve, reject);
+                                if (attempt >= 100) {
+                                    $location.path('/');
+                                    return $q.reject('Not authorized');
+                                }
+                                return $timeout(function () {
+                                    return waitForAdminUser(attempt + 1);
+                                }, 50);
+                            }
+                            return waitForAdminUser(0).then(function () {
+                                return $q.all({
+                                    users: UsersManager.loadAllUsers(),
+                                    generalBets: GeneralBetsManager.loadAllGeneralBets()
+                                });
                             });
-                        });
-                    }],
-                    users: ['UsersManager', 'ensureAdmin', (UsersManager) => UsersManager.loadAllUsers()],
-                    teams: ['TeamsManager', 'ensureAdmin', (TeamsManager) => TeamsManager.loadAllTeams()],
-                    generalBets: ['GeneralBetsManager', 'ensureAdmin', (GeneralBetsManager) => GeneralBetsManager.loadAllGeneralBets()],
-                    players: ['PlayersManager', 'ensureAdmin', (PlayersManager) => PlayersManager.loadAllPlayers()]
+                        }]
                 }
             }).
             when('/teams', {
@@ -201,6 +199,10 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
         });
         $rootScope.$on('$routeChangeSuccess', function () {
             $log.debug('$routeChangeSuccess');
+            $rootScope.mundialitoApp.message = null;
+        });
+        $rootScope.$on('$routeChangeError', function (event, current, previous, rejection) {
+            $log.debug('$routeChangeError', rejection);
             $rootScope.mundialitoApp.message = null;
         });
 
@@ -2431,9 +2433,9 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'users','teams', 'generalBets','UsersManager', 'players', function ($scope, $log, Alert, users, teams, generalBets, UsersManager, players) {
-    $scope.users = users;
-    $scope.generalBets = generalBets;
+angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'managePage', 'UsersManager', function ($scope, $log, Alert, managePage, UsersManager) {
+    $scope.users = managePage.users;
+    $scope.generalBets = managePage.generalBets;
     $scope.deleteUser = (user) => {
         var scope = user;
         $scope.deleteUserPromise = user.delete().then(() => {
@@ -2467,6 +2469,7 @@ angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', '
         });
     };
 }]);
+
 'use strict';
 angular.module('mundialitoApp').factory('User', ['$http','$log', function($http, $log) {
     function User(userData) {

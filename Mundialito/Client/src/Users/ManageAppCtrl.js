@@ -1,7 +1,7 @@
 'use strict';
-angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'users','teams', 'generalBets','UsersManager', 'players', function ($scope, $log, Alert, users, teams, generalBets, UsersManager, players) {
-    $scope.users = users;
-    $scope.generalBets = generalBets;
+angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'managePage', 'UsersManager', function ($scope, $log, Alert, managePage, UsersManager) {
+    $scope.users = managePage.users;
+    $scope.generalBets = managePage.generalBets;
     $scope.deleteUser = (user) => {
         var scope = user;
         $scope.deleteUserPromise = user.delete().then(() => {
