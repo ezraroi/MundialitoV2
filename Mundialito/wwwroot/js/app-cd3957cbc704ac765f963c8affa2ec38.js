@@ -272,15 +272,17 @@ angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope',
 
     $scope.user = new LoginModel();
     $scope.login = () => {
-        if (!$scope.loginForm.$valid) return;
+        if ($scope.loginForm && !$scope.loginForm.$valid) {
+            return;
+        }
         $rootScope.mundialitoApp.message = "Processing Login...";
         Security.login(angular.copy($scope.user)).finally(function () {
             $rootScope.mundialitoApp.message = null;
         });
     }
     $scope.schema = [
-            { property: 'username', type: 'text', attr: { ngMinlength: 4, required: true } },
-            { property: 'password', type: 'password', attr: { ngMinlength: 4, required: true } },
+            { property: 'username', type: 'text', attr: { ngMinlength: 4, required: true, autocomplete: 'username' } },
+            { property: 'password', type: 'password', attr: { ngMinlength: 4, required: true, autocomplete: 'current-password' } },
             { property: 'rememberMe', label: 'Keep me logged in', type: 'checkbox' }
     ];
 
