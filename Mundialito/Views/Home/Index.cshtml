@@ -29,7 +29,7 @@
     }
 </head>
 
-<body class="mundialito-ui">
+<body class="mundialito-ui @(Model.Theme == "cerulean" ? "theme-cerulean" : "theme-spacelab")">
    
     <script src="//accounts.google.com/gsi/client"></script>
     <div class="container body-content">
@@ -143,11 +143,11 @@
         <!-- End of Main Content -->
         @if (env.IsProduction())
         {
-            <script src="lib/lib-min-a1df9cb1c065acba00f12bed4d8c2f8a.js"></script>
+            <script src="lib/lib-min-8fd68a161fad85c947f2f5028c677f7a.js"></script>
             <script src="js/app-min-c5fa64cf5d492a8bfd3d5f8a45ca67d5.js"></script>
         }
         else {
-            <script src="lib/lib-f2772d0a6fd6bd2825872dfb4f953657.js"></script>
+            <script src="lib/lib-145b9201b74f007c81b8a051e0989f02.js"></script>
             <script src="js/app-f19819dfee43f85b5ff9235f0500f384.js"></script>
         }
          

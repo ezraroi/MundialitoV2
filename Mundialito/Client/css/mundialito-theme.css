@@ -1,31 +1,22 @@
 /**
  * Mundialito visual overrides (Bootstrap 3 + Bootswatch).
- * Loaded after cerulean/spacelab so both themes share the same modern chrome.
- * Scope: .mundialito-ui on <body>
+ * Loaded after cerulean/spacelab. Use .theme-cerulean or .theme-spacelab on <body>.
  */
 
+/* --- Shared layout & typography --- */
 .mundialito-ui {
-  --mu-primary: #1d6fd4;
-  --mu-primary-dark: #1558a8;
-  --mu-accent: #f5b731;
-  --mu-success: #1f9d55;
-  --mu-danger: #d64545;
-  --mu-warning: #e8a317;
-  --mu-info: #2a9fd6;
-  --mu-bg-page: #f0f2f5;
-  --mu-bg-card: #ffffff;
-  --mu-border: #e2e6ea;
-  --mu-border-strong: #cfd6dd;
-  --mu-text: #1a1d21;
-  --mu-text-muted: #5c6570;
   --mu-radius-sm: 6px;
   --mu-radius: 10px;
   --mu-radius-lg: 14px;
   --mu-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
   --mu-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
-  --mu-shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.18);
+  --mu-shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.2);
   --mu-nav-height: 56px;
   --mu-content-max: 1200px;
+  --mu-nav-hover: rgba(255, 255, 255, 0.12);
+  --mu-focus-ring: rgba(47, 164, 231, 0.22);
+  --mu-grid-hover: #eef4ff;
+  --mu-table-stripe: #f8fafc;
 
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 15px;
@@ -35,6 +26,56 @@
   -webkit-font-smoothing: antialiased;
   padding-top: var(--mu-nav-height);
   padding-bottom: 24px;
+}
+
+/* Cerulean: bright sky-blue, light page, energetic */
+.mundialito-ui.theme-cerulean {
+  --mu-primary: #2fa4e7;
+  --mu-primary-dark: #1a8cd1;
+  --mu-accent: #ffc107;
+  --mu-success: #73a839;
+  --mu-danger: #c71c22;
+  --mu-warning: #dd5600;
+  --mu-info: #2fa4e7;
+  --mu-bg-page: #e8f4fc;
+  --mu-bg-card: #ffffff;
+  --mu-border: #b8d9f0;
+  --mu-border-strong: #8fc5e8;
+  --mu-text: #0c2d45;
+  --mu-text-muted: #3d6a8a;
+  --mu-nav-bg-start: #1a8cd1;
+  --mu-nav-bg-end: #0d6fa8;
+  --mu-panel-info-bg: #d4edfc;
+  --mu-panel-info-text: #0a4d75;
+  --mu-panel-info-border: #9fd4f5;
+  --mu-focus-ring: rgba(47, 164, 231, 0.28);
+  --mu-grid-hover: #d9effc;
+  --mu-table-stripe: #f0f9ff;
+}
+
+/* Spacelab: slate blue-gray, cooler gray page, calmer */
+.mundialito-ui.theme-spacelab {
+  --mu-primary: #446e9b;
+  --mu-primary-dark: #35567a;
+  --mu-accent: #d4a72c;
+  --mu-success: #3cb521;
+  --mu-danger: #cd0200;
+  --mu-warning: #d47500;
+  --mu-info: #3399f3;
+  --mu-bg-page: #dfe4e8;
+  --mu-bg-card: #f7f8f9;
+  --mu-border: #c5ccd3;
+  --mu-border-strong: #a8b2bc;
+  --mu-text: #2c3338;
+  --mu-text-muted: #5a6570;
+  --mu-nav-bg-start: #3d5a73;
+  --mu-nav-bg-end: #2a3f52;
+  --mu-panel-info-bg: #e2e8ed;
+  --mu-panel-info-text: #2a3f52;
+  --mu-panel-info-border: #b8c4ce;
+  --mu-focus-ring: rgba(68, 110, 155, 0.25);
+  --mu-grid-hover: #e8edf2;
+  --mu-table-stripe: #eef1f4;
 }
 
 .mundialito-ui h1,
@@ -69,12 +110,20 @@
   padding-top: 24px;
 }
 
-/* Navbar */
+/* Navbar — theme-colored gradient */
 .mundialito-ui .navbar-inverse.navbar-fixed-top {
-  background: linear-gradient(180deg, #1a2332 0%, #121820 100%);
+  background: linear-gradient(180deg, var(--mu-nav-bg-start) 0%, var(--mu-nav-bg-end) 100%);
   border: none;
   box-shadow: var(--mu-shadow-nav);
   min-height: var(--mu-nav-height);
+}
+
+.mundialito-ui.theme-cerulean .navbar-inverse.navbar-fixed-top {
+  border-bottom: 3px solid var(--mu-accent);
+}
+
+.mundialito-ui.theme-spacelab .navbar-inverse.navbar-fixed-top {
+  border-bottom: 3px solid var(--mu-primary);
 }
 
 .mundialito-ui .navbar-inverse .navbar-brand {
@@ -102,7 +151,7 @@
 .mundialito-ui .navbar-inverse .navbar-nav > .active > a,
 .mundialito-ui .navbar-inverse .navbar-nav > .active > a:hover,
 .mundialito-ui .navbar-inverse .navbar-nav > .active > a:focus {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--mu-nav-hover);
 }
 
 .mundialito-ui .navbar-inverse .navbar-toggle {
@@ -112,7 +161,7 @@
 
 .mundialito-ui .navbar-inverse .navbar-toggle:hover,
 .mundialito-ui .navbar-inverse .navbar-toggle:focus {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--mu-nav-hover);
 }
 
 .mundialito-ui .navbar-inverse .dropdown-menu {
@@ -135,6 +184,14 @@
   margin-bottom: 20px;
 }
 
+.mundialito-ui.theme-spacelab .panel {
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui.theme-cerulean .panel {
+  border-radius: var(--mu-radius-lg);
+}
+
 .mundialito-ui .panel-heading {
   border-radius: var(--mu-radius) var(--mu-radius) 0 0;
   padding: 12px 16px;
@@ -148,9 +205,9 @@
 }
 
 .mundialito-ui .panel-info > .panel-heading {
-  background: #e8f4fc;
-  color: #0f4c75;
-  border-color: #c5e3f5;
+  background: var(--mu-panel-info-bg);
+  color: var(--mu-panel-info-text);
+  border-color: var(--mu-panel-info-border);
 }
 
 .mundialito-ui .panel-success > .panel-heading {
@@ -172,7 +229,7 @@
 }
 
 .mundialito-ui .panel-default > .panel-heading {
-  background: #f8f9fb;
+  background: var(--mu-bg-page);
   color: var(--mu-text);
   border-color: var(--mu-border);
 }
@@ -191,7 +248,7 @@
   border-top: 1px solid var(--mu-border);
 }
 
-/* Buttons */
+/* Buttons — let theme primary show through */
 .mundialito-ui .btn {
   border-radius: var(--mu-radius-sm);
   font-weight: 500;
@@ -213,7 +270,8 @@
 
 .mundialito-ui .btn-success {
   background: var(--mu-success);
-  border-color: #178247;
+  border-color: var(--mu-success);
+  filter: brightness(0.92);
 }
 
 /* Forms */
@@ -221,11 +279,16 @@
   border-radius: var(--mu-radius-sm);
   border-color: var(--mu-border-strong);
   box-shadow: none;
+  background: #fff;
+}
+
+.mundialito-ui.theme-spacelab .form-control {
+  background: #fff;
 }
 
 .mundialito-ui .form-control:focus {
   border-color: var(--mu-primary);
-  box-shadow: 0 0 0 3px rgba(29, 111, 212, 0.15);
+  box-shadow: 0 0 0 3px var(--mu-focus-ring);
 }
 
 .mundialito-ui input.ng-invalid.ng-dirty,
@@ -238,16 +301,17 @@
 .mundialito-ui textarea.ng-invalid.ng-dirty:focus,
 .mundialito-ui select.ng-invalid.ng-dirty:focus {
   border-color: var(--mu-danger);
-  box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.15);
+  box-shadow: 0 0 0 3px rgba(205, 2, 0, 0.15);
 }
 
 /* Lists & tables */
 .mundialito-ui .list-group-item {
   border-color: var(--mu-border);
+  background: var(--mu-bg-card);
 }
 
 .mundialito-ui .table-striped > tbody > tr:nth-of-type(odd) {
-  background: #f8fafc;
+  background: var(--mu-table-stripe);
 }
 
 .mundialito-ui .table > thead > tr > th {
@@ -267,6 +331,10 @@
   font-size: 12px;
 }
 
+.mundialito-ui .label-primary {
+  background-color: var(--mu-primary);
+}
+
 /* ui-grid */
 .mundialito-ui .myGrid.ui-grid {
   border: 1px solid var(--mu-border);
@@ -274,17 +342,18 @@
   overflow: hidden;
   font-size: 13px;
   min-height: 120px;
+  background: var(--mu-bg-card);
 }
 
 .mundialito-ui .myGrid .ui-grid-header-cell {
-  background: #f4f6f9;
-  color: var(--mu-text-muted);
+  background: var(--mu-panel-info-bg);
+  color: var(--mu-panel-info-text);
   font-weight: 600;
   border-color: var(--mu-border);
 }
 
 .mundialito-ui .myGrid .ui-grid-row:nth-child(even) .ui-grid-cell {
-  background: #fafbfc;
+  background: var(--mu-table-stripe);
 }
 
 .mundialito-ui .myGrid .ui-grid-cell {
@@ -292,7 +361,7 @@
 }
 
 .mundialito-ui .myGrid .ui-grid-row:hover .ui-grid-cell {
-  background: #eef4ff;
+  background: var(--mu-grid-hover);
 }
 
 /* Select2 / ui-select */
@@ -324,13 +393,22 @@
   border-radius: 999px;
   height: 8px;
   box-shadow: none;
+  background: var(--mu-border);
 }
 
 .mundialito-ui .progress-bar {
   border-radius: 999px;
 }
 
-/* Well / jumbotron if used */
+.mundialito-ui.theme-cerulean .progress-bar-warning {
+  background-color: var(--mu-warning);
+}
+
+.mundialito-ui.theme-spacelab .progress-bar-warning {
+  background-color: var(--mu-primary);
+}
+
+/* Well */
 .mundialito-ui .well {
   border-radius: var(--mu-radius);
   border-color: var(--mu-border);

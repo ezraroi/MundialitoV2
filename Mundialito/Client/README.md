@@ -22,7 +22,13 @@ The server picks a theme from config (`App:Theme`):
 - `cerulean` loads `wwwroot/css/app-cerulean.css`
 - anything else loads `wwwroot/css/app-space-lab.css`
 
-Both bundles include Bootswatch plus `mundialito-theme.css` at the end so the modern styling applies to both themes.
+Both bundles include Bootswatch plus `mundialito-theme.css` at the end. The shell adds `theme-cerulean` or `theme-spacelab` on `<body>` so each theme has distinct colors (navbar, page background, panels).
+
+## Vendor library versions (Client/lib)
+
+- jQuery 3.7.1
+- AngularJS 1.8.3 (angular, animate, sanitize, resource, route)
+- ui-grid 4.12.7
 
 ## Styling rules
 
