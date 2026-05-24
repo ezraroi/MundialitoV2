@@ -1,0 +1,27 @@
+<div class="mu-game-row__inner">
+    <div class="mu-game-row__team mu-game-row__team--home">
+        <team-flag team="game.HomeTeam"></team-flag>
+        <span class="mu-game-row__name">{{::game.HomeTeam.Name}}</span>
+    </div>
+    <div class="mu-game-row__center" ng-class="{'mu-game-row__center--dash': gameRowMode === 'dash' || (gameRowMode === 'auto' && game.IsOpen && !game.IsPendingUpdate)}">
+        <span ng-if="gameRowMode === 'score'">{{::game.HomeScore}}–{{::game.AwayScore}}</span>
+        <span ng-if="gameRowMode === 'dash'">–</span>
+        <span ng-if="gameRowMode === 'auto'">
+            <span ng-if="game.IsPendingUpdate" class="label label-info mu-game-row__status">
+                <i class="fa fa-clock"></i> Pending
+            </span>
+            <span ng-if="game.IsOpen && !game.IsPendingUpdate">–</span>
+            <span ng-if="!game.IsOpen && !game.IsPendingUpdate" class="mu-game-row__result">
+                {{::game.HomeScore}}–{{::game.AwayScore}}
+                <span class="mu-game-row__marks">
+                    <i class="fa fa-stop" style="color: #ffff00"></i> {{::game.CardsMark}}
+                    <i class="fa fa-flag"></i> {{::game.CornersMark}}
+                </span>
+            </span>
+        </span>
+    </div>
+    <div class="mu-game-row__team mu-game-row__team--away">
+        <team-flag team="game.AwayTeam"></team-flag>
+        <span class="mu-game-row__name">{{::game.AwayTeam.Name}}</span>
+    </div>
+</div>

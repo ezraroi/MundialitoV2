@@ -1,18 +1,29 @@
 ﻿<div class="row">
-    <div class="col-md-12">
-        <div class="panel panel-success">
+    <div class="col-xs-12">
+        <div class="panel panel-info mu-panel-primary">
             <div class="panel-heading">
-                <div class="row">
-                    <div class="col-md-3 col-xs-12">
-                        <toggle ng-model="gamesToggle" size="btn-sm" off-class="btn-success"
-                                        on-class="btn-info" ng-change="changed()"
-                                        on="<i class='fa-solid fa-list'></i> All"
-                                        off="<i class='fa-regular fa-folder-open'></i> Open"></toggle>
-                    </div>
-                </div>
+                <i class="fa-solid fa-futbol"></i> Games
+                <span class="pull-right">
+                    <span class="badge" ng-if="games">{{games.length}}</span>
+                    <span class="mu-games-filter hidden-xs">
+                        <toggle ng-model="gamesToggle" size="btn-xs" off-class="btn-success"
+                            on-class="btn-info" ng-change="changed()"
+                            on="<i class='fa-solid fa-list'></i> All"
+                            off="<i class='fa-regular fa-folder-open'></i> Open only">
+                        </toggle>
+                    </span>
+                </span>
             </div>
             <div class="panel-body">
-                <mundialito-games info="games" filter="gamesFilter" show-only="security.user.Roles !== 'Admin'" on-add="addNewGame()"></mundialito-games>
+                <div class="visible-xs-block mu-games-filter mu-games-filter--mobile">
+                    <toggle ng-model="gamesToggle" size="btn-sm" off-class="btn-success"
+                        on-class="btn-info" ng-change="changed()"
+                        on="<i class='fa-solid fa-list'></i> All"
+                        off="<i class='fa-regular fa-folder-open'></i> Open only">
+                    </toggle>
+                </div>
+                <mundialito-games info="games" filter="gamesFilter"
+                    show-only="security.user.Roles !== 'Admin'" on-add="addNewGame()"></mundialito-games>
             </div>
         </div>
     </div>

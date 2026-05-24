@@ -27,15 +27,23 @@ const allCss = [
     "Client/css/angular-bootstrap-toggle.css",
     "Client/css/ng-sortable.style.css"
 ];
+const themeOverrides = 'Client/css/mundialito-theme.css';
+
 gulp.task('build-css-space-lab', () => {
-    return gulp.src(allCss.concat(['Client/css/bootstrap-spacelab.min.css']))
+    return gulp.src(allCss.concat([
+        'Client/css/bootstrap-spacelab.min.css',
+        themeOverrides,
+    ]))
         .pipe(concat('app-space-lab.css'))
         .pipe(cleanCss())
         .pipe(gulp.dest('wwwroot/css'));
 });
 
 gulp.task('build-css-cerulean', () => {
-    return gulp.src(allCss.concat(['Client/css/bootstrap-cerulean.min.css']))
+    return gulp.src(allCss.concat([
+        'Client/css/bootstrap-cerulean.min.css',
+        themeOverrides,
+    ]))
         .pipe(concat('app-cerulean.css'))
         .pipe(cleanCss())
         .pipe(gulp.dest('wwwroot/css'));
@@ -60,8 +68,6 @@ gulp.task('compress-lib', function () {
         "Client/lib/promise-tracker.min.js",
         "Client/lib/datetimepicker.js",
         "Client/lib/underscore.js",
-        "Client/lib/d3.min.js",
-        "Client/lib/line-chart.min.js",
         "Client/lib/ui-grid.min.js",
         "Client/lib/ng-google-chart.js",
         "Client/lib/angular-cache.min.js",

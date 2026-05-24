@@ -1,0 +1,1254 @@
+/**
+ * Mundialito visual overrides (Bootstrap 3 + Bootswatch).
+ * Loaded after cerulean/spacelab. Use .theme-cerulean or .theme-spacelab on <body>.
+ */
+
+/* --- Shared layout & typography --- */
+.mundialito-ui {
+  --mu-radius-sm: 6px;
+  --mu-radius: 10px;
+  --mu-radius-lg: 14px;
+  --mu-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --mu-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
+  --mu-shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.2);
+  --mu-nav-height: 56px;
+  --mu-content-max: 1200px;
+  --mu-nav-hover: rgba(255, 255, 255, 0.12);
+  --mu-focus-ring: rgba(47, 164, 231, 0.22);
+  --mu-grid-hover: #eef4ff;
+  --mu-table-stripe: #f8fafc;
+
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--mu-text);
+  background: var(--mu-bg-page);
+  -webkit-font-smoothing: antialiased;
+  padding-top: var(--mu-nav-height);
+  padding-bottom: 24px;
+}
+
+/* Cerulean: bright sky-blue, light page, energetic */
+.mundialito-ui.theme-cerulean {
+  --mu-primary: #2fa4e7;
+  --mu-primary-dark: #1a8cd1;
+  --mu-accent: #ffc107;
+  --mu-success: #73a839;
+  --mu-danger: #c71c22;
+  --mu-warning: #dd5600;
+  --mu-info: #2fa4e7;
+  --mu-bg-page: #e8f4fc;
+  --mu-bg-card: #ffffff;
+  --mu-border: #b8d9f0;
+  --mu-border-strong: #8fc5e8;
+  --mu-text: #0c2d45;
+  --mu-text-muted: #3d6a8a;
+  --mu-nav-bg-start: #1a8cd1;
+  --mu-nav-bg-end: #0d6fa8;
+  --mu-panel-info-bg: #d4edfc;
+  --mu-panel-info-text: #0a4d75;
+  --mu-panel-info-border: #9fd4f5;
+  --mu-focus-ring: rgba(47, 164, 231, 0.28);
+  --mu-grid-hover: #d9effc;
+  --mu-table-stripe: #f0f9ff;
+}
+
+/* Spacelab: slate blue-gray, cooler gray page, calmer */
+.mundialito-ui.theme-spacelab {
+  --mu-primary: #446e9b;
+  --mu-primary-dark: #35567a;
+  --mu-accent: #d4a72c;
+  --mu-success: #3cb521;
+  --mu-danger: #cd0200;
+  --mu-warning: #d47500;
+  --mu-info: #3399f3;
+  --mu-bg-page: #dfe4e8;
+  --mu-bg-card: #f7f8f9;
+  --mu-border: #c5ccd3;
+  --mu-border-strong: #a8b2bc;
+  --mu-text: #2c3338;
+  --mu-text-muted: #5a6570;
+  --mu-nav-bg-start: #3d5a73;
+  --mu-nav-bg-end: #2a3f52;
+  --mu-panel-info-bg: #e2e8ed;
+  --mu-panel-info-text: #2a3f52;
+  --mu-panel-info-border: #b8c4ce;
+  --mu-focus-ring: rgba(68, 110, 155, 0.25);
+  --mu-grid-hover: #e8edf2;
+  --mu-table-stripe: #eef1f4;
+}
+
+.mundialito-ui h1,
+.mundialito-ui h2,
+.mundialito-ui h3,
+.mundialito-ui h4,
+.mundialito-ui h5 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mu-text);
+}
+
+.mundialito-ui .text-muted {
+  color: var(--mu-text-muted) !important;
+}
+
+.mundialito-ui section#body {
+  padding: 24px 0 40px;
+  background: transparent;
+}
+
+.mundialito-ui .container.body-content,
+.mundialito-ui section#body > .container {
+  max-width: var(--mu-content-max);
+}
+
+.mundialito-ui footer {
+  color: var(--mu-text-muted);
+  font-size: 13px;
+  border-top: 1px solid var(--mu-border);
+  margin-top: 8px;
+  padding-top: 24px;
+}
+
+/* Navbar — theme-colored gradient */
+.mundialito-ui .navbar-inverse.navbar-fixed-top {
+  background: linear-gradient(180deg, var(--mu-nav-bg-start) 0%, var(--mu-nav-bg-end) 100%);
+  border: none;
+  box-shadow: var(--mu-shadow-nav);
+  min-height: var(--mu-nav-height);
+}
+
+.mundialito-ui.theme-cerulean .navbar-inverse.navbar-fixed-top {
+  border-bottom: 3px solid var(--mu-accent);
+}
+
+.mundialito-ui.theme-spacelab .navbar-inverse.navbar-fixed-top {
+  border-bottom: 3px solid var(--mu-primary);
+}
+
+.mundialito-ui .navbar-inverse .navbar-brand {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.mundialito-ui .navbar-inverse .navbar-brand .fa-trophy {
+  color: var(--mu-accent) !important;
+}
+
+.mundialito-ui .navbar-inverse .navbar-nav > li > a {
+  font-weight: 500;
+  font-size: 14px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mundialito-ui .navbar-inverse .navbar-nav > li > a:hover,
+.mundialito-ui .navbar-inverse .navbar-nav > li > a:focus,
+.mundialito-ui .navbar-inverse .navbar-nav > .active > a,
+.mundialito-ui .navbar-inverse .navbar-nav > .active > a:hover,
+.mundialito-ui .navbar-inverse .navbar-nav > .active > a:focus {
+  background: var(--mu-nav-hover);
+}
+
+.mundialito-ui .navbar-inverse .navbar-toggle {
+  border-color: rgba(255, 255, 255, 0.25);
+  margin-top: 11px;
+}
+
+.mundialito-ui .navbar-inverse .navbar-toggle:hover,
+.mundialito-ui .navbar-inverse .navbar-toggle:focus {
+  background: var(--mu-nav-hover);
+}
+
+.mundialito-ui .navbar-inverse .dropdown-menu {
+  border-radius: var(--mu-radius-sm);
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow);
+  padding: 6px 0;
+}
+
+.mundialito-ui .navbar-inverse .dropdown-menu > li > a {
+  padding: 8px 16px;
+}
+
+/* Panels */
+.mundialito-ui .panel {
+  border: 1px solid var(--mu-border);
+  border-radius: var(--mu-radius);
+  box-shadow: var(--mu-shadow-sm);
+  background: var(--mu-bg-card);
+  margin-bottom: 20px;
+}
+
+.mundialito-ui.theme-spacelab .panel {
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui.theme-cerulean .panel {
+  border-radius: var(--mu-radius-lg);
+}
+
+.mundialito-ui .panel-heading {
+  border-radius: var(--mu-radius) var(--mu-radius) 0 0;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: 1px solid var(--mu-border);
+}
+
+.mundialito-ui .panel-body {
+  padding: 16px;
+}
+
+.mundialito-ui .panel-info > .panel-heading {
+  background: var(--mu-panel-info-bg);
+  color: var(--mu-panel-info-text);
+  border-color: var(--mu-panel-info-border);
+}
+
+.mundialito-ui .panel-success > .panel-heading {
+  background: #e8f6ee;
+  color: #145c32;
+  border-color: #b8e6cc;
+}
+
+.mundialito-ui .panel-danger > .panel-heading {
+  background: #fdeeee;
+  color: #8b2525;
+  border-color: #f5c6c6;
+}
+
+.mundialito-ui .panel-warning > .panel-heading {
+  background: #fef6e6;
+  color: #7a5a0a;
+  border-color: #f5e0b8;
+}
+
+.mundialito-ui .panel-default > .panel-heading {
+  background: var(--mu-bg-page);
+  color: var(--mu-text);
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .panel-body .panel {
+  box-shadow: none;
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .panel-body .panel-heading {
+  font-size: 14px;
+  padding: 10px 14px;
+}
+
+.mundialito-ui .panel-group .panel-heading + .panel-collapse > .panel-body {
+  border-top: 1px solid var(--mu-border);
+}
+
+/* Buttons — let theme primary show through */
+.mundialito-ui .btn {
+  border-radius: var(--mu-radius-sm);
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mundialito-ui .btn-primary {
+  background: var(--mu-primary);
+  border-color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .btn-primary:hover,
+.mundialito-ui .btn-primary:focus,
+.mundialito-ui .btn-primary:active,
+.mundialito-ui .btn-primary.active {
+  background: var(--mu-primary-dark);
+  border-color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .btn-success {
+  background: var(--mu-success);
+  border-color: var(--mu-success);
+  filter: brightness(0.92);
+}
+
+/* Forms */
+.mundialito-ui .form-control {
+  border-radius: var(--mu-radius-sm);
+  border-color: var(--mu-border-strong);
+  box-shadow: none;
+  background: #fff;
+}
+
+.mundialito-ui.theme-spacelab .form-control {
+  background: #fff;
+}
+
+.mundialito-ui .form-control:focus {
+  border-color: var(--mu-primary);
+  box-shadow: 0 0 0 3px var(--mu-focus-ring);
+}
+
+.mundialito-ui input.ng-invalid.ng-dirty,
+.mundialito-ui textarea.ng-invalid.ng-dirty,
+.mundialito-ui select.ng-invalid.ng-dirty {
+  border-color: var(--mu-danger);
+}
+
+.mundialito-ui input.ng-invalid.ng-dirty:focus,
+.mundialito-ui textarea.ng-invalid.ng-dirty:focus,
+.mundialito-ui select.ng-invalid.ng-dirty:focus {
+  border-color: var(--mu-danger);
+  box-shadow: 0 0 0 3px rgba(205, 2, 0, 0.15);
+}
+
+/* Lists & tables */
+.mundialito-ui .list-group-item {
+  border-color: var(--mu-border);
+  background: var(--mu-bg-card);
+}
+
+.mundialito-ui .table-striped > tbody > tr:nth-of-type(odd) {
+  background: var(--mu-table-stripe);
+}
+
+.mundialito-ui .table > thead > tr > th {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--mu-text-muted);
+  border-bottom: 2px solid var(--mu-border);
+}
+
+.mundialito-ui .alert {
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui .label {
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.mundialito-ui .label-primary {
+  background-color: var(--mu-primary);
+}
+
+/* ui-grid */
+.mundialito-ui .myGrid.ui-grid {
+  border: 1px solid var(--mu-border);
+  border-radius: var(--mu-radius-sm);
+  overflow: hidden;
+  font-size: 13px;
+  min-height: 120px;
+  background: var(--mu-bg-card);
+}
+
+.mundialito-ui .myGrid .ui-grid-header-cell {
+  background: var(--mu-panel-info-bg);
+  color: var(--mu-panel-info-text);
+  font-weight: 600;
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .myGrid .ui-grid-row:nth-child(even) .ui-grid-cell {
+  background: var(--mu-table-stripe);
+}
+
+.mundialito-ui .myGrid .ui-grid-cell {
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .myGrid .ui-grid-row:hover .ui-grid-cell {
+  background: var(--mu-grid-hover);
+}
+
+/* Select2 / ui-select */
+.mundialito-ui .select2-container .select2-choice,
+.mundialito-ui .select2-container--default .select2-selection--single {
+  border-radius: var(--mu-radius-sm);
+  border-color: var(--mu-border-strong);
+  min-height: 34px;
+}
+
+/* Busy overlay & toaster */
+.mundialito-ui .cg-busy-default-sign {
+  border-radius: var(--mu-radius);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui #toast-container .toast {
+  border-radius: var(--mu-radius-sm);
+  box-shadow: var(--mu-shadow);
+}
+
+/* Loading & progress */
+.mundialito-ui .loading h3 {
+  font-weight: 600;
+  color: var(--mu-text-muted);
+}
+
+.mundialito-ui .progress {
+  border-radius: 999px;
+  height: 8px;
+  box-shadow: none;
+  background: var(--mu-border);
+}
+
+.mundialito-ui .progress-bar {
+  border-radius: 999px;
+}
+
+.mundialito-ui.theme-cerulean .progress-bar-warning {
+  background-color: var(--mu-warning);
+}
+
+.mundialito-ui.theme-spacelab .progress-bar-warning {
+  background-color: var(--mu-primary);
+}
+
+/* Well */
+.mundialito-ui .well {
+  border-radius: var(--mu-radius);
+  border-color: var(--mu-border);
+  box-shadow: none;
+  background: var(--mu-bg-card);
+}
+
+/* --- D1: Dashboard & lists (mobile-first) --- */
+
+.mundialito-ui .mu-page-hero {
+  margin-bottom: 16px;
+}
+
+.mundialito-ui .mu-page-hero .alert {
+  margin-bottom: 0;
+  border-radius: var(--mu-radius);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.mundialito-ui .panel.mu-panel-primary {
+  border-width: 2px;
+  border-color: var(--mu-primary);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .panel.mu-panel-primary > .panel-heading {
+  background: var(--mu-primary);
+  color: #fff;
+  border-color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .panel.mu-panel-primary > .panel-heading .badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.mundialito-ui a.list-group-item.mu-game-row {
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.mundialito-ui a.list-group-item.mu-game-row:hover,
+.mundialito-ui a.list-group-item.mu-game-row:focus {
+  background: var(--mu-grid-hover);
+  color: inherit;
+}
+
+.mundialito-ui .mu-game-row__inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.mundialito-ui .mu-game-row__team {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mundialito-ui .mu-game-row__team--away {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.mundialito-ui .mu-game-row__name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mundialito-ui .mu-game-row__center {
+  flex: 0 0 auto;
+  min-width: 52px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-game-row__center--dash {
+  color: var(--mu-text-muted);
+  font-weight: 600;
+}
+
+.mundialito-ui .mu-game-row__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mundialito-ui .mu-game-row__meta {
+  font-size: 11px;
+  color: var(--mu-text-muted);
+  text-align: center;
+}
+
+.mundialito-ui .mu-game-row__status {
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.mundialito-ui .mu-game-row__result {
+  display: block;
+  line-height: 1.3;
+}
+
+.mundialito-ui .mu-game-row__marks {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--mu-text-muted);
+  margin-top: 2px;
+}
+
+.mundialito-ui .mu-game-row--add {
+  text-align: center;
+  font-weight: 600;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-game-row--add:hover,
+.mundialito-ui .mu-game-row--add:focus {
+  color: var(--mu-primary-dark);
+}
+
+/* --- D4: Games list (gamesTemplate) --- */
+
+.mundialito-ui .mu-games-template__admin-list .list-group-item {
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui .mu-games-template__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68px;
+  padding: 12px 8px;
+  color: var(--mu-danger, #d9534f);
+  text-decoration: none;
+}
+
+.mundialito-ui .mu-games-template__delete:hover,
+.mundialito-ui .mu-games-template__delete:focus {
+  background: #fdf0f0;
+  color: #c9302c;
+}
+
+.mundialito-ui .mu-games-template__delete--spacer {
+  visibility: hidden;
+  pointer-events: none;
+  min-height: 44px;
+}
+
+.mundialito-ui .mu-games-filter {
+  margin-left: 8px;
+}
+
+.mundialito-ui .mu-games-filter--mobile {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* --- D4: Teams / Stadiums entity lists --- */
+
+.mundialito-ui a.list-group-item.mu-entity-row {
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.mundialito-ui a.list-group-item.mu-entity-row:hover,
+.mundialito-ui a.list-group-item.mu-entity-row:focus {
+  background: var(--mu-grid-hover);
+  color: inherit;
+}
+
+.mundialito-ui .mu-entity-row__inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.mundialito-ui .mu-entity-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.mundialito-ui .mu-entity-row__icon {
+  font-size: 18px;
+  color: var(--mu-primary);
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.mundialito-ui .mu-entity-row__chevron {
+  flex-shrink: 0;
+  color: var(--mu-text-muted);
+  font-size: 12px;
+}
+
+.mundialito-ui .mu-entity-row--add {
+  text-align: center;
+  font-weight: 600;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-entity-row--add:hover,
+.mundialito-ui .mu-entity-row--add:focus {
+  color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .mu-entities-list__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  padding: 12px 8px;
+  color: var(--mu-danger, #d9534f);
+  text-decoration: none;
+}
+
+.mundialito-ui .mu-entities-list__delete:hover,
+.mundialito-ui .mu-entities-list__delete:focus {
+  background: #fdf0f0;
+  color: #c9302c;
+}
+
+.mundialito-ui .mu-entities-list__delete--spacer {
+  visibility: hidden;
+  pointer-events: none;
+  min-height: 44px;
+}
+
+.mundialito-ui .mu-entity-header {
+  margin-bottom: 16px;
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.mundialito-ui .mu-entity-header__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mundialito-ui .mu-entity-header__meta {
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-entity-header__link {
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-entity-header__logo {
+  max-width: 64px;
+  max-height: 64px;
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui .mu-entity-header__title {
+    font-size: 17px;
+  }
+
+  .mundialito-ui .mu-entity-header__logo {
+    max-width: 48px;
+    max-height: 48px;
+  }
+}
+
+@media (min-width: 768px) {
+  .mundialito-ui .mu-game-row__stack {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mundialito-ui .mu-game-row__stack .mu-game-row__inner {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .mundialito-ui .mu-game-row__meta {
+    flex: 0 0 auto;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .mundialito-ui .mu-game-row__marks {
+    display: inline;
+    margin-top: 0;
+    margin-left: 4px;
+  }
+
+  .mundialito-ui .mu-game-row__result {
+    display: inline;
+  }
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui section#body {
+    padding-top: 16px;
+  }
+
+  .mundialito-ui .panel-body {
+    padding: 12px;
+  }
+
+  .mundialito-ui .mu-game-row__name {
+    font-size: 12px;
+  }
+
+  .mundialito-ui .mu-game-row__center {
+    min-width: 44px;
+    font-size: 14px;
+  }
+}
+
+/* --- G1: Game match header & bet (mobile-first) --- */
+
+.mundialito-ui .mu-match-header {
+  margin-bottom: 16px;
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .mu-match-header > .panel-body {
+  padding: 16px;
+}
+
+.mundialito-ui .mu-match-header__teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-match-header__team {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.mundialito-ui .mu-match-header__team-name {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.3;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mundialito-ui .mu-match-header__team-name a {
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-match-header__score {
+  flex: 0 0 auto;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--mu-primary);
+  padding: 0 4px;
+}
+
+.mundialito-ui .mu-match-header__score--vs {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--mu-text-muted);
+}
+
+.mundialito-ui .mu-match-header__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-match-header__meta {
+  font-size: 13px;
+  color: var(--mu-text-muted);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-match-header__meta i {
+  width: 16px;
+  text-align: center;
+  margin-right: 4px;
+}
+
+.mundialito-ui .mu-match-header__points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-points-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--mu-bg-page);
+  border: 1px solid var(--mu-border);
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-match-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.mundialito-ui .panel.mu-panel-bet {
+  border-width: 2px;
+  border-color: var(--mu-success);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .panel.mu-panel-bet > .panel-heading {
+  background: #e8f6ee;
+  color: #145c32;
+  border-color: #b8e6cc;
+}
+
+.mundialito-ui .mu-bet-form__scores {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-bet-form__scores .form-group {
+  flex: 1 1 0;
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-bet-form__scores label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mu-text-muted);
+  margin-bottom: 6px;
+}
+
+.mundialito-ui .mu-bet-form__scores .form-control {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  height: 48px;
+}
+
+.mundialito-ui .mu-bet-form__marks .form-group {
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-bet-form__marks label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mu-text-muted);
+  margin-bottom: 6px;
+}
+
+.mundialito-ui .mu-bet-closed-banner {
+  margin-bottom: 12px;
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui .mu-sticky-actions {
+  position: sticky;
+  bottom: 12px;
+  z-index: 100;
+  padding: 12px 0 4px;
+  margin-top: 8px;
+  background: linear-gradient(to top, var(--mu-bg-card) 70%, transparent);
+}
+
+.mundialito-ui .mu-sticky-actions .btn {
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui .mu-chart-panel {
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .mundialito-ui .mu-match-header__team-name {
+    font-size: 16px;
+  }
+
+  .mundialito-ui .mu-match-header__score {
+    font-size: 36px;
+  }
+}
+
+/* --- D3: Dashboard hierarchy --- */
+
+.mundialito-ui .mu-empty-state {
+  margin: 16px 8px;
+  font-size: 14px;
+}
+
+.mundialito-ui .mu-ranking-list .media {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--mu-border);
+  margin-top: 0;
+}
+
+.mundialito-ui .mu-ranking-list .media:last-child {
+  border-bottom: none;
+}
+
+.mundialito-ui .mu-ranking-avatar {
+  width: 48px;
+  height: 48px;
+}
+
+@media (min-width: 768px) {
+  .mundialito-ui .mu-ranking-avatar {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.mundialito-ui .mu-ranking-meta {
+  font-size: 13px;
+  color: var(--mu-text-muted);
+}
+
+.mundialito-ui .mu-ranking-meta-sep {
+  margin: 0 6px;
+}
+
+.mundialito-ui .mu-pending-hint {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-pending-toggle {
+  margin: 10px 0;
+}
+
+.mundialito-ui .mu-accordion-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.mundialito-ui .mu-accordion-heading-icon {
+  flex: 0 0 32px;
+  text-align: center;
+}
+
+.mundialito-ui .mu-accordion-heading-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mundialito-ui .mu-progress-label {
+  color: #fff;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.mundialito-ui .panel.mu-panel-more {
+  border-style: dashed;
+  border-color: var(--mu-border-strong);
+  box-shadow: none;
+}
+
+.mundialito-ui .panel.mu-panel-more > .panel-body {
+  background: transparent;
+}
+
+.mundialito-ui .mu-more-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 16px 0 10px;
+  color: var(--mu-text);
+}
+
+.mundialito-ui .mu-player-search {
+  margin-bottom: 10px;
+}
+
+.mundialito-ui .mu-players-list {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+/* --- G3: Game page tabs --- */
+
+.mundialito-ui .mu-game-tabs {
+  margin-bottom: 16px;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 2px solid var(--mu-border);
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs > li {
+  float: none;
+  flex: 1 0 auto;
+  text-align: center;
+  min-width: 72px;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs > li > a {
+  margin-right: 0;
+  border-radius: var(--mu-radius-sm) var(--mu-radius-sm) 0 0;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+.mundialito-ui .mu-game-tabs > .nav-tabs > li.active > a,
+.mundialito-ui .mu-game-tabs > .nav-tabs > li.active > a:hover,
+.mundialito-ui .mu-game-tabs > .nav-tabs > li.active > a:focus {
+  background: var(--mu-bg-card);
+  border-color: var(--mu-border) var(--mu-border) transparent;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-tab-pane {
+  padding-top: 12px;
+}
+
+.mundialito-ui .mu-tab-hint {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-game-tabs .tab-content {
+  background: var(--mu-bg-card);
+  border: 1px solid var(--mu-border);
+  border-top: none;
+  border-radius: 0 0 var(--mu-radius) var(--mu-radius);
+  padding: 4px 8px 12px;
+}
+
+.mundialito-ui .mu-bets-highlights__toggle {
+  cursor: pointer;
+  user-select: none;
+}
+
+.mundialito-ui .mu-bets-highlights__toggle:hover {
+  background: var(--mu-bg-muted, #f5f5f5);
+}
+
+.mundialito-ui .mu-bets-highlights .panel-body.collapse:not(.in) {
+  display: none;
+}
+
+.mundialito-ui .mu-bets-highlights .panel-body.collapse.in {
+  display: block;
+}
+
+/* --- Phase 2: Bets Center --- */
+
+.mundialito-ui .mu-bets-center-hint {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.mundialito-ui .mu-bets-center-table {
+  margin-bottom: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mundialito-ui .mu-bets-center-table__grid {
+  min-width: 720px;
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-bets-center-table__game {
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.mundialito-ui .mu-bets-center-table__close {
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.mundialito-ui .mu-bets-center-table__action {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+.mundialito-ui .mu-bets-center-table tbody tr.warning > td {
+  background-color: #fcf8e3;
+}
+
+/* Mobile: card per game */
+.mundialito-ui .mu-bets-center-cards {
+  margin-top: 4px;
+}
+
+.mundialito-ui .mu-bets-center-card {
+  margin-bottom: 12px;
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.mundialito-ui .mu-bets-center-card__heading {
+  padding: 10px 12px;
+}
+
+.mundialito-ui .mu-bets-center-card__match {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mundialito-ui .mu-bets-center-card__match:hover,
+.mundialito-ui .mu-bets-center-card__match:focus {
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .mu-bets-center-card__close {
+  font-size: 12px;
+}
+
+.mundialito-ui .mu-bets-center-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mundialito-ui .mu-bets-center-card.panel-warning > .panel-heading {
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
+
+/* --- Phase 2: Navbar --- */
+
+.mundialito-ui .navbar-toggle {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+}
+
+.mundialito-ui .navbar-nav > li > a {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+@media (max-width: 767px) {
+  .mundialito-ui .navbar-collapse.in .navbar-nav > li > a {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 15px;
+  }
+}
+
+.mundialito-ui .navbar-brand {
+  font-weight: 700;
+}
+
+.mundialito-ui .navbar-nav > li.active > a,
+.mundialito-ui .navbar-nav > li.active > a:hover,
+.mundialito-ui .navbar-nav > li.active > a:focus {
+  font-weight: 600;
+}
+
+/* --- Phase 2: Loading (global + cg-busy) --- */
+
+.mundialito-ui .loading {
+  padding: 48px 16px;
+}
+
+.mundialito-ui .loading h3 {
+  margin-top: 16px;
+}
+
+.mundialito-ui .loading .fa-spinner {
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .cg-busy-default-sign {
+  background: var(--mu-bg-card, #fff);
+  border: 1px solid var(--mu-border);
+  border-radius: var(--mu-radius);
+  box-shadow: var(--mu-shadow);
+  padding: 20px 28px;
+  min-width: 140px;
+}
+
+.mundialito-ui .cg-busy-default-text {
+  color: var(--mu-text-muted);
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.mundialito-ui .cg-busy-default-spinner .fa-spinner {
+  font-size: 28px;
+  color: var(--mu-primary);
+}
+
+.mundialito-ui .datetimepicker .fa-chevron-left,
+.mundialito-ui .datetimepicker .fa-chevron-right {
+  font-size: 12px;
+}

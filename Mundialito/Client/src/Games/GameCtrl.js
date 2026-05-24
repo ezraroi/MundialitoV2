@@ -8,6 +8,27 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.userBet = userBet;
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
+    $scope.gameActiveTab = 0;
+    $scope.betsHighlightsOpen = false;
+    $scope.showMoreTab = game.IsPendingUpdate;
+    $scope.adminTabIndex = game.IsPendingUpdate ? 2 : 1;
+
+    function updateShowMoreTab() {
+        var hasOdds = $scope.plugins['odds'] && $scope.plugins['odds'].template;
+        var homeTeamId = $scope.game.HomeTeam.TeamId;
+        var hasTeamsForm = $scope.teamsForm
+            && $scope.teamsForm[homeTeamId]
+            && $scope.teamsForm[homeTeamId].form.length > 0;
+        $scope.showMoreTab = !!(hasOdds || hasTeamsForm || $scope.game.IsPendingUpdate);
+        $scope.adminTabIndex = $scope.showMoreTab ? 2 : 1;
+        if (!$scope.showMoreTab && $scope.gameActiveTab === 1) {
+            $scope.gameActiveTab = 0;
+        }
+    }
+
+    $scope.goToAdminTab = function () {
+        $scope.gameActiveTab = $scope.adminTabIndex;
+    };
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
@@ -22,6 +43,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         results.forEach((result) => {
             $scope.plugins[result.property] = { data: result.data, template: result.template };
         });
+        updateShowMoreTab();
     });
 
     if (!$scope.game.IsOpen) {
@@ -185,7 +207,8 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         $scope.teamsForm[teamId] = {
             form : form,
             games: _.filter(games, (game) => game.IsBetResolved)
-        }
+        };
+        updateShowMoreTab();
     }
     $scope.loadTeamsForm();
 }]);

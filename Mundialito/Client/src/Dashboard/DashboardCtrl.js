@@ -7,6 +7,8 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.oneAtATime = true;
         $scope.status = {};
         $scope.toggleValue = {};
+        $scope.tableToggleValue = false;
+        $scope.moreStatsOpen = false;
         $scope.players = players;
 
         // Function to group teams by ShortName

@@ -16,6 +16,9 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
     <base href="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @if (Model.Theme == "cerulean")
     {
         <link href="css/app-cerulean.css" rel="stylesheet" />
@@ -24,15 +27,9 @@
     {
         <link href="css/app-space-lab.css" rel="stylesheet" />
     }
-    <style>
-        body {
-            padding-top: 50px;
-            padding-bottom: 20px;
-        }
-    </style>
 </head>
 
-<body>
+<body class="mundialito-ui @(Model.Theme == "cerulean" ? "theme-cerulean" : "theme-spacelab")">
    
     <script src="//accounts.google.com/gsi/client"></script>
     <div class="container body-content">
@@ -58,26 +55,25 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy" style="color: #FFD43B;"></i>
+                        <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy"></i>
                             @Model.ApplicationName</a>
                     </div>
                     <div ng-if="security.user" class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li active-nav><a href="/"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
+                            <li active-nav><a href="/" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-tachometer"></i> Dashboard</a></li>
                             <li ng-show="security.user.Roles !== 'Disabled'" active-nav><a href="/bets_center"
-                                    class="hidden-xs"><i class="fa fa-money"></i> Bets
-                                    Center</a></li>
-                            <li active-nav><a href="/games"><i class="fa-solid fa-futbol"></i> Games</a></li>
-                            <li active-nav><a href="/teams"><i class="fa-solid fa-users"></i> Teams</a></li>
-                            <li active-nav><a href="/stadiums"><i class="fa-solid fa-home"></i> Stadiums</a></li>
+                                    data-toggle="collapse" data-target=".navbar-collapse"><i class="fa fa-money"></i> Bets Center</a></li>
+                            <li active-nav><a href="/games" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-futbol"></i> Games</a></li>
+                            <li active-nav><a href="/teams" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-users"></i> Teams</a></li>
+                            <li active-nav><a href="/stadiums" data-toggle="collapse" data-target=".navbar-collapse"><i class="fa-solid fa-home"></i> Stadiums</a></li>
                             <li active-nav access-level="Admin" class="hidden-xs"><a href="/manage_users"><i
                                         class="fa-solid fa-tasks"></i> Admin Panel</a></li>
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                             <li uib-dropdown on-toggle="toggled(open)">
                                 <a href="#" uib-dropdown-toggle id="userDropdown">
-                                    <img referrerpolicy="no-referrer" ng-show="{{security.user.ProfilePicture != null}}" src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;">
-                                    <i class="fa fa-solid fa-user" ng-show="{{security.user.ProfilePicture == null}}"></i> {{security.user.Username}} <b class="caret"></b></a>
+                                    <img referrerpolicy="no-referrer" ng-show="security.user.ProfilePicture" ng-src="{{security.user.ProfilePicture}}" class="img-circle" style="width: 20px;" alt="">
+                                    <i class="fa-solid fa-user" ng-show="!security.user.ProfilePicture"></i> {{security.user.Username}} <b class="caret"></b></a>
                                 <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="userDropdown">
                                     <li><a href="/users/{{security.user.Username}}"><span
                                                 class="fa-solid fa-book"></span>
@@ -111,8 +107,7 @@
                                 <span>&copy; @DateTime.Now.Year - @Model.ApplicationName</span>
                             </div>
                             <div class="col-md-4 text-center hidden-xs">
-                                <a href="https://github.com/ezraroi/MundialitoV2" target="_self">Mundilaito at <i
-                                        class="<i class=" fa-brands fa-github"></i> GitHub</a>
+                                <a href="https://github.com/ezraroi/MundialitoV2" target="_blank" rel="noopener">Mundialito on <i class="fa-brands fa-github"></i> GitHub</a>
                             </div>
                             <div class="col-md-4 col-xs-6">
                                 <span class="pull-right"><a href="/swagger/index.html" target="_self">Mundialito REST
@@ -141,26 +136,29 @@
             </div>
             <!-- End of Content Loading message -->
         </div>
-        <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
-        <!-- If you include the integration it will be available under Sentry.Integrations.Angular -->
-        <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
         <!-- End of Main Content -->
         @if (env.IsProduction())
         {
-            <script src="lib/lib-min-2d5e40df8764ea1d842fca768d139b58.js"></script>
-            <script src="js/app-min-c5fa64cf5d492a8bfd3d5f8a45ca67d5.js"></script>
+            <script src="lib/lib-min-3cbf6acf2e20bb605c0df871cb6ab29a.js"></script>
         }
         else {
-            <script src="lib/lib-77990d6df268e8d3d432fb52597000f9.js"></script>
-            <script src="js/app-f19819dfee43f85b5ff9235f0500f384.js"></script>
+            <script src="lib/lib-79b1a897e7539961e2feb9f19aa139ac.js"></script>
         }
-         
-<script>
-  Sentry.init({
-    dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
-    integrations: [new Sentry.Integrations.Angular()],
-  });
-</script>
+        <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
+        <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
+        <script>
+          Sentry.init({
+            dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
+            integrations: [new Sentry.Integrations.Angular()],
+          });
+        </script>
+        @if (env.IsProduction())
+        {
+            <script src="js/app-min-e0cc938ae15cc2391bd1a4de40e3b13a.js"></script>
+        }
+        else {
+            <script src="js/app-6b86bf38c8299ce23f6ce0212e6e7bfa.js"></script>
+        }
     </div>
 </body>
 
