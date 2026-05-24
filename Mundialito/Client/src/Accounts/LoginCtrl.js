@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope' , 'security', function ($scope, $rootScope, Security) {
+angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope', '$timeout', 'security', function ($scope, $rootScope, $timeout, Security) {
     $rootScope.mundialitoApp.authenticating = false;
 
     var LoginModel = function () {
@@ -24,24 +24,62 @@ angular.module('mundialitoApp').controller('LoginCtrl', ['$scope', '$rootScope' 
             { property: 'rememberMe', label: 'Keep me logged in', type: 'checkbox' }
     ];
 
-    window.login = (response) => {
-        console.log('Got response from Google: ' + response);
-        $rootScope.mundialitoApp.message = "Processing Login...";
-        Security.googleLogin(response).finally(function () {
-            $rootScope.mundialitoApp.message = null;
+    function onGoogleCredential(response) {
+        $scope.$apply(function () {
+            $rootScope.mundialitoApp.message = "Processing Login...";
+            Security.googleLogin({ Credential: response.credential }).finally(function () {
+                $rootScope.mundialitoApp.message = null;
+            });
         });
     }
 
-    window.onload = function () {
+    function initGoogleSignIn(attempt) {
+        attempt = attempt || 0;
+        var clientId = $rootScope.mundialitoApp.GoogleClientId;
+        if (!clientId) {
+            return;
+        }
+
+        if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+            if (attempt < 10) {
+                $timeout(function () { initGoogleSignIn(attempt + 1); }, 100);
+            }
+            return;
+        }
+
+        var buttonEl = document.getElementById('buttonDiv');
+        if (!buttonEl) {
+            if (attempt < 10) {
+                $timeout(function () { initGoogleSignIn(attempt + 1); }, 100);
+            }
+            return;
+        }
+
+        buttonEl.innerHTML = '';
+
         google.accounts.id.initialize({
-          client_id: $scope.mundialitoApp.GoogleClientId,
-          callback: login
+            client_id: clientId,
+            callback: onGoogleCredential
         });
         google.accounts.id.renderButton(
-          document.getElementById("buttonDiv"),
-          { theme: "filled_blue", size: "large", text: "continue_with", shape: "circle" }  // customization attributes
+            buttonEl,
+            { theme: "filled_blue", size: "large", text: "continue_with", shape: "circle" }
         );
-        google.accounts.id.prompt(); // also display the One Tap dialog
-      }
+        google.accounts.id.prompt();
+    }
+
+    $scope.$on('$destroy', function () {
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            google.accounts.id.cancel();
+        }
+        var buttonEl = document.getElementById('buttonDiv');
+        if (buttonEl) {
+            buttonEl.innerHTML = '';
+        }
+    });
+
+    if ($rootScope.mundialitoApp.GoogleClientId) {
+        $timeout(initGoogleSignIn, 0);
+    }
 
 }]);
