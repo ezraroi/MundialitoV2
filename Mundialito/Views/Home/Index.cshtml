@@ -16,6 +16,9 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
     <base href="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @if (Model.Theme == "cerulean")
     {
         <link href="css/app-cerulean.css" rel="stylesheet" />
@@ -24,15 +27,9 @@
     {
         <link href="css/app-space-lab.css" rel="stylesheet" />
     }
-    <style>
-        body {
-            padding-top: 50px;
-            padding-bottom: 20px;
-        }
-    </style>
 </head>
 
-<body>
+<body class="mundialito-ui">
    
     <script src="//accounts.google.com/gsi/client"></script>
     <div class="container body-content">
@@ -58,7 +55,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy" style="color: #FFD43B;"></i>
+                        <a href="/" class="navbar-brand"><i class="fa-solid fa-trophy"></i>
                             @Model.ApplicationName</a>
                     </div>
                     <div ng-if="security.user" class="navbar-collapse collapse">
@@ -111,8 +108,7 @@
                                 <span>&copy; @DateTime.Now.Year - @Model.ApplicationName</span>
                             </div>
                             <div class="col-md-4 text-center hidden-xs">
-                                <a href="https://github.com/ezraroi/MundialitoV2" target="_self">Mundilaito at <i
-                                        class="<i class=" fa-brands fa-github"></i> GitHub</a>
+                                <a href="https://github.com/ezraroi/MundialitoV2" target="_blank" rel="noopener">Mundialito on <i class="fa-brands fa-github"></i> GitHub</a>
                             </div>
                             <div class="col-md-4 col-xs-6">
                                 <span class="pull-right"><a href="/swagger/index.html" target="_self">Mundialito REST
@@ -147,11 +143,11 @@
         <!-- End of Main Content -->
         @if (env.IsProduction())
         {
-            <script src="lib/lib-min-2d5e40df8764ea1d842fca768d139b58.js"></script>
+            <script src="lib/lib-min-a1df9cb1c065acba00f12bed4d8c2f8a.js"></script>
             <script src="js/app-min-c5fa64cf5d492a8bfd3d5f8a45ca67d5.js"></script>
         }
         else {
-            <script src="lib/lib-77990d6df268e8d3d432fb52597000f9.js"></script>
+            <script src="lib/lib-f2772d0a6fd6bd2825872dfb4f953657.js"></script>
             <script src="js/app-f19819dfee43f85b5ff9235f0500f384.js"></script>
         }
          

@@ -1,0 +1,339 @@
+/**
+ * Mundialito visual overrides (Bootstrap 3 + Bootswatch).
+ * Loaded after cerulean/spacelab so both themes share the same modern chrome.
+ * Scope: .mundialito-ui on <body>
+ */
+
+.mundialito-ui {
+  --mu-primary: #1d6fd4;
+  --mu-primary-dark: #1558a8;
+  --mu-accent: #f5b731;
+  --mu-success: #1f9d55;
+  --mu-danger: #d64545;
+  --mu-warning: #e8a317;
+  --mu-info: #2a9fd6;
+  --mu-bg-page: #f0f2f5;
+  --mu-bg-card: #ffffff;
+  --mu-border: #e2e6ea;
+  --mu-border-strong: #cfd6dd;
+  --mu-text: #1a1d21;
+  --mu-text-muted: #5c6570;
+  --mu-radius-sm: 6px;
+  --mu-radius: 10px;
+  --mu-radius-lg: 14px;
+  --mu-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --mu-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
+  --mu-shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.18);
+  --mu-nav-height: 56px;
+  --mu-content-max: 1200px;
+
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--mu-text);
+  background: var(--mu-bg-page);
+  -webkit-font-smoothing: antialiased;
+  padding-top: var(--mu-nav-height);
+  padding-bottom: 24px;
+}
+
+.mundialito-ui h1,
+.mundialito-ui h2,
+.mundialito-ui h3,
+.mundialito-ui h4,
+.mundialito-ui h5 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mu-text);
+}
+
+.mundialito-ui .text-muted {
+  color: var(--mu-text-muted) !important;
+}
+
+.mundialito-ui section#body {
+  padding: 24px 0 40px;
+  background: transparent;
+}
+
+.mundialito-ui .container.body-content,
+.mundialito-ui section#body > .container {
+  max-width: var(--mu-content-max);
+}
+
+.mundialito-ui footer {
+  color: var(--mu-text-muted);
+  font-size: 13px;
+  border-top: 1px solid var(--mu-border);
+  margin-top: 8px;
+  padding-top: 24px;
+}
+
+/* Navbar */
+.mundialito-ui .navbar-inverse.navbar-fixed-top {
+  background: linear-gradient(180deg, #1a2332 0%, #121820 100%);
+  border: none;
+  box-shadow: var(--mu-shadow-nav);
+  min-height: var(--mu-nav-height);
+}
+
+.mundialito-ui .navbar-inverse .navbar-brand {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.mundialito-ui .navbar-inverse .navbar-brand .fa-trophy {
+  color: var(--mu-accent) !important;
+}
+
+.mundialito-ui .navbar-inverse .navbar-nav > li > a {
+  font-weight: 500;
+  font-size: 14px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mundialito-ui .navbar-inverse .navbar-nav > li > a:hover,
+.mundialito-ui .navbar-inverse .navbar-nav > li > a:focus,
+.mundialito-ui .navbar-inverse .navbar-nav > .active > a,
+.mundialito-ui .navbar-inverse .navbar-nav > .active > a:hover,
+.mundialito-ui .navbar-inverse .navbar-nav > .active > a:focus {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mundialito-ui .navbar-inverse .navbar-toggle {
+  border-color: rgba(255, 255, 255, 0.25);
+  margin-top: 11px;
+}
+
+.mundialito-ui .navbar-inverse .navbar-toggle:hover,
+.mundialito-ui .navbar-inverse .navbar-toggle:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mundialito-ui .navbar-inverse .dropdown-menu {
+  border-radius: var(--mu-radius-sm);
+  border: 1px solid var(--mu-border);
+  box-shadow: var(--mu-shadow);
+  padding: 6px 0;
+}
+
+.mundialito-ui .navbar-inverse .dropdown-menu > li > a {
+  padding: 8px 16px;
+}
+
+/* Panels */
+.mundialito-ui .panel {
+  border: 1px solid var(--mu-border);
+  border-radius: var(--mu-radius);
+  box-shadow: var(--mu-shadow-sm);
+  background: var(--mu-bg-card);
+  margin-bottom: 20px;
+}
+
+.mundialito-ui .panel-heading {
+  border-radius: var(--mu-radius) var(--mu-radius) 0 0;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: 1px solid var(--mu-border);
+}
+
+.mundialito-ui .panel-body {
+  padding: 16px;
+}
+
+.mundialito-ui .panel-info > .panel-heading {
+  background: #e8f4fc;
+  color: #0f4c75;
+  border-color: #c5e3f5;
+}
+
+.mundialito-ui .panel-success > .panel-heading {
+  background: #e8f6ee;
+  color: #145c32;
+  border-color: #b8e6cc;
+}
+
+.mundialito-ui .panel-danger > .panel-heading {
+  background: #fdeeee;
+  color: #8b2525;
+  border-color: #f5c6c6;
+}
+
+.mundialito-ui .panel-warning > .panel-heading {
+  background: #fef6e6;
+  color: #7a5a0a;
+  border-color: #f5e0b8;
+}
+
+.mundialito-ui .panel-default > .panel-heading {
+  background: #f8f9fb;
+  color: var(--mu-text);
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .panel-body .panel {
+  box-shadow: none;
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .panel-body .panel-heading {
+  font-size: 14px;
+  padding: 10px 14px;
+}
+
+.mundialito-ui .panel-group .panel-heading + .panel-collapse > .panel-body {
+  border-top: 1px solid var(--mu-border);
+}
+
+/* Buttons */
+.mundialito-ui .btn {
+  border-radius: var(--mu-radius-sm);
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mundialito-ui .btn-primary {
+  background: var(--mu-primary);
+  border-color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .btn-primary:hover,
+.mundialito-ui .btn-primary:focus,
+.mundialito-ui .btn-primary:active,
+.mundialito-ui .btn-primary.active {
+  background: var(--mu-primary-dark);
+  border-color: var(--mu-primary-dark);
+}
+
+.mundialito-ui .btn-success {
+  background: var(--mu-success);
+  border-color: #178247;
+}
+
+/* Forms */
+.mundialito-ui .form-control {
+  border-radius: var(--mu-radius-sm);
+  border-color: var(--mu-border-strong);
+  box-shadow: none;
+}
+
+.mundialito-ui .form-control:focus {
+  border-color: var(--mu-primary);
+  box-shadow: 0 0 0 3px rgba(29, 111, 212, 0.15);
+}
+
+.mundialito-ui input.ng-invalid.ng-dirty,
+.mundialito-ui textarea.ng-invalid.ng-dirty,
+.mundialito-ui select.ng-invalid.ng-dirty {
+  border-color: var(--mu-danger);
+}
+
+.mundialito-ui input.ng-invalid.ng-dirty:focus,
+.mundialito-ui textarea.ng-invalid.ng-dirty:focus,
+.mundialito-ui select.ng-invalid.ng-dirty:focus {
+  border-color: var(--mu-danger);
+  box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.15);
+}
+
+/* Lists & tables */
+.mundialito-ui .list-group-item {
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .table-striped > tbody > tr:nth-of-type(odd) {
+  background: #f8fafc;
+}
+
+.mundialito-ui .table > thead > tr > th {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--mu-text-muted);
+  border-bottom: 2px solid var(--mu-border);
+}
+
+.mundialito-ui .alert {
+  border-radius: var(--mu-radius-sm);
+}
+
+.mundialito-ui .label {
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* ui-grid */
+.mundialito-ui .myGrid.ui-grid {
+  border: 1px solid var(--mu-border);
+  border-radius: var(--mu-radius-sm);
+  overflow: hidden;
+  font-size: 13px;
+  min-height: 120px;
+}
+
+.mundialito-ui .myGrid .ui-grid-header-cell {
+  background: #f4f6f9;
+  color: var(--mu-text-muted);
+  font-weight: 600;
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .myGrid .ui-grid-row:nth-child(even) .ui-grid-cell {
+  background: #fafbfc;
+}
+
+.mundialito-ui .myGrid .ui-grid-cell {
+  border-color: var(--mu-border);
+}
+
+.mundialito-ui .myGrid .ui-grid-row:hover .ui-grid-cell {
+  background: #eef4ff;
+}
+
+/* Select2 / ui-select */
+.mundialito-ui .select2-container .select2-choice,
+.mundialito-ui .select2-container--default .select2-selection--single {
+  border-radius: var(--mu-radius-sm);
+  border-color: var(--mu-border-strong);
+  min-height: 34px;
+}
+
+/* Busy overlay & toaster */
+.mundialito-ui .cg-busy-default-sign {
+  border-radius: var(--mu-radius);
+  box-shadow: var(--mu-shadow);
+}
+
+.mundialito-ui #toast-container .toast {
+  border-radius: var(--mu-radius-sm);
+  box-shadow: var(--mu-shadow);
+}
+
+/* Loading & progress */
+.mundialito-ui .loading h3 {
+  font-weight: 600;
+  color: var(--mu-text-muted);
+}
+
+.mundialito-ui .progress {
+  border-radius: 999px;
+  height: 8px;
+  box-shadow: none;
+}
+
+.mundialito-ui .progress-bar {
+  border-radius: 999px;
+}
+
+/* Well / jumbotron if used */
+.mundialito-ui .well {
+  border-radius: var(--mu-radius);
+  border-color: var(--mu-border);
+  box-shadow: none;
+  background: var(--mu-bg-card);
+}
