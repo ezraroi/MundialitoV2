@@ -897,14 +897,10 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.userBet.GameId = game.GameId;
     $scope.showEditForm = false;
     $scope.gameActiveTab = 0;
+    $scope.betsHighlightsOpen = false;
     $scope.goToAdminTab = function () {
-        $scope.gameActiveTab = 3;
+        $scope.gameActiveTab = 2;
     };
-    $scope.$watch('security.user', function (user) {
-        if (user && user.Roles === 'Disabled') {
-            $scope.gameActiveTab = 1;
-        }
-    });
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };

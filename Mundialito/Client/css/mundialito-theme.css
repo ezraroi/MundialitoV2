@@ -860,3 +860,20 @@
   border-radius: 0 0 var(--mu-radius) var(--mu-radius);
   padding: 4px 8px 12px;
 }
+
+.mundialito-ui .mu-bets-highlights__toggle {
+  cursor: pointer;
+  user-select: none;
+}
+
+.mundialito-ui .mu-bets-highlights__toggle:hover {
+  background: var(--mu-bg-muted, #f5f5f5);
+}
+
+.mundialito-ui .mu-bets-highlights .panel-body.collapse:not(.in) {
+  display: none;
+}
+
+.mundialito-ui .mu-bets-highlights .panel-body.collapse.in {
+  display: block;
+}
