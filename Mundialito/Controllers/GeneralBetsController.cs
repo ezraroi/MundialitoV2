@@ -146,6 +146,18 @@ public class GeneralBetsController : ControllerBase
             AddLog(ActionType.UNAUTHORIZED_ACCESS, "You can't update a bet that is not yours");
             return Unauthorized(new ErrorMessage { Message = "You can't update a bet that is not yours" });
         }
+        var winningTeam = teamsRepository.GetTeam(bet.WinningTeam.TeamId);
+        if (winningTeam == null)
+        {
+            AddLog(ActionType.ERROR, string.Format("Team with id '{0}' dosen't exits", bet.WinningTeam.TeamId));
+            return NotFound(new ErrorMessage { Message = string.Format("Team with id '{0}' dosen't exits", bet.WinningTeam.TeamId) });
+        }
+        var goldenBootPlayer = playersRepository.GetPlayer(bet.GoldenBootPlayer.PlayerId);
+        if (goldenBootPlayer == null)
+        {
+            AddLog(ActionType.ERROR, string.Format("Player with id '{0}' dosen't exits", bet.GoldenBootPlayer.PlayerId));
+            return NotFound(new ErrorMessage { Message = string.Format("Player with id '{0}' dosen't exits", bet.GoldenBootPlayer.PlayerId) });
+        }
         betToUpdate.WinningTeamId = bet.WinningTeam.TeamId;
         betToUpdate.GoldBootPlayerId = bet.GoldenBootPlayer.PlayerId;
         generalBetsRepository.Save();

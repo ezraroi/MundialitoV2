@@ -85,10 +85,10 @@ public class NewGeneralBetModelGoldenBootPlayer
 public class UpdateGenralBetModel
 {
     [JsonPropertyName("WinningTeam")]
-    public Team WinningTeam { get; set; }
+    public NewGeneralBetModelWinningTeam WinningTeam { get; set; }
 
     [JsonPropertyName("GoldenBootPlayer")]
-    public Player GoldenBootPlayer { get; set; }
+    public NewGeneralBetModelGoldenBootPlayer GoldenBootPlayer { get; set; }
 }
 
 public class ResolveGeneralBetModel

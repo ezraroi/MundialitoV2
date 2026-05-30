@@ -13,7 +13,11 @@ angular.module('mundialitoApp').factory('GeneralBet', ['$http','$log', function(
         },
         update: function() {
             $log.debug('General Bet: Will update general bet ' + this.GeneralBetId);
-            return $http.put('api/generalbets/' + this.GeneralBetId, this, { tracker: 'updateGeneralBet' });
+            var data = {
+                WinningTeam: { TeamId: this.WinningTeam.TeamId },
+                GoldenBootPlayer: { PlayerId: this.GoldenBootPlayer.PlayerId }
+            };
+            return $http.put('api/generalbets/' + this.GeneralBetId, data, { tracker: 'updateGeneralBet' });
         },
         resolve: function() {
             $log.debug('General Bet: Will resolve general bet ' + this.GeneralBetId);
