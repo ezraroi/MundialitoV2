@@ -9,7 +9,7 @@
                 <p class="text-muted mu-entity-header__meta">
                     Capacity: {{ stadium.Capacity | number }}
                 </p>
-                <button type="button" class="btn btn-info btn-sm" data-access-level="Admin"
+                <button type="button" class="btn btn-info btn-sm"
                     ng-if="security.user && security.user.Roles === 'Admin'"
                     ng-click="showEditForm = !showEditForm">
                     <i class="fa fa-pencil-square"></i>
@@ -20,7 +20,7 @@
         </div>
     </div>
 </div>
-<div class="row" data-access-level="Admin"
+<div class="row"
     ng-if="security.user && security.user.Roles === 'Admin'" ng-show="showEditForm" cg-busy="editStadiumPromise">
     <div class="col-xs-12">
         <div class="panel panel-info">
