@@ -5,6 +5,9 @@ angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'Teams
     $scope.plugins = {};
     $scope.teamsForm = {};
     $scope.showEditForm = false;
+    $scope.toggleEditForm = function () {
+        $scope.showEditForm = !$scope.showEditForm;
+    };
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };

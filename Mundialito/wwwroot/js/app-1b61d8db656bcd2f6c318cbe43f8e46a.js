@@ -2028,6 +2028,9 @@ angular.module('mundialitoApp').factory('Stadium', ['$http','$log', function($ht
 angular.module('mundialitoApp').controller('StadiumCtrl', ['$scope', '$log', 'StadiumsManager', 'GamesManager', 'stadium', 'Alert', function ($scope, $log, StadiumsManager, GamesManager, stadium, Alert) {
     $scope.stadium = stadium;
     $scope.showEditForm = false;
+    $scope.toggleEditForm = function () {
+        $scope.showEditForm = !$scope.showEditForm;
+    };
 
     $scope.getStadiumGamesPromise = GamesManager.getStadiumGames($scope.stadium.StadiumId).then((data) => {
         $log.debug('StadiumCtrl: Got games of stadium');
@@ -2236,6 +2239,9 @@ angular.module('mundialitoApp').controller('TeamCtrl', ['$scope', '$log', 'Teams
     $scope.plugins = {};
     $scope.teamsForm = {};
     $scope.showEditForm = false;
+    $scope.toggleEditForm = function () {
+        $scope.showEditForm = !$scope.showEditForm;
+    };
     $scope.toKeyValue = (object) => {
         return _.keys(object).map((key) => { return { 'name': key, 'value': object[key] } });
     };
