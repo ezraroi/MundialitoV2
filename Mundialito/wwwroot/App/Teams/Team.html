@@ -20,7 +20,7 @@
                         </p>
                         <button type="button" class="btn btn-info btn-sm"
                             ng-if="security.user && security.user.Roles === 'Admin'"
-                            ng-click="showEditForm = !showEditForm">
+                            ng-click="toggleEditForm()">
                             <i class="fa fa-pencil-square"></i>
                             <span mundialito-toggle-text true-label="Hide edit" false-label="Edit team"
                                 varieble="showEditForm">Edit team</span>
