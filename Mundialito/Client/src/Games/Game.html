@@ -100,14 +100,8 @@
                             <tbody>
                                 <tr>
                                     <td>{{::userBet.HomeScore}} - {{::userBet.AwayScore}}</td>
-                                    <td>
-                                        <span ng-if="userBet.CardsMark === 'X'">X</span>
-                                        <team-flag ng-if="userBet.CardsMark !== 'X'" team="userBet.getTeamByCardsMark()"></team-flag>
-                                    </td>
-                                    <td>
-                                        <span ng-if="userBet.CornersMark === 'X'">X</span>
-                                        <team-flag ng-if="userBet.CornersMark !== 'X'" team="userBet.getTeamByCornersMark()"></team-flag>
-                                    </td>
+                                    <td>{{userBet.CardsMark}}</td>
+                                    <td>{{userBet.CornersMark}}</td>
                                     <td><span class="label label-{{userBet.getClass()}}"
                                             ng-show="userBet.IsResolved">{{::userBet.Points}}</span></td>
                                 </tr>
@@ -208,18 +202,8 @@
                                                 <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                         {{::bet.User.LastName}}</a></td>
                                                 <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                <td>
-                                                    <span ng-if="bet.CardsMark === 'X'">X</span>
-                                                    <span ng-if="bet.CardsMark !== 'X'">
-                                                        <team-flag team="bet.getTeamByCardsMark()"></team-flag>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span ng-if="bet.CornersMark === 'X'">X</span>
-                                                    <span ng-if="bet.CornersMark !== 'X'">
-                                                        <team-flag team="bet.getTeamByCornersMark()"></team-flag>
-                                                    </span>
-                                                </td>
+                                                <td>{{bet.CardsMark}}</td>
+                                                <td>{{bet.CornersMark}}</td>
                                                 <td><span class="label label-{{bet.getClass()}}"
                                                         ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
@@ -252,18 +236,8 @@
                                                 <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                         {{::bet.User.LastName}}</a></td>
                                                 <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                <td>
-                                                    <span ng-if="bet.CardsMark === 'X'">X</span>
-                                                    <span ng-if="bet.CardsMark !== 'X'">
-                                                        <team-flag team="bet.getTeamByCardsMark()"></team-flag>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span ng-if="bet.CornersMark === 'X'">X</span>
-                                                    <span ng-if="bet.CornersMark !== 'X'">
-                                                        <team-flag team="bet.getTeamByCornersMark()"></team-flag>
-                                                    </span>
-                                                </td>
+                                                <td>{{bet.CardsMark}}</td>
+                                                <td>{{bet.CornersMark}}</td>
                                                 <td><span class="label label-{{bet.getClass()}}"
                                                         ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
@@ -296,18 +270,8 @@
                                                 <td><a href="users/{{bet.User.Username}}">{{::bet.User.FirstName}}
                                                         {{::bet.User.LastName}}</a></td>
                                                 <td>{{::bet.HomeScore}} - {{::bet.AwayScore}}</td>
-                                                <td>
-                                                    <span ng-if="bet.CardsMark === 'X'">X</span>
-                                                    <span ng-if="bet.CardsMark !== 'X'">
-                                                        <team-flag team="bet.getTeamByCardsMark()"></team-flag>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span ng-if="bet.CornersMark === 'X'">X</span>
-                                                    <span ng-if="bet.CornersMark !== 'X'">
-                                                        <team-flag team="bet.getTeamByCornersMark()"></team-flag>
-                                                    </span>
-                                                </td>
+                                                <td>{{bet.CardsMark}}</td>
+                                                <td>{{bet.CornersMark}}</td>
                                                 <td><span class="label label-{{bet.getClass()}}"
                                                         ng-show="bet.IsResolved">{{::bet.Points}}</span></td>
                                             </tr>
