@@ -233,12 +233,18 @@ public class GamesController : ControllerBase
         }
     }
 
-    private async void AddMonkeyBet(Game res)
+    private void AddMonkeyBet(Game res)
     {
         var monkeyUserName = config.MonkeyUserName;
-        if (!string.IsNullOrEmpty(monkeyUserName))
+        if (string.IsNullOrEmpty(monkeyUserName))
         {
-            var monkeyUser = userManager.Users.Where(user => user.UserName == monkeyUserName).First();
+            return;
+        }
+        // Adding the monkey bet is a best-effort side effect of creating a game; a failure here
+        // (missing monkey, DB issue) must never break game creation, so it is logged and swallowed.
+        try
+        {
+            var monkeyUser = userManager.Users.FirstOrDefault(user => user.UserName == monkeyUserName);
             if (monkeyUser == null)
             {
                 logger.LogError("Monkey user {0} was not found, will not add monkey bet", monkeyUserName);
@@ -258,6 +264,10 @@ public class GamesController : ControllerBase
             });
             betsRepository.Save();
             logger.LogInformation("Monkey bet was saved");
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Failed to add monkey bet for game {0}: {1}", res.GameId, e.Message);
         }
     }
 }

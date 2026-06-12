@@ -39,6 +39,8 @@ public class DatabaseInitilaizer
             {
                 SeedTournamentData(context, config, userManager, logger);
             }
+
+            EnsureMonkeyBets(context, config, logger);
         }
     }
 
@@ -120,6 +122,98 @@ public class DatabaseInitilaizer
         };
         logger.LogInformation("Creating missing monkey user {UserName}", config.MonkeyUserName);
         userManager.CreateAsync(monkey, "monkey").Wait();
+    }
+
+    // Idempotent backfill: guarantees the monkey has a random bet on every existing game and a
+    // general bet. Normally SetupGames seeds these, but if the tournament data was seeded while the
+    // monkey user did not yet exist, SetupGames skipped them and the one-shot Teams gate never re-runs.
+    // On a healthy database this is a no-op. Games added later via the API are covered by AddMonkeyBet.
+    private static void EnsureMonkeyBets(
+        MundialitoDbContext context,
+        Config config,
+        ILogger<DatabaseInitilaizer> logger)
+    {
+        if (string.IsNullOrEmpty(config.MonkeyUserName))
+        {
+            return;
+        }
+
+        // Best-effort: Seed() is called unguarded in Program.cs, so a throw here would abort startup.
+        // The backfill must never crash the app; on failure we log and let the app start normally.
+        try
+        {
+            var monkey = context.Users.FirstOrDefault(u => u.UserName == config.MonkeyUserName);
+            if (monkey == null)
+            {
+                logger.LogWarning("Monkey user {UserName} not found, skipping monkey bets backfill", config.MonkeyUserName);
+                return;
+            }
+
+            var randomResults = new RandomResults();
+
+            // A random, unscored bet for every game the monkey is missing. Already-resolved games get an
+            // unscored bet too; re-saving that game's result re-runs BetsResolver and scores the monkey's
+            // bet without changing any other user's points. The (UserId, GameId) unique index makes this safe.
+            var existingBetGameIds = context.Bets
+                .Where(bet => bet.UserId == monkey.Id)
+                .Select(bet => bet.GameId)
+                .ToHashSet();
+
+            var addedBets = 0;
+            foreach (var game in context.Games.ToList())
+            {
+                if (existingBetGameIds.Contains(game.GameId))
+                {
+                    continue;
+                }
+                var result = randomResults.GetRandomResult();
+                context.Bets.Add(new Bet
+                {
+                    UserId = monkey.Id,
+                    GameId = game.GameId,
+                    HomeScore = result.Key,
+                    AwayScore = result.Value,
+                    CardsMark = randomResults.GetRandomMark(),
+                    CornersMark = randomResults.GetRandomMark()
+                });
+                addedBets++;
+            }
+
+            // General bet: there is no DB uniqueness on GeneralBets.UserId, so this guard is the only thing
+            // preventing a duplicate monkey general bet on every startup.
+            var addedGeneralBet = false;
+            if (!context.GeneralBets.Any(generalBet => generalBet.User.Id == monkey.Id))
+            {
+                var teams = context.Teams.ToList();
+                var players = context.Players.ToList();
+                if (teams.Count > 0 && players.Count > 0)
+                {
+                    var rnd = new Random();
+                    context.GeneralBets.Add(new GeneralBet
+                    {
+                        User = monkey,
+                        WinningTeam = teams[rnd.Next(teams.Count)],
+                        GoldBootPlayer = players[rnd.Next(players.Count)],
+                        IsResolved = false
+                    });
+                    addedGeneralBet = true;
+                }
+                else
+                {
+                    logger.LogWarning("Cannot backfill monkey general bet: teams or players are missing");
+                }
+            }
+
+            if (addedBets > 0 || addedGeneralBet)
+            {
+                logger.LogInformation("Monkey backfill: adding {BetCount} missing bet(s){GeneralBet}", addedBets, addedGeneralBet ? " and a general bet" : string.Empty);
+                context.SaveChanges();
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Monkey bets backfill failed, continuing startup: {0}", e.Message);
+        }
     }
 
     private static void SetupPlayers(MundialitoDbContext context, ITournamentCreator tournamentCreator)
