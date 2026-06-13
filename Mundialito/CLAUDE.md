@@ -42,6 +42,12 @@ npx gulp
 
 After running `gulp`, the hashed filenames in `wwwroot/js/` and `wwwroot/lib/` are automatically written back into `Views/Home/Index.cshtml` by the cache-bust tasks.
 
+**IMPORTANT — always commit these together after every gulp run:**
+```bash
+git add Mundialito/wwwroot/ Mundialito/Views/Home/Index.cshtml
+```
+`Views/Home/Index.cshtml`, the new hashed files in `wwwroot/js/`, and the deleted old hashed files must be committed atomically. If `Index.cshtml` is left out, production will request a JS file that no longer exists and the app will fail to load.
+
 ## Architecture
 
 ### Backend layers
