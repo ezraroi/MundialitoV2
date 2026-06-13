@@ -1063,6 +1063,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 let neighbors = _.chain(users.slice(lowIndex, upperIndex + 1))
                     .pluck('Username').filter((user) => user !== $scope.security.user.Username).value();
                 $scope.neighborsBets = _.filter($scope.gameBets, (bet) => neighbors.includes(bet.User.Username));
+                $scope.sort('place');
             });
         });
     }
@@ -1118,6 +1119,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         $log.debug('GameCtrl: sorting by ' + column);
         $scope.gameBets = _.sortBy($scope.gameBets, (item) => {
             switch (column) {
+                case 'place': return $scope.getUserPlace(item.User);
                 case 'points': return item.Points;
                 case 'cards': return item.CardsMark;
                 case 'corners': return item.CornersMark;
