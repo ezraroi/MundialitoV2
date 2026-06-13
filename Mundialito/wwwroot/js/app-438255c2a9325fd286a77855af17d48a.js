@@ -738,7 +738,7 @@ angular.module('mundialitoApp').controller('DashboardCtrl', ['$scope', '$log', '
         $scope.status = {};
         $scope.toggleValue = {};
         $scope.tableToggleValue = false;
-        $scope.moreStatsOpen = false;
+        $scope.moreStatsOpen = true;
         $scope.players = players;
 
         // Function to group teams by ShortName
@@ -1463,14 +1463,13 @@ angular.module('mundialitoApp').directive('mundialitoGames', ['Alert', function 
         },
         templateUrl: 'App/Games/gamesTemplate.html',
         link: ($scope) => {
-            $scope.allGames = $scope.games;
             $scope.$watch('gamesType', function(newValue) {
                 if ((newValue) && (newValue !== "All")) {
-                    $scope.games = $scope.games.filter((game) => {
+                    $scope.displayedGames = $scope.games.filter((game) => {
                         return game.IsOpen;
                     });
                 } else {
-                    $scope.games = $scope.allGames;
+                    $scope.displayedGames = $scope.games;
                 }
             });
             $scope.deleteGame = (game) => {
@@ -1478,6 +1477,8 @@ angular.module('mundialitoApp').directive('mundialitoGames', ['Alert', function 
                 game.delete().then(() => {
                     Alert.success('Game was deleted successfully');
                     $scope.games.splice($scope.games.indexOf(scope), 1);
+                    var displayedIdx = $scope.displayedGames.indexOf(scope);
+                    if (displayedIdx !== -1) $scope.displayedGames.splice(displayedIdx, 1);
                 });
             };
         }

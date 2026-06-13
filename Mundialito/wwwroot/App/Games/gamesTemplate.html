@@ -3,7 +3,7 @@
         <div class="list-group">
             <a href="{{game.getUrl()}}" class="list-group-item mu-game-row"
                 ng-class="{'list-group-item-warning': !game.UserHasBet}"
-                ng-repeat="game in games track by game.GameId"
+                ng-repeat="game in displayedGames track by game.GameId"
                 title="At {{game.Stadium.Name}}"
                 ng-init="gameRowMode='auto'">
                 <div class="mu-game-row__stack">
@@ -15,7 +15,7 @@
                 ng-click="onAdd()" ng-if="!showOnly">
                 <i class="fa fa-plus-circle"></i> Add new game
             </a>
-            <p class="mu-empty-state text-muted text-center" ng-if="games.length === 0">
+            <p class="mu-empty-state text-muted text-center" ng-if="displayedGames.length === 0">
                 <i class="fa fa-info-circle"></i> No games to show.
             </p>
         </div>
@@ -24,7 +24,7 @@
         <div class="list-group mu-games-template__admin-list">
             <a href="" title="Delete game" ng-click="deleteGame(game)"
                 class="list-group-item mu-games-template__delete"
-                ng-repeat="game in games track by game.GameId">
+                ng-repeat="game in displayedGames track by game.GameId">
                 <i class="fa fa-times-circle"></i>
             </a>
             <span class="list-group-item mu-games-template__delete mu-games-template__delete--spacer"
