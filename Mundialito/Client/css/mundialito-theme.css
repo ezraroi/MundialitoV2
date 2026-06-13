@@ -999,6 +999,16 @@
   font-size: 12px;
 }
 
+.mundialito-ui .mu-accordion-heading-bar .progress {
+  height: 20px;
+  line-height: 20px;
+  margin-bottom: 0;
+}
+
+.mundialito-ui .mu-accordion-heading-bar .progress-bar {
+  line-height: 20px;
+}
+
 .mundialito-ui .panel.mu-panel-more {
   border-style: dashed;
   border-color: var(--mu-border-strong);
