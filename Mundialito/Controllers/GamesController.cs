@@ -128,7 +128,7 @@ public class GamesController : ControllerBase
     [HttpGet("Open")]
     public IEnumerable<GameViewModel> GetOpenGames()
     {
-        var res = gamesRepository.GetGames().Where(game => game.IsOpen(dateTimeProvider.UTCNow)).Select(game => new GameViewModel(game));
+        var res = gamesRepository.GetGames().Where(game => game.IsOpen(dateTimeProvider.UTCNow)).Select(game => new GameViewModel(game)).ToList();
         AddUserBetsData(res);
         return res;
     }

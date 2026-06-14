@@ -142,6 +142,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             BetsManager.addBet($scope.userBet).then((data) => {
                 $log.log('GameCtrl: Bet ' + data.BetId + ' was added');
                 $scope.userBet = data;
+                $scope.game.UserHasBet = true;
                 Alert.success('Bet was added successfully');
             }, (err) => {
                 Alert.error('Failed to add bet, please try again');
