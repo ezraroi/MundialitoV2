@@ -309,6 +309,10 @@
   border-color: var(--mu-border);
   background: var(--mu-bg-card);
 }
+.mundialito-ui .list-group-item.list-group-item-warning {
+  background: #fcf8e3;
+  color: #8a6d3b;
+}
 
 .mundialito-ui .table-striped > tbody > tr:nth-of-type(odd) {
   background: var(--mu-table-stripe);
