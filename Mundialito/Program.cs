@@ -184,7 +184,16 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.MapFallbackToController("Index", "Home");
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        if (ctx.File.Name.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.Context.Response.Headers["Cache-Control"] = "no-store";
+        }
+    }
+});
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
