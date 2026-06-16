@@ -300,14 +300,14 @@
                     <div class="table-responsive" ng-if="gameBets.length > 0">
                         <table class="table table-striped">
                             <thead>
-                                <th style="cursor: pointer" ng-click="sort('place')">#</th>
-                                <th style="cursor: pointer" ng-click="sort('user')"><i class="fa fa-user"></i> User</th>
-                                <th style="cursor: pointer" ng-click="sort('result')">Result</th>
+                                <th style="cursor: pointer" ng-click="sort('place')"># <i ng-if="sortColumn==='place'" class="fa" ng-class="sortReverse ? 'fa-sort-desc' : 'fa-sort-asc'"></i></th>
+                                <th style="cursor: pointer" ng-click="sort('user')"><i class="fa fa-user"></i> User <i ng-if="sortColumn==='user'" class="fa" ng-class="sortReverse ? 'fa-sort-desc' : 'fa-sort-asc'"></i></th>
+                                <th style="cursor: pointer" ng-click="sort('result')">Result <i ng-if="sortColumn==='result'" class="fa" ng-class="sortReverse ? 'fa-sort-desc' : 'fa-sort-asc'"></i></th>
                                 <th style="cursor: pointer" ng-click="sort('cards')"><i class="fa fa-stop"
-                                        style="color: #ffff00" tooltip="Yellow Cards Mark"></i></th>
+                                        style="color: #ffff00" tooltip="Yellow Cards Mark"></i> <i ng-if="sortColumn==='cards'" class="fa" ng-class="sortReverse ? 'fa-sort-desc' : 'fa-sort-asc'"></i></th>
                                 <th style="cursor: pointer" ng-click="sort('corners')"><i class="fa fa-flag"
-                                        tooltip="Corners Mark"></i></th>
-                                <th style="cursor: pointer" ng-click="sort('points')">Points</th>
+                                        tooltip="Corners Mark"></i> <i ng-if="sortColumn==='corners'" class="fa" ng-class="sortReverse ? 'fa-sort-desc' : 'fa-sort-asc'"></i></th>
+                                <th style="cursor: pointer" ng-click="sort('points')">Points <i ng-if="sortColumn==='points'" class="fa" ng-class="sortReverse ? 'fa-sort-desc' : 'fa-sort-asc'"></i></th>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="bet in gameBets">

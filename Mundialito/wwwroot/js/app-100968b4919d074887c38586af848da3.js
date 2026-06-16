@@ -1116,8 +1116,17 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
         });
     }
 
+    $scope.sortColumn = 'place';
+    $scope.sortReverse = false;
+
     $scope.sort = (column) => {
         $log.debug('GameCtrl: sorting by ' + column);
+        if ($scope.sortColumn === column) {
+            $scope.sortReverse = !$scope.sortReverse;
+        } else {
+            $scope.sortColumn = column;
+            $scope.sortReverse = false;
+        }
         $scope.gameBets = _.sortBy($scope.gameBets, (item) => {
             switch (column) {
                 case 'place': return parseInt($scope.getUserPlace(item.User), 10);
@@ -1128,6 +1137,9 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 case 'result': return item.HomeScore + '-' + item.AwayScore;
             }
         });
+        if ($scope.sortReverse) {
+            $scope.gameBets = $scope.gameBets.slice().reverse();
+        }
     };
 
     $scope.gridOptions = {
