@@ -160,8 +160,11 @@ angular.module('mundialitoApp').controller('UserProfileCtrl', ['$scope', '$log',
                     displayExactValues: true,
                     is3D: true,
                     backgroundColor: { fill: 'transparent' },
+                    legend: { position: 'none' },
                     vAxis: {
                         title: "Place",
+                        direction: -1,
+                        viewWindow: { min: 1 }
                     },
                     hAxis: {
                         title: "Date"
