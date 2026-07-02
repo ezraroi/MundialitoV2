@@ -48,7 +48,11 @@ public class BetsController : ControllerBase
     [HttpGet]
     public IEnumerable<BetViewModel> GetAllBets()
     {
-        return betsRepository.GetBets().Select(item => new BetViewModel(item, dateTimeProvider.UTCNow));
+        var currentUsername = httpContextAccessor.HttpContext?.User.Identity.Name;
+        // Bets on games that are still open for betting are private to their owner.
+        return betsRepository.GetBets()
+            .Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow) || bet.User.UserName == currentUsername)
+            .Select(item => new BetViewModel(item, dateTimeProvider.UTCNow));
     }
 
     [HttpGet("{id}")]
@@ -56,6 +60,11 @@ public class BetsController : ControllerBase
     {
         var item = betsRepository.GetBet(id);
         if (item == null)
+            return NotFound(new ErrorMessage{ Message = string.Format("Bet with id '{0}' not found", id)});
+        // A bet on a game that is still open for betting may only be viewed by its owner.
+        // Return NotFound (rather than Forbid) so bet existence cannot be enumerated.
+        var currentUsername = httpContextAccessor.HttpContext?.User.Identity.Name;
+        if (item.IsOpenForBetting(dateTimeProvider.UTCNow) && item.User.UserName != currentUsername)
             return NotFound(new ErrorMessage{ Message = string.Format("Bet with id '{0}' not found", id)});
         return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
     }
