@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Mundialito.Configuration;
 using Mundialito.DAL.Accounts;
@@ -27,6 +28,9 @@ public class DatabaseInitilaizer
             var context = serviceScope.ServiceProvider.GetService<MundialitoDbContext>();
             var userManager = serviceScope.ServiceProvider.GetService<UserManager<MundialitoUser>>();
             var config = serviceScope.ServiceProvider.GetService<IOptions<Config>>().Value;
+
+            ApplyMigrations(context, logger);
+
             if (context.Users.Count() == 0)
             {
                 logger.LogInformation("No users found. will populate the database");
@@ -42,6 +46,23 @@ public class DatabaseInitilaizer
 
             EnsureMonkeyBets(context, config, logger);
         }
+    }
+
+    /// <summary>
+    /// Brings the schema up to date before anything queries it. A database created outside the app
+    /// has no tables at all, which used to fail the first Users query rather than seeding.
+    /// </summary>
+    private static void ApplyMigrations(MundialitoDbContext context, ILogger<DatabaseInitilaizer> logger)
+    {
+        var pending = context.Database.GetPendingMigrations().ToList();
+        if (pending.Count == 0)
+        {
+            return;
+        }
+
+        logger.LogInformation("Applying {Count} pending migration(s): {Migrations}", pending.Count, string.Join(", ", pending));
+        context.Database.Migrate();
+        logger.LogInformation("Migrations applied");
     }
 
     private static void SeedTournamentData(
