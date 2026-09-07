@@ -1,16 +1,18 @@
-using Mundialito.DAL.Bets;
+using Mundialito.DAL.Games;
 
 namespace Mundialito.Logic;
 
 public interface IBetValidator
 {
-    void ValidateNewBet(Bet bet);
-
-    /// <param name="persisted">The bet as it is stored - never a copy the caller supplied.</param>
-    /// <param name="callerUserId">The authenticated caller. A separate parameter on purpose:
-    /// comparing two fields of one object is how the ownership check came to compare a field
-    /// to itself, since EF hands back the same instance on every read.</param>
-    void ValidateUpdateBet(Bet persisted, string callerUserId);
+    /// <summary>
+    /// The only rule left on the bet write path. Everything the old ValidateNewBet and
+    /// ValidateUpdateBet checked - that the game exists, that the bet has an owner, that
+    /// the caller owns it, that there is not already a bet - is unrepresentable once the
+    /// request carries no bet id and no game id: the route names the game and the token
+    /// names the owner, and (owner, game) is unique in the database.
+    /// </summary>
+    /// <param name="game">The game as loaded by the caller, never one named by the request.</param>
+    void ValidateBetUpsert(Game game);
 
     void ValidateDeleteBet(int betId, string userId);
 }

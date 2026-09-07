@@ -22,31 +22,8 @@ public class BetValidator : IBetValidator
         this.dateTimeProvider = dateTimeProvider;
     }
 
-    public void ValidateNewBet(Bet bet)
+    public void ValidateBetUpsert(Game game)
     {
-        var game = gamesRepository.GetGame(bet.GameId);
-        if (game == null)
-            throw new BetValidationException(string.Format("Game {0} dosen't exist", bet.GameId));
-        if (!game.IsOpen(dateTimeProvider.UTCNow))
-            throw new GameClosedForBettingException(string.Format("Game {0} is closed for betting", game.GameId));
-        if (string.IsNullOrEmpty(bet.UserId))
-            throw new BetValidationException("New bet must have an owner");
-        if (betsRepository.GetGameBets(game.GameId).Any(b => b.UserId == bet.UserId))
-            throw new BetValidationException(string.Format("You already have an existing bet on game {0}", game.GameId));
-    }
-
-    public void ValidateUpdateBet(Bet persisted, string callerUserId)
-    {
-        if (persisted == null)
-            throw new BetValidationException("Bet dosen't exist");
-        if (string.IsNullOrEmpty(callerUserId))
-            throw new BetValidationException(string.Format("Updated bet {0} must have user", persisted.BetId));
-        if (persisted.UserId != callerUserId)
-            throw new BetForbiddenException("You can't update a bet that is not yours");
-        // The bet's own game, never one named by the request: a bet's game is fixed at creation.
-        var game = gamesRepository.GetGame(persisted.GameId);
-        if (game == null)
-            throw new BetValidationException(string.Format("Game {0} dosen't exist", persisted.GameId));
         if (!game.IsOpen(dateTimeProvider.UTCNow))
             throw new GameClosedForBettingException(string.Format("Game {0} is closed for betting", game.GameId));
     }

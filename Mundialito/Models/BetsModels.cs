@@ -34,10 +34,17 @@ public class BetViewModel
         BonusPoints = bet.MaxPoints ? bet.Game.BingoBonusPoints() : 0;
         Game = new BetGame(bet.Game);
         User = new BetUser(bet.User);
+        HasBet = true;
     }
 
     [JsonPropertyName("BetId")]
     public int BetId { get; set; }
+
+    /// <summary>False on the placeholder returned for a game the caller has not bet on.
+    /// The client used to detect that by BetId == -1; a named flag means a template site
+    /// that was missed fails visibly instead of silently reading a sentinel.</summary>
+    [JsonPropertyName("HasBet")]
+    public bool HasBet { get; set; }
 
     [JsonPropertyName("HomeScore")]
     public int? HomeScore { get; set; }
@@ -109,73 +116,25 @@ public class BetUser
     public string LastName { get; set; }
 }
 
-public class NewBetModel
+/// <summary>
+/// The body of PUT /api/games/{gameId}/mybet. No ids at all: the game comes from the
+/// route and the owner from the token, so neither is the caller's to name.
+///
+/// Scores are int? on purpose. [Required] on a non-nullable int is a no-op - the old
+/// models declared it and a body that omitted HomeScore bound to 0, passed [Range(0,10)]
+/// and silently recorded a 0-0 bet. With int? the omission is a 400.
+/// </summary>
+public class SaveBetModel
 {
-    public NewBetModel()
-    {
-
-    }
-
-    public NewBetModel(int id, UpdateBetModel bet)
-    {
-        BetId = id;
-        GameId = bet.GameId;
-        HomeScore = bet.HomeScore;
-        AwayScore = bet.AwayScore;
-        CornersMark = bet.CornersMark;
-        CardsMark = bet.CardsMark;
-    }
-
-    [JsonPropertyName("BetId")]
-    public int BetId { get; set; }
-
     [Required]
-    [JsonPropertyName("GameId")]
-    public int GameId { get; set; }
-
-    [Required]
-    [Range(0,10)]
+    [Range(0, 10)]
     [JsonPropertyName("HomeScore")]
-    public int HomeScore { get; set; }
+    public int? HomeScore { get; set; }
 
     [Required]
     [Range(0, 10)]
     [JsonPropertyName("AwayScore")]
-    public int AwayScore { get; set; }
-
-    [Required]
-    [StringLength(1)]
-    [RegularExpression("[1X2]")]
-    [JsonPropertyName("CornersMark")]
-    public string CornersMark { get; set; }
-
-    [Required]
-    [StringLength(1)]
-    [RegularExpression("[1X2]")]
-    [JsonPropertyName("CardsMark")]
-    public string CardsMark { get; set; }
-}
-
-public class UpdateBetModel
-{
-    public UpdateBetModel()
-    {
-
-    }
-
-    [Required]
-    [JsonPropertyName("GameId")]
-    public int GameId { get; set; }
-
-    [Required]
-    [Range(0, 10)]
-    [JsonPropertyName("HomeScore")]
-    public int HomeScore { get; set; }
-
-    [Required]
-    [Range(0, 10)]
-    [JsonPropertyName("AwayScore")]
-    public int AwayScore { get; set; }
+    public int? AwayScore { get; set; }
 
     [Required]
     [StringLength(1)]

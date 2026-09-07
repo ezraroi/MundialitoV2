@@ -21,6 +21,7 @@ using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
 using Mundialito.Logic;
 using Mundialito.Mail;
+using Mundialito.Models;
 
 // https://medium.com/medialesson/how-to-send-emails-at-scale-in-net-with-the-azure-communication-service-14565d84147f
 // https://www.telerik.com/blogs/new-net-8-aspnet-core-identity-how-implement
@@ -231,6 +232,11 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+/* The SPA fallback above is a catch-all, so without this an unmatched API route answers
+   with index.html and a 200 - a deleted or mistyped endpoint looks like a success to
+   $http, which reads BetId off an HTML string. Catch-all segments lose to every attribute
+   route, so this only ever sees requests no controller claimed. */
+app.Map("/api/{**path}", (string path) => Results.NotFound(new ErrorMessage { Message = $"No API endpoint at 'api/{path}'" }));
 app.MapControllerRoute(
 	 name: "default",
 	 pattern: "{controller=Home}/{action=Index}/{id?}");

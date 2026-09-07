@@ -186,38 +186,103 @@ cmd_status() {
   if app_running; then info "app       running (pid $(cat "$PIDFILE")) $BASE"; else info "app       stopped"; fi
 }
 
-# Regression check for the stale-role bug: a role change must take effect on the token the
-# user already holds. See Auth/Authorization/CurrentRoleHandler.
+# Regression checks for the stale-role bug (a role change must take effect on the token the
+# user already holds - see Auth/Authorization/CurrentRoleHandler) and for the bet write path
+# (PUT /api/games/{id}/mybet - see #170, #171). The bet cases assert the stored row, not just
+# the status code: the defect they guard returned 400 *and* saved.
 cmd_verify() {
   mkdir -p "$RUN_DIR"
   app_running || die "app is not running - try '$0 up'"
   local admin id t code fails=0
-  bet_on() { echo "{\"GameId\":$1,\"HomeScore\":1,\"AwayScore\":0,\"CardsMark\":\"1\",\"CornersMark\":\"2\"}"; }
+  bet_body()  { echo "{\"HomeScore\":${1:-1},\"AwayScore\":${2:-0},\"CardsMark\":\"1\",\"CornersMark\":\"2\"}"; }
+  mybet()     { echo "/api/games/$1/mybet"; }
+  body_field() { python3 -c "import sys,json
+try: print(json.load(sys.stdin).get('$1',''))
+except Exception: print('')" < "$RUN_DIR/body"; }
+  check() { # check <label> <expected> <actual>
+    if [ "$3" = "$2" ]; then info "PASS  $1 ($3)"; else info "FAIL  $1 got $3, expected $2"; fails=1; fi
+  }
   admin=$(login "$ADMIN_USER" "$ADMIN_PASS")
   local u="verify$(date +%s)"
   register "$u"
   t=$(login "$u" "$TEST_PASS")
   [ -n "$t" ] || die "could not log in as the freshly registered $u"
   id=$(user_id "$admin" "$u")
-  local g1 g2
-  read -r g1 g2 <<<"$(api GET /api/games "$admin" | python3 -c '
+  local g1 g2 gclosed
+  read -r g1 g2 gclosed <<<"$(api GET /api/games "$admin" | python3 -c '
 import sys, json
-o = [x["GameId"] for x in json.load(sys.stdin) if x.get("IsOpen")]
-print(o[0], o[1] if len(o) > 1 else "")')"
+g = json.load(sys.stdin)
+o = [x["GameId"] for x in g if x.get("IsOpen")]
+c = [x["GameId"] for x in g if not x.get("IsOpen")]
+print(o[0] if o else "", o[1] if len(o) > 1 else "", c[0] if c else "-")')"
   [ -n "$g1" ] && [ -n "$g2" ] || die "need two games open for betting - try '$0 reset'"
 
   bold "Role changes must apply to an already-issued token"
 
-  code=$(api_code POST /api/bets "$t" "$(bet_on "$g1")")
-  [ "$code" = "403" ] && info "PASS  disabled user is refused ($code)" || { info "FAIL  disabled user got $code, expected 403"; fails=1; }
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body)")
+  check "disabled user is refused" 403 "$code"
 
   api POST "/api/users/$id/activate" "$admin" >/dev/null
-  code=$(api_code POST /api/bets "$t" "$(bet_on "$g1")")
-  [ "$code" = "200" ] && info "PASS  activation applies to the old token ($code)" || { info "FAIL  after activation got $code, expected 200"; fails=1; }
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body)")
+  check "activation applies to the old token" 201 "$code"
 
   api DELETE "/api/users/$id/activate" "$admin" >/dev/null
-  code=$(api_code POST /api/bets "$t" "$(bet_on "$g2")")
-  [ "$code" = "403" ] && info "PASS  deactivation applies to the old token ($code)" || { info "FAIL  after deactivation got $code, expected 403"; fails=1; }
+  code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body)")
+  check "deactivation applies to the old token" 403 "$code"
+
+  echo
+  bold "A bet has one address and one write verb"
+  api POST "/api/users/$id/activate" "$admin" >/dev/null
+
+  # The activation check above created the bet. Saving again must update it in place - a
+  # double tap on Save is now two identical idempotent writes, not a POST then a PUT.
+  local first second
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body 2 2)"); first=$(body_field BetId)
+  check "a second save updates rather than creates" 200 "$code"
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body 3 3)"); second=$(body_field BetId)
+  check "a third save updates rather than creates" 200 "$code"
+  if [ -n "$first" ] && [ "$first" = "$second" ]; then
+    info "PASS  every save addressed the same bet ($first)"
+  else
+    info "FAIL  saves produced bets '$first' and '$second'"; fails=1
+  fi
+
+  # The response must be sendable straight back. Echoing a create response used to 400 with
+  # "Object reference not set to an instance of an object" because it carried no flat GameId.
+  api GET "$(mybet "$g1")" "$t" > "$RUN_DIR/mybet.json"
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(cat "$RUN_DIR/mybet.json")")
+  check "the server's own response round-trips" 200 "$code"
+
+  # [Required] on a non-nullable int was a no-op: this body used to record a silent 0-0 bet.
+  code=$(api_code PUT "$(mybet "$g1")" "$t" '{"AwayScore":1,"CardsMark":"1","CornersMark":"2"}')
+  check "an omitted score is refused" 400 "$code"
+
+  code=$(api_code GET "$(mybet 999999)" "$t")
+  check "GET on an unknown game is not fabricated" 404 "$code"
+  code=$(api_code PUT "$(mybet 999999)" "$t" "$(bet_body)")
+  check "PUT on an unknown game is refused" 404 "$code"
+
+  # The old fork is gone, deliberately rather than aliased.
+  code=$(api_code POST /api/bets "$t" "$(bet_body)")
+  check "POST /api/bets no longer exists" 404 "$code"
+  code=$(api_code PUT "/api/bets/$first" "$t" "$(bet_body)")
+  check "PUT /api/bets/{id} no longer exists" 404 "$code"
+
+  if [ "$gclosed" = "-" ]; then
+    info "SKIP  no closed game in this seed, cannot check the deadline"
+  else
+    # The defect this whole change exists for: the refusal must also leave the row alone.
+    local before after
+    before=$(api GET "$(mybet "$gclosed")" "$t")
+    code=$(api_code PUT "$(mybet "$gclosed")" "$t" "$(bet_body 9 9)")
+    check "a past-deadline save is refused" 409 "$code"
+    after=$(api GET "$(mybet "$gclosed")" "$t")
+    if [ "$before" = "$after" ]; then
+      info "PASS  the refused save left the bet untouched"
+    else
+      info "FAIL  the refused save changed the bet"; fails=1
+    fi
+  fi
 
   echo
   [ "$fails" = "0" ] && bold "all checks passed" || { bold "checks FAILED"; return 1; }

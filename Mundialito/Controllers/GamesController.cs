@@ -109,23 +109,6 @@ public class GamesController : ControllerBase
         return Ok(betsRepository.GetGameBets(id).Select(item => new BetViewModel(item, dateTimeProvider.UTCNow)).OrderByDescending(bet => bet.Points));
     }
 
-    [HttpGet("{id}/MyBet/")]
-    public async Task<ActionResult<BetViewModel>> GetGameUserBet(int id)
-    {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
-        if (user == null)
-            return Unauthorized();
-        var game = GetGameByID(id);
-        var uid = user.Id;
-        var item = betsRepository.GetGameBets(id).SingleOrDefault(bet => bet.User.Id == uid);
-        if (item == null)
-        {
-            logger.LogInformation("No bet found for game {0} and user {1}, creating empty Bet", game.Result, uid);
-            return Ok(new BetViewModel() { BetId = -1, HomeScore = null, AwayScore = null, IsOpenForBetting = true, IsResolved = false, Game = new BetGame() { GameId = id } });
-        }
-        return Ok(new BetViewModel(item, dateTimeProvider.UTCNow));
-    }
-
     [HttpGet("Open")]
     public IEnumerable<GameViewModel> GetOpenGames()
     {
