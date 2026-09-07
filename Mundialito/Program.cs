@@ -105,6 +105,16 @@ builder.Services.AddIdentity<MundialitoUser, IdentityRole>(
 var validIssuer = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidIssuer");
 var validAudience = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidAudience");
 var symmetricSecurityKey = builder.Configuration.GetValue<string>("JwtTokenSettings:SymmetricSecurityKey");
+// The signing key is a secret and is deliberately not committed. Anyone holding it can forge
+// a token for any user, so fail loudly at startup rather than booting with a null or weak key
+// and issuing tokens nobody can trust. HMAC-SHA256 wants at least 256 bits.
+if (string.IsNullOrWhiteSpace(symmetricSecurityKey) || Encoding.UTF8.GetByteCount(symmetricSecurityKey) < 32)
+{
+	throw new InvalidOperationException(
+		"JwtTokenSettings:SymmetricSecurityKey is missing or shorter than 32 bytes. " +
+		"Set it in configuration - on App Service as the application setting " +
+		"JwtTokenSettings__SymmetricSecurityKey. Locally, scripts/dev.sh supplies a throwaway key.");
+}
 builder.Services.AddAuthentication(options =>
 {
 	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
