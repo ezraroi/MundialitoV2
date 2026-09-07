@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Controllers;
+using Mundialito.DAL.Bets;
+using Mundialito.DAL.Games;
 using static Tests.BetsTestHarness;
 
 namespace Tests;
@@ -11,14 +13,14 @@ namespace Tests;
 [TestFixture]
 public class BetsControllerAuthorizationTests
 {
-    private static BetsController Viewing(IEnumerable<Mundialito.DAL.Bets.Bet> bets, string viewer)
+    private static BetsController Viewing(IEnumerable<Bet> bets, string viewer)
     {
         var repo = new FakeBetsRepository(bets);
-        return MakeController(repo, new FakeGamesRepository(Array.Empty<Mundialito.DAL.Games.Game>()),
+        return MakeController(repo, new FakeGamesRepository(Array.Empty<Game>()),
             validator: null!, caller: null, callerName: viewer);
     }
 
-    private static Mundialito.DAL.Bets.Bet OwnedBet(int betId, string owner, bool gameOpen) =>
+    private static Bet OwnedBet(int betId, string owner, bool gameOpen) =>
         MakeBet(betId, MakeUser(owner), MakeGame(betId * 100, gameOpen));
 
     [Test]
@@ -45,7 +47,7 @@ public class BetsControllerAuthorizationTests
     [Test]
     public void GetBetById_Missing_ReturnsNotFound()
     {
-        var controller = Viewing(Array.Empty<Mundialito.DAL.Bets.Bet>(), "bob");
+        var controller = Viewing(Array.Empty<Bet>(), "bob");
         Assert.That(controller.GetBetById(999).Result, Is.InstanceOf<NotFoundObjectResult>());
     }
 

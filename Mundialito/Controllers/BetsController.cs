@@ -12,8 +12,6 @@ using Mundialito.Configuration;
 using Microsoft.Extensions.Options;
 using Mundialito.Mail;
 using Mundialito.Auth.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Mundialito.Controllers;
 
@@ -163,7 +161,7 @@ public class BetsController : ControllerBase
         {
             betsRepository.Save();
         }
-        catch (DbUpdateException e) when (IsDuplicateBet(e))
+        catch (DuplicateBetException e)
         {
             /* Two concurrent first saves both see "no existing bet" and both insert; one
                loses on IX_Bets_UserId_GameId. Answering 409 rather than re-reading and
@@ -174,6 +172,8 @@ public class BetsController : ControllerBase
             return Conflict(new ErrorMessage{ Message = "Your bet on this game was just saved by another request, please reload and try again"});
         }
 
+        /* These two message texts are load-bearing: the ActionLogs query in #171 that tells
+           a post-deadline write apart from a rejected create matches on them. */
         AddLog(isCreate ? ActionType.CREATE : ActionType.UPDATE,
             string.Format(isCreate ? "Posting new Bet: {0}" : "Updating Bet: {0}", target));
         if (ShouldSendMail())
@@ -206,11 +206,6 @@ public class BetsController : ControllerBase
         logger.LogInformation("Bet {} of {} was deleted", id, user.UserName);
         return Ok();
     }
-
-    /// <summary>Npgsql's unique_violation. Matched on SQLSTATE rather than on the index
-    /// name, which is not part of any contract.</summary>
-    private static bool IsDuplicateBet(DbUpdateException e) =>
-        e.InnerException is PostgresException { SqlState: "23505" };
 
     private void AddLog(ActionType actionType, string message)
     {
