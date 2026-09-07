@@ -2,6 +2,8 @@
 angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', '$timeout', 'Alert', 'BetsManager', 'games', function ($scope, $log, $timeout, Alert, BetsManager, games) {
     $scope.games = games;
     $scope.bets = {};
+    /* Keyed per game: a single flag would disable every row on one save. */
+    $scope.savingBets = {};
 
 
     var loadUserBets = function() {
@@ -14,16 +16,12 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
             $scope.getUserBetsPromise = BetsManager.getUserBets($scope.security.user.Username).then((bets) => {
                 for (var i = 0; i < bets.length; i++) {
                     $scope.bets[bets[i].Game.GameId] = bets[i];
-                    $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId;
                 }
 
                 for (var j = 0; j < games.length; j++) {
                     if (!angular.isDefined($scope.bets[games[j].GameId])) {
                         $log.debug('BetsCenterCtrl: game ' + games[j].GameId + ' has not bet');
-                        $scope.bets[games[j].GameId] = { BetId: -1, GameId: games[j].GameId };
-                    }
-                    else {
-                        $scope.bets[$scope.bets[games[j].GameId]] = bets[i];
+                        $scope.bets[games[j].GameId] = { HasBet: false };
                     }
                 }
             });
@@ -33,25 +31,20 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
     loadUserBets();
 
     $scope.updateBet = function(gameId) {
-        if ($scope.bets[gameId].BetId !== -1) {
-            $log.debug('BetsCenterCtrl: Will update bet');
-            $scope.bets[gameId].update().then((data) => {
-                Alert.success('Bet was updated successfully');
-                BetsManager.setBet(data);
-            }).catch(function () {
-                Alert.error('Failed to update Bet, please try again');
-            });
+        if ($scope.savingBets[gameId]) {
+            return;
         }
-        else {
-            $log.debug('BetsCenterCtrl: Will create new bet');
-            BetsManager.addBet($scope.bets[gameId]).then(function(data) {
-                $log.log('BetsCenterCtrl: Bet ' + data.BetId + ' was added');
-                $scope.bets[gameId] = data;
-                Alert.success('Bet was added successfully');
-            }).catch(function () {
-                Alert.error('Failed to add Bet, please try again');
-            });
-        }
+        $log.debug('BetsCenterCtrl: Will save bet on game ' + gameId);
+        $scope.savingBets[gameId] = true;
+        BetsManager.saveBet(gameId, $scope.bets[gameId]).then((bet) => {
+            $scope.bets[gameId] = bet;
+            Alert.success('Bet was saved successfully');
+        }).catch((err) => {
+            /* The http interceptor owns the user-facing message. */
+            $log.error('Error saving bet', err);
+        }).finally(() => {
+            $scope.savingBets[gameId] = false;
+        });
     };
     $scope.shuffleBet = function(gameId) {
         var homeGoals, awayGoals;

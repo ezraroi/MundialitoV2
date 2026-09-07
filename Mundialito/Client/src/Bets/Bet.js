@@ -1,5 +1,5 @@
 'use strict';
-angular.module('mundialitoApp').factory('Bet', ['$http','$log', function($http,$log) {
+angular.module('mundialitoApp').factory('Bet', [function() {
     function Bet(betData) {
         if (betData) {
             this.setData(betData);
@@ -28,10 +28,6 @@ angular.module('mundialitoApp').factory('Bet', ['$http','$log', function($http,$
                 return this.Game.AwayTeam;
             }
             return null;
-        },
-        update: function() {
-            $log.debug('Bet: Will update bet ' + this.BetId)
-            return $http.put('api/bets/' + this.BetId, this, { tracker: 'updateBet' });
         },
         getGameUrl: function() {
             return '/games/' + this.Game.GameId;

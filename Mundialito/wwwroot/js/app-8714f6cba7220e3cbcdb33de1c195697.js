@@ -458,7 +458,7 @@ angular.module('mundialitoApp').controller('ResetPasswordCtrl', ['$scope', '$roo
     ];
 }]);
 'use strict';
-angular.module('mundialitoApp').factory('Bet', ['$http','$log', function($http,$log) {
+angular.module('mundialitoApp').factory('Bet', [function() {
     function Bet(betData) {
         if (betData) {
             this.setData(betData);
@@ -488,10 +488,6 @@ angular.module('mundialitoApp').factory('Bet', ['$http','$log', function($http,$
             }
             return null;
         },
-        update: function() {
-            $log.debug('Bet: Will update bet ' + this.BetId)
-            return $http.put('api/bets/' + this.BetId, this, { tracker: 'updateBet' });
-        },
         getGameUrl: function() {
             return '/games/' + this.Game.GameId;
         },
@@ -518,6 +514,8 @@ angular.module('mundialitoApp').factory('Bet', ['$http','$log', function($http,$
 angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', '$timeout', 'Alert', 'BetsManager', 'games', function ($scope, $log, $timeout, Alert, BetsManager, games) {
     $scope.games = games;
     $scope.bets = {};
+    /* Keyed per game: a single flag would disable every row on one save. */
+    $scope.savingBets = {};
 
 
     var loadUserBets = function() {
@@ -530,16 +528,12 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
             $scope.getUserBetsPromise = BetsManager.getUserBets($scope.security.user.Username).then((bets) => {
                 for (var i = 0; i < bets.length; i++) {
                     $scope.bets[bets[i].Game.GameId] = bets[i];
-                    $scope.bets[bets[i].Game.GameId].GameId = bets[i].Game.GameId;
                 }
 
                 for (var j = 0; j < games.length; j++) {
                     if (!angular.isDefined($scope.bets[games[j].GameId])) {
                         $log.debug('BetsCenterCtrl: game ' + games[j].GameId + ' has not bet');
-                        $scope.bets[games[j].GameId] = { BetId: -1, GameId: games[j].GameId };
-                    }
-                    else {
-                        $scope.bets[$scope.bets[games[j].GameId]] = bets[i];
+                        $scope.bets[games[j].GameId] = { HasBet: false };
                     }
                 }
             });
@@ -549,25 +543,20 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
     loadUserBets();
 
     $scope.updateBet = function(gameId) {
-        if ($scope.bets[gameId].BetId !== -1) {
-            $log.debug('BetsCenterCtrl: Will update bet');
-            $scope.bets[gameId].update().then((data) => {
-                Alert.success('Bet was updated successfully');
-                BetsManager.setBet(data);
-            }).catch(function () {
-                Alert.error('Failed to update Bet, please try again');
-            });
+        if ($scope.savingBets[gameId]) {
+            return;
         }
-        else {
-            $log.debug('BetsCenterCtrl: Will create new bet');
-            BetsManager.addBet($scope.bets[gameId]).then(function(data) {
-                $log.log('BetsCenterCtrl: Bet ' + data.BetId + ' was added');
-                $scope.bets[gameId] = data;
-                Alert.success('Bet was added successfully');
-            }).catch(function () {
-                Alert.error('Failed to add Bet, please try again');
-            });
-        }
+        $log.debug('BetsCenterCtrl: Will save bet on game ' + gameId);
+        $scope.savingBets[gameId] = true;
+        BetsManager.saveBet(gameId, $scope.bets[gameId]).then((bet) => {
+            $scope.bets[gameId] = bet;
+            Alert.success('Bet was saved successfully');
+        }).catch((err) => {
+            /* The http interceptor owns the user-facing message. */
+            $log.error('Error saving bet', err);
+        }).finally(() => {
+            $scope.savingBets[gameId] = false;
+        });
     };
     $scope.shuffleBet = function(gameId) {
         var homeGoals, awayGoals;
@@ -632,19 +621,22 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
         },
 
         /* Public Methods */
-        /* Use this function in order to add a new bet */
-        addBet: function(betData) {
-            var deferred = $q.defer();
+        /* The only bet write path. One idempotent PUT whether or not a bet exists yet, so
+           callers never branch and a double tap is two identical writes. Always resolves a
+           pooled Bet instance, never the raw $http envelope. */
+        saveBet: function(gameId, betData) {
             var scope = this;
-            $log.debug('BetsManager: will add new bet - ' + angular.toJson(betData));
-            $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).then((data) => {
-                var bet = scope._retrieveInstance(data.data.BetId, data.data);
-                deferred.resolve(bet);
-            }).catch((err) => {
-                $log.error('Failed to add bet');
-                deferred.reject(err);
-            });
-            return deferred.promise;
+            $log.debug('BetsManager: will save bet on game ' + gameId);
+            /* Only the four fields the server accepts: the game comes from the URL and the
+               owner from the token. */
+            var body = {
+                HomeScore: betData.HomeScore,
+                AwayScore: betData.AwayScore,
+                CardsMark: betData.CardsMark,
+                CornersMark: betData.CornersMark
+            };
+            return $http.put('api/games/' + gameId + '/mybet', body, { tracker: 'saveBet' })
+                .then((res) => scope._retrieveInstance(res.data.BetId, res.data));
         },
 
         /* Use this function in order to get a bet instance by it's id */
@@ -709,29 +701,18 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             $log.debug('BetsManager: will fetch user bet of game ' + gameId + ' from server');
             $http.get('api/games/' + gameId + '/mybet', { tracker: 'getUserBetOnGame' })
                 .then((betData) => {
-                    if (betData.data.BetId != -1) {
-                        var bet = scope._retrieveInstance(betData.data.BetId, betData.data);
-                        deferred.resolve(bet);
+                    /* The no-bet placeholder is deliberately not pooled: it has no BetId,
+                       so every un-bet game would share one slot. */
+                    if (betData.data.HasBet) {
+                        deferred.resolve(scope._retrieveInstance(betData.data.BetId, betData.data));
+                    } else {
+                        deferred.resolve(betData.data);
                     }
-                    deferred.resolve(betData.data);
                 })
                 .catch(() => {
                     deferred.reject();
                 });
             return deferred.promise;
-        },
-
-        /*  This function is useful when we got somehow the bet data and we wish to store it or update the pool and get a general bet instance in return */
-        setBet: function(betData) {
-            $log.debug('BetsManager: will set bet ' + betData.BetId + ' to -' + angular.toJson(betData));
-            var scope = this;
-            var bet = this._search(betData.BetId);
-            if (bet) {
-                bet.setData(betData);
-            } else {
-                bet = scope._retrieveInstance(betData.BetId, betData);
-            }
-            return bet;
         }
 
     };
@@ -970,7 +951,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.simulatedGame = {};
     $scope.plugins = {};
     $scope.userBet = userBet;
-    $scope.userBet.GameId = game.GameId;
+    $scope.savingBet = false;
     $scope.showEditForm = false;
     $scope.gameActiveTab = 0;
     $scope.betsHighlightsOpen = false;
@@ -1093,27 +1074,24 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     };
 
     $scope.updateBet = () => {
-        if ($scope.userBet.BetId !== -1) {
-            $scope.updateBetPromise =  $scope.userBet.update().then((data) => {
-                Alert.success('Bet was updated successfully');
-                BetsManager.setBet(data);
-            }).catch((err) => {
-                /* The http interceptor already toasted the reason - a second generic
-                   toast here only competes with it for the 2.5s the toaster shows. */
-                $log.error('Error updating bet', err);
-            });
+        /* Saving is one idempotent write whether or not a bet exists yet, so there is no
+           branch to get wrong - and the in-flight guard means a double tap cannot race
+           itself into two saves. */
+        if ($scope.savingBet) {
+            return;
         }
-        else {
-            BetsManager.addBet($scope.userBet).then((data) => {
-                $log.log('GameCtrl: Bet ' + data.BetId + ' was added');
-                $scope.userBet = data;
-                $scope.game.UserHasBet = true;
-                Alert.success('Bet was added successfully');
-            }, (err) => {
-                /* See updateBet above - the interceptor owns the user-facing message. */
-                $log.error('Error adding bet', err);
-            });
-        }
+        $scope.savingBet = true;
+        $scope.updateBetPromise = BetsManager.saveBet($scope.game.GameId, $scope.userBet).then((bet) => {
+            $scope.userBet = bet;
+            $scope.game.UserHasBet = true;
+            Alert.success('Bet was saved successfully');
+        }).catch((err) => {
+            /* The http interceptor already toasted the reason - a second generic
+               toast here only competes with it for the 2.5s the toaster shows. */
+            $log.error('Error saving bet', err);
+        }).finally(() => {
+            $scope.savingBet = false;
+        });
     };
 
     $scope.simulateGame = () => {
