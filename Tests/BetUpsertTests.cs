@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Controllers;
 using Mundialito.DAL.Accounts;
+using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
 using Mundialito.DAL.Games;
 using Mundialito.Models;
@@ -104,7 +105,10 @@ public class BetUpsertTests
         var alice = MakeUser("alice");
         var game = MakeGame(100, open: false);
         var existing = MakeBet(7, alice, game);
-        var (controller, bets) = Fixture(alice, new[] { existing }, game);
+        var betsRepo = new FakeBetsRepository(new[] { existing });
+        var gamesRepo = new FakeGamesRepository(new[] { game });
+        var logs = new FakeActionLogsRepository();
+        var controller = MakeController(betsRepo, gamesRepo, MakeValidator(betsRepo, gamesRepo), alice, logs);
 
         var result = await controller.PutMyBet(game.GameId, Save(9, 9));
 
@@ -113,7 +117,11 @@ public class BetUpsertTests
             Assert.That(result.Result, Is.InstanceOf<ConflictObjectResult>());
             Assert.That(existing.HomeScore, Is.EqualTo(1), "a refused save wrote to the bet");
             Assert.That(existing.AwayScore, Is.EqualTo(0));
-            Assert.That(bets.SaveCount, Is.Zero, "a refused save reached Save()");
+            Assert.That(betsRepo.SaveCount, Is.Zero, "a refused save reached Save()");
+            // BetValidator no longer logs; the controller must, or the ActionLogs query in
+            // #171 that finds a post-deadline write has nothing to find.
+            Assert.That(logs.Logs.Select(l => l.Type), Does.Contain(ActionType.ERROR));
+            Assert.That(logs.Logs.Single().Message, Does.Contain("closed for betting"));
         });
     }
 

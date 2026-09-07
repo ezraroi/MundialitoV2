@@ -1517,8 +1517,9 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
     var ErrorHandler = this;
 
     /* Bets are the only thing an unapproved player can try to write, so a 403 there means
-       "your account is not active yet" rather than "you are not an admin". */
-    var BETTING_URL = /api\/(bets|generalbets)/i;
+       "your account is not active yet" rather than "you are not an admin". The bet upsert
+       lives under api/games/{id}/mybet, so matching on api/bets alone misses it. */
+    var BETTING_URL = /api\/(bets|generalbets|games\/\d+\/mybet)/i;
 
     function clearSession() {
         localStorage.removeItem('accessToken');

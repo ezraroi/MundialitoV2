@@ -235,7 +235,10 @@ app.MapControllers();
 /* The SPA fallback above is a catch-all, so without this an unmatched API route answers
    with index.html and a 200 - a deleted or mistyped endpoint looks like a success to
    $http, which reads BetId off an HTML string. Catch-all segments lose to every attribute
-   route, so this only ever sees requests no controller claimed. */
+   route, so this only ever sees requests no controller claimed. Two consequences worth
+   knowing: a wrong method on a real route answers 404 rather than 405, and any future
+   non-controller endpoint under api/ (MapIdentityApi and friends) must be mapped before
+   this line or it will be shadowed. */
 app.Map("/api/{**path}", (string path) => Results.NotFound(new ErrorMessage { Message = $"No API endpoint at 'api/{path}'" }));
 app.MapControllerRoute(
 	 name: "default",

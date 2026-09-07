@@ -202,19 +202,18 @@ except Exception: print('')" < "$RUN_DIR/body"; }
   check() { # check <label> <expected> <actual>
     if [ "$3" = "$2" ]; then info "PASS  $1 ($3)"; else info "FAIL  $1 got $3, expected $2"; fails=1; fi
   }
+  db_query() { docker exec "$CONTAINER" psql -U mundialito -d mundialito -tAqc "$1"; }
   admin=$(login "$ADMIN_USER" "$ADMIN_PASS")
   local u="verify$(date +%s)"
   register "$u"
   t=$(login "$u" "$TEST_PASS")
   [ -n "$t" ] || die "could not log in as the freshly registered $u"
   id=$(user_id "$admin" "$u")
-  local g1 g2 gclosed
-  read -r g1 g2 gclosed <<<"$(api GET /api/games "$admin" | python3 -c '
+  local g1 g2
+  read -r g1 g2 <<<"$(api GET /api/games "$admin" | python3 -c '
 import sys, json
-g = json.load(sys.stdin)
-o = [x["GameId"] for x in g if x.get("IsOpen")]
-c = [x["GameId"] for x in g if not x.get("IsOpen")]
-print(o[0] if o else "", o[1] if len(o) > 1 else "", c[0] if c else "-")')"
+o = [x["GameId"] for x in json.load(sys.stdin) if x.get("IsOpen")]
+print(o[0] if o else "", o[1] if len(o) > 1 else "")')"
   [ -n "$g1" ] && [ -n "$g2" ] || die "need two games open for betting - try '$0 reset'"
 
   bold "Role changes must apply to an already-issued token"
@@ -268,20 +267,30 @@ print(o[0] if o else "", o[1] if len(o) > 1 else "", c[0] if c else "-")')"
   code=$(api_code PUT "/api/bets/$first" "$t" "$(bet_body)")
   check "PUT /api/bets/{id} no longer exists" 404 "$code"
 
-  if [ "$gclosed" = "-" ]; then
-    info "SKIP  no closed game in this seed, cannot check the deadline"
+  # The defect this whole change exists for. Asserting the *stored row* is the point: the
+  # status code alone never showed it, because the rejection returned 400 and saved anyway.
+  # It needs a bet that already exists on a game whose deadline has passed, so bet on the
+  # second open game while it is open and push its kickoff back afterwards - reading a
+  # game the seed already closed would compare two "no bet" placeholders and pass for free.
+  if ! db_running; then
+    info "SKIP  database container not running, cannot assert the stored row"
   else
-    # The defect this whole change exists for: the refusal must also leave the row alone.
-    local before after
-    before=$(api GET "$(mybet "$gclosed")" "$t")
-    code=$(api_code PUT "$(mybet "$gclosed")" "$t" "$(bet_body 9 9)")
+    local betid row_before row_after
+    local cols='"HomeScore","AwayScore","CardsMark","CornersMark","GameId"'
+    code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body 1 2)"); betid=$(body_field BetId)
+    check "a bet can be placed while the game is open" 201 "$code"
+    db_query "UPDATE \"Games\" SET \"Date\" = \"Date\" - interval '30 days' WHERE \"GameId\" = $g2;" >/dev/null
+    row_before=$(db_query "SELECT $cols FROM \"Bets\" WHERE \"BetId\" = $betid;")
+    code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body 9 9)")
     check "a past-deadline save is refused" 409 "$code"
-    after=$(api GET "$(mybet "$gclosed")" "$t")
-    if [ "$before" = "$after" ]; then
-      info "PASS  the refused save left the bet untouched"
+    row_after=$(db_query "SELECT $cols FROM \"Bets\" WHERE \"BetId\" = $betid;")
+    if [ -n "$row_before" ] && [ "$row_before" = "$row_after" ]; then
+      info "PASS  the refused save left the stored row untouched ($row_after)"
     else
-      info "FAIL  the refused save changed the bet"; fails=1
+      info "FAIL  the refused save changed the row: '$row_before' -> '$row_after'"; fails=1
     fi
+    # Put the fixture back so a second run still finds two open games.
+    db_query "UPDATE \"Games\" SET \"Date\" = \"Date\" + interval '30 days' WHERE \"GameId\" = $g2;" >/dev/null
   fi
 
   echo

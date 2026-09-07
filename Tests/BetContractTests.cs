@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Mundialito.Controllers;
 using Mundialito.Models;
 using static Tests.BetsTestHarness;
 
@@ -54,6 +57,43 @@ public class BetContractTests
 
         Assert.That(Validate(save).SelectMany(r => r.MemberNames), Does.Contain(nameof(SaveBetModel.HomeScore)));
     }
+
+    /// <summary>
+    /// The rule behind the round-trip above, generalised the way
+    /// <see cref="AuthorizationAttributeGuardTests"/> generalises its own: for every
+    /// BetsController action that takes a request model, each field the caller must supply
+    /// has to be readable off the response, or the client cannot echo what it was given.
+    /// Scoped to this controller on purpose - other controllers bind EF entities as request
+    /// bodies (see #172), which this rule would flag for a different reason.
+    /// </summary>
+    [Test]
+    public void EveryBetRequestFieldIsPresentOnTheResponse()
+    {
+        var readable = JsonNames(typeof(BetViewModel));
+
+        var offenders = new List<string>();
+        foreach (var action in typeof(BetsController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+        foreach (var parameter in action.GetParameters().Where(p => p.ParameterType.Namespace == typeof(BetViewModel).Namespace))
+        foreach (var required in RequiredProperties(parameter.ParameterType))
+            if (!readable.Contains(JsonName(required)))
+                offenders.Add($"{action.Name}: {parameter.ParameterType.Name}.{required.Name} is required but BetViewModel never sends it");
+
+        Assert.That(offenders, Is.Empty, string.Join("; ", offenders));
+    }
+
+    private static string JsonName(PropertyInfo p) =>
+        p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? p.Name;
+
+    private static ISet<string> JsonNames(Type t) =>
+        t.GetProperties().Select(JsonName).ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>A property the caller must supply. Non-nullable value types count even
+    /// without [Required], because that attribute is a no-op on them and they bind their
+    /// default silently - which is the whole bug class this file guards.</summary>
+    private static IEnumerable<PropertyInfo> RequiredProperties(Type t) =>
+        t.GetProperties().Where(p =>
+            p.GetCustomAttribute<RequiredAttribute>() != null
+            || (p.PropertyType.IsValueType && Nullable.GetUnderlyingType(p.PropertyType) == null));
 
     [Test]
     public void TheWriteModelCarriesNoIdentifiers()
