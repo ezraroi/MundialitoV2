@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "skills": {
+    "cmux": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux/SKILL.md",
+      "computedHash": "75b2d4a46f84a04b23fac4fdcaafeb2b11310d44b9bcc0e9aa44a7ef5413a45e"
+    },
+    "cmux-architecture": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-architecture/SKILL.md",
+      "computedHash": "41745c31fed11ec54020c9d0111074b806d687196f46423ff46cc598558c69a3"
+    },
+    "cmux-backend": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-backend/SKILL.md",
+      "computedHash": "f64905a4e6f18e10ff8361f163bb650a2062b9d8383e421d4d748d5d77c3684f"
+    },
+    "cmux-billing": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-billing/SKILL.md",
+      "computedHash": "78f4e9d91e6a9233871011e870d873d65dc818267617cd87009a52b88050150d"
+    },
+    "cmux-browser": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-browser/SKILL.md",
+      "computedHash": "35178784acf682c5a7e336c0f7b27f1f066c1b5563808bb37c4c3083b6d745cd"
+    },
+    "cmux-cua": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-cua/SKILL.md",
+      "computedHash": "c01c3b5c09553e40eb22107e8f841602c898eaa3768734f952eef2a319b65fee"
+    },
+    "cmux-custom-sidebar": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-custom-sidebar/SKILL.md",
+      "computedHash": "18edd8ba167b12addfa4f2f6063f293e376c76015da469b062551002cb7f8366"
+    },
+    "cmux-customization": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-customization/SKILL.md",
+      "computedHash": "13c8870cff261c2b0cb54727c2549311740dbd3a1df047673c88d36727933003"
+    },
+    "cmux-debugging": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-debugging/SKILL.md",
+      "computedHash": "3f87d7fa471ca8bac4303965e29613ae98a4c580eb40b167b3d009929290a8ac"
+    },
+    "cmux-dev-workflow": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-dev-workflow/SKILL.md",
+      "computedHash": "caa7cb50f29e810d0cc81631fd3df7f22dbc2c83ca11b50b862212f6475539e0"
+    },
+    "cmux-diagnostics": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-diagnostics/SKILL.md",
+      "computedHash": "321d2b89fb13523dc1945da92cf04f383c9fb665354b601fa6face49a4a1fa6a"
+    },
+    "cmux-ghostty": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-ghostty/SKILL.md",
+      "computedHash": "c4d3dae3b0d71b427b58901c92dca9405cec934625c8dbb3ba78ceb6be50ffe2"
+    },
+    "cmux-keyboard-shortcuts": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-keyboard-shortcuts/SKILL.md",
+      "computedHash": "32c05cc3a88869f5f19013ded2341785b74e49769039efa1d67f325cb837b26a"
+    },
+    "cmux-localization": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-localization/SKILL.md",
+      "computedHash": "81d58a42f918426424a6a65e8234827a0840f79ec258df6f938cf8539c4254e9"
+    },
+    "cmux-markdown": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-markdown/SKILL.md",
+      "computedHash": "0870025e9cc20f3a7bde8eeebfafc7a2c5e273168b5252df961acac942c26e28"
+    },
+    "cmux-release": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-release/SKILL.md",
+      "computedHash": "3416ef5ed8200d6a514fba27cc73a513e2858ce52b00abe47ec4ef4f4f78ec85"
+    },
+    "cmux-settings": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-settings/SKILL.md",
+      "computedHash": "7193693493397dcff3d320a0f7ba43e10be179ccc1e1b1bf4c7b264d447cbf04"
+    },
+    "cmux-shared-behavior": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-shared-behavior/SKILL.md",
+      "computedHash": "bbe60e3e04b6c8a427ddf194b2449c9d96009cb6a75a8c6c34d784654bddb176"
+    },
+    "cmux-socket-policy": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-socket-policy/SKILL.md",
+      "computedHash": "a454245e2f949f104889b24a6aa1e9ba02b85057191a1af587b7a7df799eef7d"
+    },
+    "cmux-testing": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-testing/SKILL.md",
+      "computedHash": "e0b80970fc5e86bde23f01f41d8cdcac04ad0e3b1fac7a0e32a5a30b8ae5ba4c"
+    },
+    "cmux-workspace": {
+      "source": "manaflow-ai/cmux",
+      "sourceType": "github",
+      "skillPath": "skills/cmux-workspace/SKILL.md",
+      "computedHash": "63ed6d443cc59e60c0cd59f3f271ef0746679e9dba436aabb244c8d5c5cf061e"
+    }
+  }
+}
