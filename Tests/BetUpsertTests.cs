@@ -107,7 +107,7 @@ public class BetUpsertTests
         var existing = MakeBet(7, alice, game);
         var betsRepo = new FakeBetsRepository(new[] { existing });
         var gamesRepo = new FakeGamesRepository(new[] { game });
-        var logs = new FakeActionLogsRepository();
+        var logs = new FakeActionLogger();
         var controller = MakeController(betsRepo, gamesRepo, MakeValidator(betsRepo, gamesRepo), alice, logs);
 
         var result = await controller.PutMyBet(game.GameId, Save(9, 9));
@@ -120,8 +120,9 @@ public class BetUpsertTests
             Assert.That(betsRepo.SaveCount, Is.Zero, "a refused save reached Save()");
             // BetValidator no longer logs; the controller must, or the ActionLogs query in
             // #171 that finds a post-deadline write has nothing to find.
-            Assert.That(logs.Logs.Select(l => l.Type), Does.Contain(ActionType.ERROR));
-            Assert.That(logs.Logs.Single().Message, Does.Contain("closed for betting"));
+            Assert.That(logs.Entries.Select(e => e.Type), Does.Contain(ActionType.ERROR));
+            Assert.That(logs.Entries.Single().ObjectType, Is.EqualTo("Bet"));
+            Assert.That(logs.Entries.Single().Message, Does.Contain("closed for betting"));
         });
     }
 

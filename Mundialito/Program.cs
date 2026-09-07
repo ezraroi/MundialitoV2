@@ -149,6 +149,9 @@ builder.Services.AddScoped<IBetValidator, BetValidator>();
 builder.Services.AddScoped<IBetsResolver, BetsResolver>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<IActionLogsRepository, ActionLogsRepository>();
+// Singleton on purpose: it resolves a scope of its own per write, so it must not be bound
+// to a request's scope - that is the whole point of it. See ActionLogger.
+builder.Services.AddSingleton<IActionLogger, ActionLogger>();
 builder.Services.AddScoped<TokenService, TokenService>();
 builder.Services.AddScoped<GoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<AuthService, AuthService>();

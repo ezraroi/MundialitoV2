@@ -85,15 +85,15 @@ public static class BetsTestHarness
     }
 
     /// <summary>Records what was logged so a test can assert the audit trail survived the
-    /// move out of <see cref="BetValidator"/>.</summary>
-    public sealed class FakeActionLogsRepository : IActionLogsRepository
+    /// move out of <see cref="BetValidator"/>. Nothing here can reach a business repository,
+    /// which is the property the real ActionLogger buys with its own scope.</summary>
+    public sealed class FakeActionLogger : IActionLogger
     {
-        private readonly List<ActionLog> logs = new();
-        public IReadOnlyList<ActionLog> Logs => logs;
+        private readonly List<(ActionType Type, string ObjectType, string Message)> entries = new();
+        public IReadOnlyList<(ActionType Type, string ObjectType, string Message)> Entries => entries;
 
-        public IEnumerable<ActionLog> GetAllLogs() => logs;
-        public ActionLog InsertLogAction(ActionLog logAction) { logs.Add(logAction); return logAction; }
-        public void Save() { }
+        public void Log(ActionType actionType, string objectType, string message) =>
+            entries.Add((actionType, objectType, message));
     }
 
     private sealed class FakeUserStore : IUserStore<MundialitoUser>
@@ -165,7 +165,7 @@ public static class BetsTestHarness
         IGamesRepository games,
         IBetValidator validator,
         MundialitoUser? caller,
-        IActionLogsRepository? actionLogs = null,
+        IActionLogger? actionLogger = null,
         string? callerName = null)
     {
         var httpContext = new DefaultHttpContext
@@ -178,7 +178,7 @@ public static class BetsTestHarness
             betsRepository: bets,
             betValidator: validator,
             dateTimeProvider: new FixedClock(),
-            actionLogsRepository: actionLogs ?? new FakeActionLogsRepository(),
+            actionLogger: actionLogger ?? new FakeActionLogger(),
             gamesRepository: games,
             userManager: new FakeUserManager(caller),
             httpContextAccessor: new HttpContextAccessor { HttpContext = httpContext },

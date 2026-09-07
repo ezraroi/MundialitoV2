@@ -19,7 +19,7 @@ public class UsersController : ControllerBase
 {
     private const string ObjectType = "User";
     private readonly IBetsRepository betsRepository;
-    private readonly IActionLogsRepository actionLogsRepository;
+    private readonly IActionLogger actionLogger;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
     private readonly IDateTimeProvider dateTimeProvider;
@@ -29,9 +29,9 @@ public class UsersController : ControllerBase
     private readonly MundialitoDbContext mundialitoDbContext;
     private readonly ILogger logger;
 
-    public UsersController(ILogger<UsersController> logger, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, GeneralBetsService generalBetsService, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
+    public UsersController(ILogger<UsersController> logger, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, GeneralBetsService generalBetsService, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
     {
-        this.actionLogsRepository = actionLogsRepository;
+        this.actionLogger = actionLogger;
         this.httpContextAccessor = httpContextAccessor;
         this.userManager = userManager;
         this.betsRepository = betsRepository;
@@ -175,7 +175,7 @@ public class UsersController : ControllerBase
             ModelState.AddModelError("", "Cannot remove user existing roles");
             return BadRequest(ModelState);
         }
-        AddLog(ActionType.UPDATE, string.Format("Made user {0} admin", id));
+        actionLogger.Log(ActionType.UPDATE, ObjectType, string.Format("Made user {0} admin", id));
         logger.LogInformation("User {} is now admin", user.UserName);
         return Ok();
     }
@@ -200,7 +200,7 @@ public class UsersController : ControllerBase
             ModelState.AddModelError("", "Failed to activate user");
             return BadRequest(ModelState);
         }
-        AddLog(ActionType.UPDATE, string.Format("Made user {0} active", id));
+        actionLogger.Log(ActionType.UPDATE, ObjectType, string.Format("Made user {0} active", id));
         logger.LogInformation("User {} is now active", user.UserName);
         return Ok();
     }
@@ -224,7 +224,7 @@ public class UsersController : ControllerBase
             ModelState.AddModelError("", "Failed to disable user");
             return BadRequest(ModelState);
         }
-        AddLog(ActionType.UPDATE, string.Format("Made user {0} disabled", id));
+        actionLogger.Log(ActionType.UPDATE, ObjectType, string.Format("Made user {0} disabled", id));
         logger.LogInformation("User {} is now disabled", user.UserName);
         return Ok();
     }
@@ -244,7 +244,7 @@ public class UsersController : ControllerBase
             return BadRequest(ModelState);
         }
         logger.LogInformation("Deleted user {0}", id);
-        AddLog(ActionType.DELETE, string.Format("Deleted user: {0}", id));
+        actionLogger.Log(ActionType.DELETE, ObjectType, string.Format("Deleted user: {0}", id));
         return Ok();
     }
 
@@ -307,18 +307,6 @@ public class UsersController : ControllerBase
         return resEntries;
     }
 
-    private void AddLog(ActionType actionType, string message)
-    {
-        try
-        {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
-            actionLogsRepository.Save();
-        }
-        catch (Exception e)
-        {
-            logger.LogInformation("Exception during log. Exception: {0}", e.Message);
-        }
-    }
 
     private IEnumerable<UserWithPointsModel> GetTableDetails(IEnumerable<MundialitoUser> users)
     {

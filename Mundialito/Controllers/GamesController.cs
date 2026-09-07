@@ -24,7 +24,7 @@ public class GamesController : ControllerBase
     private readonly IBetsRepository betsRepository;
     private readonly IBetsResolver betsResolver;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IActionLogsRepository actionLogsRepository;
+    private readonly IActionLogger actionLogger;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<MundialitoUser> userManager;
@@ -32,7 +32,7 @@ public class GamesController : ControllerBase
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly ILogger logger;
 
-    public GamesController(ILogger<GamesController> logger, IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository)
+    public GamesController(ILogger<GamesController> logger, IGamesRepository gamesRepository, IBetsRepository betsRepository, IBetsResolver betsResolver, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IOptions<Config> config, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository)
     {
         this.httpContextAccessor = httpContextAccessor;
         this.config = config.Value;
@@ -41,7 +41,7 @@ public class GamesController : ControllerBase
         this.betsResolver = betsResolver;
         this.dateTimeProvider = dateTimeProvider;
         this.dateTimeProvider = dateTimeProvider;
-        this.actionLogsRepository = actionLogsRepository;
+        this.actionLogger = actionLogger;
         this.userManager = userManager;
         this.tableBuilder = tableBuilder;
         this.generalBetsRepository = generalBetsRepository;
@@ -140,7 +140,7 @@ public class GamesController : ControllerBase
         game.GameId = res.GameId;
         game.IsOpen = true;
         game.IsPendingUpdate = false;
-        AddLog(ActionType.CREATE, string.Format("Posting new game: {0}", newGame));
+        actionLogger.Log(ActionType.CREATE, ObjectType, string.Format("Posting new game: {0}", newGame));
         AddMonkeyBet(res);
         return game;
     }
@@ -166,7 +166,7 @@ public class GamesController : ControllerBase
         gamesRepository.Save();
         if (item.IsBetResolved(dateTimeProvider.UTCNow))
         {
-            AddLog(ActionType.UPDATE, string.Format("Will resolve bets of game {0}", item.GameId));
+            actionLogger.Log(ActionType.UPDATE, ObjectType, string.Format("Will resolve bets of game {0}", item.GameId));
             logger.LogInformation("Will reoslve Game {0} bets", id);
             var bets = betsRepository.GetGameBets(item.GameId);
             betsResolver.ResolveBets(item, bets);
@@ -175,7 +175,7 @@ public class GamesController : ControllerBase
                 betsRepository.Save();
             }
         }
-        AddLog(ActionType.UPDATE, string.Format("Updating Game {0}", item));
+        actionLogger.Log(ActionType.UPDATE, ObjectType, string.Format("Updating Game {0}", item));
         logger.LogInformation("Bet {} was resolved", id);
         return Ok(new PutGameModelResult(item, dateTimeProvider.UTCNow));
     }
@@ -190,7 +190,7 @@ public class GamesController : ControllerBase
         logger.LogInformation("Deleting Game {0}", id);
         gamesRepository.DeleteGame(id);
         gamesRepository.Save();
-        AddLog(ActionType.DELETE, String.Format("Deleting Game {0}", id));
+        actionLogger.Log(ActionType.DELETE, ObjectType, String.Format("Deleting Game {0}", id));
         logger.LogInformation("Game {0} was deleted", id);
         return Ok();
     }
@@ -204,18 +204,6 @@ public class GamesController : ControllerBase
         }
     }
 
-    private void AddLog(ActionType actionType, string message)
-    {
-        try
-        {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
-            actionLogsRepository.Save();
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Exception during log. Exception: {0}", e.Message);
-        }
-    }
 
     private void AddMonkeyBet(Game res)
     {
