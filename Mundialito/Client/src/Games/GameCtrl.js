@@ -134,7 +134,8 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 Alert.success('Bet was updated successfully');
                 BetsManager.setBet(data);
             }).catch((err) => {
-                Alert.error('Failed to update bet, please try again');
+                /* The http interceptor already toasted the reason - a second generic
+                   toast here only competes with it for the 2.5s the toaster shows. */
                 $log.error('Error updating bet', err);
             });
         }
@@ -145,7 +146,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
                 $scope.game.UserHasBet = true;
                 Alert.success('Bet was added successfully');
             }, (err) => {
-                Alert.error('Failed to add bet, please try again');
+                /* See updateBet above - the interceptor owns the user-facing message. */
                 $log.error('Error adding bet', err);
             });
         }

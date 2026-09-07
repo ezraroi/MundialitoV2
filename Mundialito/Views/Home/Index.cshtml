@@ -150,15 +150,16 @@
         <script>
           Sentry.init({
             dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
+            environment: "@env.EnvironmentName",
             integrations: [new Sentry.Integrations.Angular()],
           });
         </script>
         @if (env.IsProduction())
         {
-            <script src="js/app-min-2ab0bdbec3a48e3bdb2ef3323f784e16.js"></script>
+            <script src="js/app-min-e5c72caf52b233e7d43f34a56c91fb6b.js"></script>
         }
         else {
-            <script src="js/app-263343a488087853d6afa6e326e13895.js"></script>
+            <script src="js/app-a47e3d021c248551629e3592bc2ebb45.js"></script>
         }
     </div>
 </body>
