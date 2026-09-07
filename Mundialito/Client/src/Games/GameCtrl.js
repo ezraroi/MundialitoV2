@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', 'security', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players, security) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', 'security', '$interval', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players, security, $interval) {
     $scope.game = game;
     $scope.teamsDic = {};
     $scope.playersDic = {};
@@ -148,6 +148,41 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             $scope.savingBet = false;
         });
     };
+
+    /* game.IsOpen is a snapshot the server computed at page load and nothing re-evaluates it,
+       so a page left open past kickoff kept showing a live Save button - and the save was
+       then refused, which is the path that used to save the bet anyway (#171). Close the form
+       at the deadline instead. UX only: the server remains the authority on the deadline, and
+       CloseTime is the same value it decides with (kickoff minus 15 minutes, sent as UTC).
+
+       invokeApply false so the page is not digested once a second for as long as it is open -
+       which is exactly the situation this exists for. The one flip asks for a digest itself. */
+    function closeBetFormAtDeadline() {
+        if (!$scope.game.IsOpen) {
+            return;
+        }
+        var tick = $interval(() => {
+            /* Read CloseTime each tick rather than capturing it: an admin editing the game's
+               date from this same page moves the deadline, and the form should follow it. */
+            var closeTime = new Date($scope.game.CloseTime).getTime();
+            if (isNaN(closeTime)) {
+                $log.warn('GameCtrl: game ' + $scope.game.GameId + ' has no usable CloseTime, leaving the bet form open');
+                $interval.cancel(tick);
+                return;
+            }
+            if (Date.now() < closeTime) {
+                return;
+            }
+            $interval.cancel(tick);
+            $scope.$evalAsync(() => {
+                $log.debug('GameCtrl: betting closed on game ' + $scope.game.GameId);
+                $scope.game.IsOpen = false;
+            });
+        }, 1000, 0, false);
+        /* Without this every visit to a game page leaks a timer. */
+        $scope.$on('$destroy', () => $interval.cancel(tick));
+    }
+    closeBetFormAtDeadline();
 
     $scope.simulateGame = () => {
         $log.debug('GameCtrl: simulating game');
