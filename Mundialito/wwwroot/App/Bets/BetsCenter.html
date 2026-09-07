@@ -46,7 +46,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="game in games"
-                                    ng-class="{'warning': !bets[game.GameId].HasBet}">
+                                    ng-class="{'warning': !bets[game.GameId].HasBet, 'text-muted': closedGames[game.GameId]}">
                                     <ng-form name="betFromIn">
                                         <td class="text-center mu-bets-center-table__game">
                                             <a href="{{game.getUrl()}}">
@@ -94,7 +94,7 @@
                                             </button>
                                         </td>
                                         <td class="text-center">
-                                            <button type="button" ng-disabled="betFromIn.$invalid || savingBets[game.GameId]"
+                                            <button type="button" ng-disabled="betFromIn.$invalid || savingBets[game.GameId] || closedGames[game.GameId]"
                                                 class="btn btn-success btn-sm mu-bets-center-table__action"
                                                 ng-click="updateBet(game.GameId)" title="Save">
                                                 <i class="fa fa-save"></i>
@@ -169,7 +169,7 @@
                                         <i class="fa fa-random"></i> Shuffle
                                     </button>
                                     <button type="button" class="btn btn-success btn-block"
-                                        ng-disabled="betFromMobile.$invalid || savingBets[game.GameId]"
+                                        ng-disabled="betFromMobile.$invalid || savingBets[game.GameId] || closedGames[game.GameId]"
                                         ng-click="updateBet(game.GameId)">
                                         <i class="fa fa-save"></i> Save bet
                                     </button>

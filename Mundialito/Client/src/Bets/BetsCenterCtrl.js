@@ -1,9 +1,33 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', '$timeout', 'Alert', 'BetsManager', 'games', function ($scope, $log, $timeout, Alert, BetsManager, games) {
+angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', '$timeout', '$interval', 'Alert', 'BetsManager', 'games', function ($scope, $log, $timeout, $interval, Alert, BetsManager, games) {
     $scope.games = games;
     $scope.bets = {};
     /* Keyed per game: a single flag would disable every row on one save. */
     $scope.savingBets = {};
+    /* Same for the deadline. These rows are the games that were open when the page loaded,
+       and nothing re-evaluates that, so a row whose kickoff passes keeps a live Save button
+       - the Game page had the same problem. Rows close themselves; the server stays the
+       authority, and a row that closes here is refused there too. */
+    $scope.closedGames = {};
+
+    var deadlineTick = $interval(() => {
+        var now = Date.now();
+        var changed = false;
+        games.forEach((game) => {
+            var closeTime = new Date(game.CloseTime).getTime();
+            var closed = !isNaN(closeTime) && closeTime <= now;
+            if (closed !== !!$scope.closedGames[game.GameId]) {
+                $scope.closedGames[game.GameId] = closed;
+                changed = true;
+            }
+        });
+        /* invokeApply is false below, so ask for a digest only when something actually moved
+           - otherwise thirty-odd rows get re-evaluated every second for nothing. */
+        if (changed) {
+            $scope.$evalAsync(angular.noop);
+        }
+    }, 1000, 0, false);
+    $scope.$on('$destroy', () => $interval.cancel(deadlineTick));
 
 
     var loadUserBets = function() {
@@ -31,7 +55,7 @@ angular.module('mundialitoApp').controller('BetsCenterCtrl', ['$scope', '$log', 
     loadUserBets();
 
     $scope.updateBet = function(gameId) {
-        if ($scope.savingBets[gameId]) {
+        if ($scope.savingBets[gameId] || $scope.closedGames[gameId]) {
             return;
         }
         $log.debug('BetsCenterCtrl: Will save bet on game ' + gameId);

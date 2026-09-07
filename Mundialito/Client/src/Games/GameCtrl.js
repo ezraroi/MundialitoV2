@@ -7,6 +7,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.plugins = {};
     $scope.userBet = userBet;
     $scope.savingBet = false;
+    /* Whether betting is still open, as opposed to what the server thought at page load.
+       Deliberately not game.IsOpen: twelve ng-ifs read that, including the admin Edit Game
+       form, which swaps its Date picker for four required score fields when a game closes -
+       flipping it under an admin mid-edit would take away the field they are typing in and
+       disable Save. This flag gates the bet panel and nothing else. */
+    $scope.betFormOpen = game.IsOpen;
     $scope.showEditForm = false;
     $scope.gameActiveTab = 0;
     $scope.betsHighlightsOpen = false;
@@ -153,12 +159,13 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
        so a page left open past kickoff kept showing a live Save button - and the save was
        then refused, which is the path that used to save the bet anyway (#171). Close the form
        at the deadline instead. UX only: the server remains the authority on the deadline, and
-       CloseTime is the same value it decides with (kickoff minus 15 minutes, sent as UTC).
+       CloseTime is the same value it decides with - GameExtensionMethods.IsOpen and
+       BetValidator both compare against CloseTime, not kickoff. Sent as UTC.
 
        invokeApply false so the page is not digested once a second for as long as it is open -
        which is exactly the situation this exists for. The one flip asks for a digest itself. */
     function closeBetFormAtDeadline() {
-        if (!$scope.game.IsOpen) {
+        if (!$scope.betFormOpen) {
             return;
         }
         var tick = $interval(() => {
@@ -176,7 +183,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             $interval.cancel(tick);
             $scope.$evalAsync(() => {
                 $log.debug('GameCtrl: betting closed on game ' + $scope.game.GameId);
-                $scope.game.IsOpen = false;
+                $scope.betFormOpen = false;
             });
         }, 1000, 0, false);
         /* Without this every visit to a game page leaks a timer. */
