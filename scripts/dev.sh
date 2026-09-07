@@ -275,19 +275,30 @@ print(o[0] if o else "", o[1] if len(o) > 1 else "")')"
   if ! db_running; then
     info "SKIP  database container not running, cannot assert the stored row"
   else
-    local betid row_before row_after
+    local betid row_before row_after audit_before audit_after
     local cols='"HomeScore","AwayScore","CardsMark","CornersMark","GameId"'
+    # ActionType ordinals: 0 CREATE, 1 UPDATE, 2 DELETE, 3 ERROR, 4 UNAUTHORIZED_ACCESS.
+    local audit_rows='SELECT count(*) FROM "ActionLogs" WHERE "ObjectType" = '"'"'Bet'"'"' AND "Type" = 3;'
     code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body 1 2)"); betid=$(body_field BetId)
     check "a bet can be placed while the game is open" 201 "$code"
     db_query "UPDATE \"Games\" SET \"Date\" = \"Date\" - interval '30 days' WHERE \"GameId\" = $g2;" >/dev/null
     row_before=$(db_query "SELECT $cols FROM \"Bets\" WHERE \"BetId\" = $betid;")
+    audit_before=$(db_query "$audit_rows")
     code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body 9 9)")
     check "a past-deadline save is refused" 409 "$code"
     row_after=$(db_query "SELECT $cols FROM \"Bets\" WHERE \"BetId\" = $betid;")
+    audit_after=$(db_query "$audit_rows")
     if [ -n "$row_before" ] && [ "$row_before" = "$row_after" ]; then
       info "PASS  the refused save left the stored row untouched ($row_after)"
     else
       info "FAIL  the refused save changed the row: '$row_before' -> '$row_after'"; fails=1
+    fi
+    # The audit row must land even though the write it describes was refused - it is written
+    # through a context of its own, so it neither depends on nor commits the business change.
+    if [ "$audit_after" -gt "$audit_before" ] 2>/dev/null; then
+      info "PASS  the refusal was recorded in ActionLogs ($audit_before -> $audit_after)"
+    else
+      info "FAIL  no ActionLogs row for the refusal ($audit_before -> $audit_after)"; fails=1
     fi
     # Put the fixture back so a second run still finds two open games.
     db_query "UPDATE \"Games\" SET \"Date\" = \"Date\" + interval '30 days' WHERE \"GameId\" = $g2;" >/dev/null

@@ -25,14 +25,14 @@ public class BetsController : ControllerBase
     private readonly IGamesRepository gamesRepository;
     private readonly IBetValidator betValidator;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IActionLogsRepository actionLogsRepository;
+    private readonly IActionLogger actionLogger;
     private readonly UserManager<MundialitoUser> userManager;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IEmailSender emailSender;
     private readonly ILogger logger;
 
-    public BetsController(ILogger<BetsController> logger, IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
+    public BetsController(ILogger<BetsController> logger, IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
     {
         this.config = config.Value;
         this.httpContextAccessor = httpContextAccessor;
@@ -41,7 +41,7 @@ public class BetsController : ControllerBase
         this.betsRepository = betsRepository;
         this.betValidator = betValidator;
         this.dateTimeProvider = dateTimeProvider;
-        this.actionLogsRepository = actionLogsRepository;
+        this.actionLogger = actionLogger;
         this.emailSender = emailSender;
         this.logger = logger;
     }
@@ -136,7 +136,7 @@ public class BetsController : ControllerBase
         {
             /* 409, not 400: "you were too late" is a different thing from "your request was
                malformed" and should not share its Sentry fingerprint. */
-            AddLog(ActionType.ERROR, e.Message);
+            actionLogger.Log(ActionType.ERROR, ObjectType, e.Message);
             return Conflict(new ErrorMessage{ Message = e.Message});
         }
 
@@ -174,7 +174,7 @@ public class BetsController : ControllerBase
 
         /* These two message texts are load-bearing: the ActionLogs query in #171 that tells
            a post-deadline write apart from a rejected create matches on them. */
-        AddLog(isCreate ? ActionType.CREATE : ActionType.UPDATE,
+        actionLogger.Log(isCreate ? ActionType.CREATE : ActionType.UPDATE, ObjectType,
             string.Format(isCreate ? "Posting new Bet: {0}" : "Updating Bet: {0}", target));
         if (ShouldSendMail())
             SendBetMail(target, user);
@@ -193,31 +193,18 @@ public class BetsController : ControllerBase
         try {
             betValidator.ValidateDeleteBet(id, user.Id);
         } catch (BetForbiddenException e) {
-            AddLog(ActionType.UNAUTHORIZED_ACCESS, e.Message);
+            actionLogger.Log(ActionType.UNAUTHORIZED_ACCESS, ObjectType, e.Message);
             return Unauthorized(e.Message);
         } catch (BetValidationException e) {
-            AddLog(ActionType.ERROR, e.Message);
+            actionLogger.Log(ActionType.ERROR, ObjectType, e.Message);
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         logger.LogInformation("Deleting bet {} of {}", id, user.UserName);
         betsRepository.DeleteBet(id);
         betsRepository.Save();
-        AddLog(ActionType.DELETE, string.Format("Deleting Bet: {0}", id));
+        actionLogger.Log(ActionType.DELETE, ObjectType, string.Format("Deleting Bet: {0}", id));
         logger.LogInformation("Bet {} of {} was deleted", id, user.UserName);
         return Ok();
-    }
-
-    private void AddLog(ActionType actionType, string message)
-    {
-        try
-        {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
-            actionLogsRepository.Save();
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Exception during log. Exception: {0}", e.Message);
-        }
     }
 
     private bool ShouldSendMail()

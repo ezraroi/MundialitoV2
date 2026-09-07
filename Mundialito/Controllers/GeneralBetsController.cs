@@ -20,7 +20,7 @@ public class GeneralBetsController : ControllerBase
     private const string ObjectType = "GeneralBet";
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IActionLogsRepository actionLogsRepository;
+    private readonly IActionLogger actionLogger;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TournamentTimesUtils tournamentTimesUtils;
     private readonly UserManager<MundialitoUser> userManager;
@@ -30,11 +30,11 @@ public class GeneralBetsController : ControllerBase
     private readonly ICurrentUserRoleProvider currentUserRoleProvider;
     private readonly ILogger logger;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider)
     {
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
-        this.actionLogsRepository = actionLogsRepository;
+        this.actionLogger = actionLogger;
         this.httpContextAccessor = httpContextAccessor;
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.userManager = userManager;
@@ -100,7 +100,7 @@ public class GeneralBetsController : ControllerBase
         var validate = Validate();
         if (!string.IsNullOrEmpty(validate))
         {
-            AddLog(ActionType.ERROR, validate);
+            actionLogger.Log(ActionType.ERROR, ObjectType, validate);
             return BadRequest(new ErrorMessage { Message = validate });
         }
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
@@ -109,13 +109,13 @@ public class GeneralBetsController : ControllerBase
         var winningTeam = teamsRepository.GetTeam(newBet.WinningTeam.TeamId);
         if (winningTeam == null)
         {
-            AddLog(ActionType.ERROR, string.Format("Team with id '{0}' dosen't exits", newBet.WinningTeam.TeamId));
+            actionLogger.Log(ActionType.ERROR, ObjectType, string.Format("Team with id '{0}' dosen't exits", newBet.WinningTeam.TeamId));
             return NotFound(new ErrorMessage { Message = string.Format("Team with id '{0}' dosen't exits", newBet.WinningTeam.TeamId) });
         }
         var goldenBootPlayer = playersRepository.GetPlayer(newBet.GoldenBootPlayer.PlayerId);
         if (goldenBootPlayer == null)
         {
-            AddLog(ActionType.ERROR, string.Format("Player with id '{0}' dosen't exits", newBet.GoldenBootPlayer.PlayerId));
+            actionLogger.Log(ActionType.ERROR, ObjectType, string.Format("Player with id '{0}' dosen't exits", newBet.GoldenBootPlayer.PlayerId));
             return NotFound(new ErrorMessage { Message = string.Format("Player with id '{0}' dosen't exits", newBet.GoldenBootPlayer.PlayerId) });
         }
         var generalBet = new GeneralBet
@@ -128,7 +128,7 @@ public class GeneralBetsController : ControllerBase
         logger.LogInformation("Posting new general bet {} from {}", generalBet, user.UserName);
         generalBetsRepository.Save();
         newBet.GeneralBetId = res.GeneralBetId;
-        AddLog(ActionType.CREATE, string.Format("Posting new Generel Bet: {0}", res));
+        actionLogger.Log(ActionType.CREATE, ObjectType, string.Format("Posting new Generel Bet: {0}", res));
         logger.LogInformation("Saved general bet of {}", user.UserName);
         return Ok(newBet);
     }
@@ -140,7 +140,7 @@ public class GeneralBetsController : ControllerBase
         var validate = Validate();
         if (!string.IsNullOrEmpty(validate))
         {
-            AddLog(ActionType.ERROR, validate);
+            actionLogger.Log(ActionType.ERROR, ObjectType, validate);
             return BadRequest(new ErrorMessage { Message = validate });
         }
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
@@ -149,19 +149,19 @@ public class GeneralBetsController : ControllerBase
         var betToUpdate = generalBetsRepository.GetGeneralBet(id);
         if (betToUpdate.User.Id != user.Id)
         {
-            AddLog(ActionType.UNAUTHORIZED_ACCESS, "You can't update a bet that is not yours");
+            actionLogger.Log(ActionType.UNAUTHORIZED_ACCESS, ObjectType, "You can't update a bet that is not yours");
             return Unauthorized(new ErrorMessage { Message = "You can't update a bet that is not yours" });
         }
         var winningTeam = teamsRepository.GetTeam(bet.WinningTeam.TeamId);
         if (winningTeam == null)
         {
-            AddLog(ActionType.ERROR, string.Format("Team with id '{0}' dosen't exits", bet.WinningTeam.TeamId));
+            actionLogger.Log(ActionType.ERROR, ObjectType, string.Format("Team with id '{0}' dosen't exits", bet.WinningTeam.TeamId));
             return NotFound(new ErrorMessage { Message = string.Format("Team with id '{0}' dosen't exits", bet.WinningTeam.TeamId) });
         }
         var goldenBootPlayer = playersRepository.GetPlayer(bet.GoldenBootPlayer.PlayerId);
         if (goldenBootPlayer == null)
         {
-            AddLog(ActionType.ERROR, string.Format("Player with id '{0}' dosen't exits", bet.GoldenBootPlayer.PlayerId));
+            actionLogger.Log(ActionType.ERROR, ObjectType, string.Format("Player with id '{0}' dosen't exits", bet.GoldenBootPlayer.PlayerId));
             return NotFound(new ErrorMessage { Message = string.Format("Player with id '{0}' dosen't exits", bet.GoldenBootPlayer.PlayerId) });
         }
         betToUpdate.WinningTeamId = bet.WinningTeam.TeamId;
@@ -177,20 +177,20 @@ public class GeneralBetsController : ControllerBase
     {
         if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsResolveTime())
         {
-            AddLog(ActionType.ERROR, "General bets are not closed for betting yet");
+            actionLogger.Log(ActionType.ERROR, ObjectType, "General bets are not closed for betting yet");
             return BadRequest(new ErrorMessage { Message = "General bets are not closed for betting yet" });
         }
         var item = generalBetsRepository.GetGeneralBet(id);
         if (item == null)
         {
-            AddLog(ActionType.ERROR, string.Format("General Bet '{0}' dosen't exits", id));
+            actionLogger.Log(ActionType.ERROR, ObjectType, string.Format("General Bet '{0}' dosen't exits", id));
             return NotFound(new ErrorMessage { Message = string.Format("General Bet '{0}' dosen't exits", id) });
         }
         logger.LogInformation("Resolving general bet {0} with data: {1}", id, resolvedBet);
         item.Resolve(resolvedBet.PlayerIsRight, resolvedBet.TeamIsRight);
         generalBetsRepository.Save();
         logger.LogInformation("Resolved general bet {0}", id);
-        AddLog(ActionType.UPDATE, string.Format("Resolved Generel Bet: {0}", item));
+        actionLogger.Log(ActionType.UPDATE, ObjectType, string.Format("Resolved Generel Bet: {0}", item));
         return Ok();
     }
 
@@ -198,23 +198,11 @@ public class GeneralBetsController : ControllerBase
     {
         if (dateTimeProvider.UTCNow > tournamentTimesUtils.GetGeneralBetsCloseTime())
         {
-            AddLog(ActionType.ERROR, "General bets are already closed for betting");
+            actionLogger.Log(ActionType.ERROR, ObjectType, "General bets are already closed for betting");
             return "General bets are already closed for betting";
         }
         return string.Empty;
     }
 
-    private void AddLog(ActionType actionType, string message)
-    {
-        try
-        {
-            actionLogsRepository.InsertLogAction(ActionLog.Create(actionType, ObjectType, message, httpContextAccessor.HttpContext?.User.Identity.Name));
-            actionLogsRepository.Save();
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Exception during log. Exception: {0}", e.Message);
-        }
-    }
 }
 
