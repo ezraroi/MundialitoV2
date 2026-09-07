@@ -64,11 +64,12 @@ public class AuthorizationAttributeGuardTests
             .GroupBy(x => x.Attribute.Policy!)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        // 5 player-facing writes (3 bets + 2 general bets), 14 admin actions.
+        // 4 player-facing writes (2 bets - the mybet upsert and delete - plus 2 general
+        // bets), 14 admin actions.
         // A silently dropped attribute would leave an endpoint open to any signed-in user.
         Assert.Multiple(() =>
         {
-            Assert.That(byPolicy.GetValueOrDefault(Policies.ActiveOrAdmin), Is.EqualTo(5));
+            Assert.That(byPolicy.GetValueOrDefault(Policies.ActiveOrAdmin), Is.EqualTo(4));
             Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(14));
         });
     }

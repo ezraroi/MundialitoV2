@@ -6,7 +6,7 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.simulatedGame = {};
     $scope.plugins = {};
     $scope.userBet = userBet;
-    $scope.userBet.GameId = game.GameId;
+    $scope.savingBet = false;
     $scope.showEditForm = false;
     $scope.gameActiveTab = 0;
     $scope.betsHighlightsOpen = false;
@@ -129,27 +129,24 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     };
 
     $scope.updateBet = () => {
-        if ($scope.userBet.BetId !== -1) {
-            $scope.updateBetPromise =  $scope.userBet.update().then((data) => {
-                Alert.success('Bet was updated successfully');
-                BetsManager.setBet(data);
-            }).catch((err) => {
-                /* The http interceptor already toasted the reason - a second generic
-                   toast here only competes with it for the 2.5s the toaster shows. */
-                $log.error('Error updating bet', err);
-            });
+        /* Saving is one idempotent write whether or not a bet exists yet, so there is no
+           branch to get wrong - and the in-flight guard means a double tap cannot race
+           itself into two saves. */
+        if ($scope.savingBet) {
+            return;
         }
-        else {
-            BetsManager.addBet($scope.userBet).then((data) => {
-                $log.log('GameCtrl: Bet ' + data.BetId + ' was added');
-                $scope.userBet = data;
-                $scope.game.UserHasBet = true;
-                Alert.success('Bet was added successfully');
-            }, (err) => {
-                /* See updateBet above - the interceptor owns the user-facing message. */
-                $log.error('Error adding bet', err);
-            });
-        }
+        $scope.savingBet = true;
+        $scope.updateBetPromise = BetsManager.saveBet($scope.game.GameId, $scope.userBet).then((bet) => {
+            $scope.userBet = bet;
+            $scope.game.UserHasBet = true;
+            Alert.success('Bet was saved successfully');
+        }).catch((err) => {
+            /* The http interceptor already toasted the reason - a second generic
+               toast here only competes with it for the 2.5s the toaster shows. */
+            $log.error('Error saving bet', err);
+        }).finally(() => {
+            $scope.savingBet = false;
+        });
     };
 
     $scope.simulateGame = () => {

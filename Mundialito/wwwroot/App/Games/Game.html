@@ -83,10 +83,10 @@
                     ng-class="{'fa-legal': !userBet.IsMaxPoints, 'fa-bullseye': userBet.IsMaxPoints, 'fa-skull-crossbones': userBet.IsResolved && userBet.Points == 0, 'fa-question': !userBet.IsResolved}"></i>
             </div>
             <div class="panel-body" cg-busy="updateBetPromise">
-                <div ng-if="!game.IsOpen && userBet.BetId === -1" class="alert alert-danger mu-bet-closed-banner">
+                <div ng-if="!game.IsOpen && !userBet.HasBet" class="alert alert-danger mu-bet-closed-banner">
                     <i class="fa fa-warning"></i> You haven't placed a bet and betting is closed.
                 </div>
-                <div ng-show="!game.IsOpen && userBet.BetId !== -1">
+                <div ng-show="!game.IsOpen && userBet.HasBet">
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>
@@ -148,7 +148,7 @@
                     </div>
                     <div class="mu-sticky-actions">
                         <button type="button" class="btn btn-primary btn-lg btn-block" ng-click="updateBet()"
-                            ng-disabled="userBetFrom.$invalid">
+                            ng-disabled="userBetFrom.$invalid || savingBet">
                             <i class="fa fa-save"></i> Save bet
                         </button>
                     </div>

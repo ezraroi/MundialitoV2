@@ -186,13 +186,23 @@ cmd_status() {
   if app_running; then info "app       running (pid $(cat "$PIDFILE")) $BASE"; else info "app       stopped"; fi
 }
 
-# Regression check for the stale-role bug: a role change must take effect on the token the
-# user already holds. See Auth/Authorization/CurrentRoleHandler.
+# Regression checks for the stale-role bug (a role change must take effect on the token the
+# user already holds - see Auth/Authorization/CurrentRoleHandler) and for the bet write path
+# (PUT /api/games/{id}/mybet - see #170, #171). The bet cases assert the stored row, not just
+# the status code: the defect they guard returned 400 *and* saved.
 cmd_verify() {
   mkdir -p "$RUN_DIR"
   app_running || die "app is not running - try '$0 up'"
   local admin id t code fails=0
-  bet_on() { echo "{\"GameId\":$1,\"HomeScore\":1,\"AwayScore\":0,\"CardsMark\":\"1\",\"CornersMark\":\"2\"}"; }
+  bet_body()  { echo "{\"HomeScore\":${1:-1},\"AwayScore\":${2:-0},\"CardsMark\":\"1\",\"CornersMark\":\"2\"}"; }
+  mybet()     { echo "/api/games/$1/mybet"; }
+  body_field() { python3 -c "import sys,json
+try: print(json.load(sys.stdin).get('$1',''))
+except Exception: print('')" < "$RUN_DIR/body"; }
+  check() { # check <label> <expected> <actual>
+    if [ "$3" = "$2" ]; then info "PASS  $1 ($3)"; else info "FAIL  $1 got $3, expected $2"; fails=1; fi
+  }
+  db_query() { docker exec "$CONTAINER" psql -U mundialito -d mundialito -tAqc "$1"; }
   admin=$(login "$ADMIN_USER" "$ADMIN_PASS")
   local u="verify$(date +%s)"
   register "$u"
@@ -203,21 +213,85 @@ cmd_verify() {
   read -r g1 g2 <<<"$(api GET /api/games "$admin" | python3 -c '
 import sys, json
 o = [x["GameId"] for x in json.load(sys.stdin) if x.get("IsOpen")]
-print(o[0], o[1] if len(o) > 1 else "")')"
+print(o[0] if o else "", o[1] if len(o) > 1 else "")')"
   [ -n "$g1" ] && [ -n "$g2" ] || die "need two games open for betting - try '$0 reset'"
 
   bold "Role changes must apply to an already-issued token"
 
-  code=$(api_code POST /api/bets "$t" "$(bet_on "$g1")")
-  [ "$code" = "403" ] && info "PASS  disabled user is refused ($code)" || { info "FAIL  disabled user got $code, expected 403"; fails=1; }
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body)")
+  check "disabled user is refused" 403 "$code"
 
   api POST "/api/users/$id/activate" "$admin" >/dev/null
-  code=$(api_code POST /api/bets "$t" "$(bet_on "$g1")")
-  [ "$code" = "200" ] && info "PASS  activation applies to the old token ($code)" || { info "FAIL  after activation got $code, expected 200"; fails=1; }
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body)")
+  check "activation applies to the old token" 201 "$code"
 
   api DELETE "/api/users/$id/activate" "$admin" >/dev/null
-  code=$(api_code POST /api/bets "$t" "$(bet_on "$g2")")
-  [ "$code" = "403" ] && info "PASS  deactivation applies to the old token ($code)" || { info "FAIL  after deactivation got $code, expected 403"; fails=1; }
+  code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body)")
+  check "deactivation applies to the old token" 403 "$code"
+
+  echo
+  bold "A bet has one address and one write verb"
+  api POST "/api/users/$id/activate" "$admin" >/dev/null
+
+  # The activation check above created the bet. Saving again must update it in place - a
+  # double tap on Save is now two identical idempotent writes, not a POST then a PUT.
+  local first second
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body 2 2)"); first=$(body_field BetId)
+  check "a second save updates rather than creates" 200 "$code"
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(bet_body 3 3)"); second=$(body_field BetId)
+  check "a third save updates rather than creates" 200 "$code"
+  if [ -n "$first" ] && [ "$first" = "$second" ]; then
+    info "PASS  every save addressed the same bet ($first)"
+  else
+    info "FAIL  saves produced bets '$first' and '$second'"; fails=1
+  fi
+
+  # The response must be sendable straight back. Echoing a create response used to 400 with
+  # "Object reference not set to an instance of an object" because it carried no flat GameId.
+  api GET "$(mybet "$g1")" "$t" > "$RUN_DIR/mybet.json"
+  code=$(api_code PUT "$(mybet "$g1")" "$t" "$(cat "$RUN_DIR/mybet.json")")
+  check "the server's own response round-trips" 200 "$code"
+
+  # [Required] on a non-nullable int was a no-op: this body used to record a silent 0-0 bet.
+  code=$(api_code PUT "$(mybet "$g1")" "$t" '{"AwayScore":1,"CardsMark":"1","CornersMark":"2"}')
+  check "an omitted score is refused" 400 "$code"
+
+  code=$(api_code GET "$(mybet 999999)" "$t")
+  check "GET on an unknown game is not fabricated" 404 "$code"
+  code=$(api_code PUT "$(mybet 999999)" "$t" "$(bet_body)")
+  check "PUT on an unknown game is refused" 404 "$code"
+
+  # The old fork is gone, deliberately rather than aliased.
+  code=$(api_code POST /api/bets "$t" "$(bet_body)")
+  check "POST /api/bets no longer exists" 404 "$code"
+  code=$(api_code PUT "/api/bets/$first" "$t" "$(bet_body)")
+  check "PUT /api/bets/{id} no longer exists" 404 "$code"
+
+  # The defect this whole change exists for. Asserting the *stored row* is the point: the
+  # status code alone never showed it, because the rejection returned 400 and saved anyway.
+  # It needs a bet that already exists on a game whose deadline has passed, so bet on the
+  # second open game while it is open and push its kickoff back afterwards - reading a
+  # game the seed already closed would compare two "no bet" placeholders and pass for free.
+  if ! db_running; then
+    info "SKIP  database container not running, cannot assert the stored row"
+  else
+    local betid row_before row_after
+    local cols='"HomeScore","AwayScore","CardsMark","CornersMark","GameId"'
+    code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body 1 2)"); betid=$(body_field BetId)
+    check "a bet can be placed while the game is open" 201 "$code"
+    db_query "UPDATE \"Games\" SET \"Date\" = \"Date\" - interval '30 days' WHERE \"GameId\" = $g2;" >/dev/null
+    row_before=$(db_query "SELECT $cols FROM \"Bets\" WHERE \"BetId\" = $betid;")
+    code=$(api_code PUT "$(mybet "$g2")" "$t" "$(bet_body 9 9)")
+    check "a past-deadline save is refused" 409 "$code"
+    row_after=$(db_query "SELECT $cols FROM \"Bets\" WHERE \"BetId\" = $betid;")
+    if [ -n "$row_before" ] && [ "$row_before" = "$row_after" ]; then
+      info "PASS  the refused save left the stored row untouched ($row_after)"
+    else
+      info "FAIL  the refused save changed the row: '$row_before' -> '$row_after'"; fails=1
+    fi
+    # Put the fixture back so a second run still finds two open games.
+    db_query "UPDATE \"Games\" SET \"Date\" = \"Date\" + interval '30 days' WHERE \"GameId\" = $g2;" >/dev/null
+  fi
 
   echo
   [ "$fails" = "0" ] && bold "all checks passed" || { bold "checks FAILED"; return 1; }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Mundialito.DAL.Bets;
 
@@ -50,5 +51,21 @@ public class BetsRepository : GenericRepository<Bet>, IBetsRepository
     {
         Update(bet);
     }
-    
+
+    /// <summary>
+    /// Turns the driver's unique_violation on IX_Bets_UserId_GameId into a named domain
+    /// failure. Matched on SQLSTATE rather than on the index name, which is not part of any
+    /// contract. Two concurrent first saves of the same bet are the shape that hits this.
+    /// </summary>
+    public override void Save()
+    {
+        try
+        {
+            base.Save();
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: "23505" })
+        {
+            throw new DuplicateBetException("This user already has a bet on this game", e);
+        }
+    }
 }

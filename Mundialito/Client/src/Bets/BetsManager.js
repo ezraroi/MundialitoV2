@@ -39,19 +39,22 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
         },
 
         /* Public Methods */
-        /* Use this function in order to add a new bet */
-        addBet: function(betData) {
-            var deferred = $q.defer();
+        /* The only bet write path. One idempotent PUT whether or not a bet exists yet, so
+           callers never branch and a double tap is two identical writes. Always resolves a
+           pooled Bet instance, never the raw $http envelope. */
+        saveBet: function(gameId, betData) {
             var scope = this;
-            $log.debug('BetsManager: will add new bet - ' + angular.toJson(betData));
-            $http.post('api/bets/', betData, { tracker: 'addBetOnGame' }).then((data) => {
-                var bet = scope._retrieveInstance(data.data.BetId, data.data);
-                deferred.resolve(bet);
-            }).catch((err) => {
-                $log.error('Failed to add bet');
-                deferred.reject(err);
-            });
-            return deferred.promise;
+            $log.debug('BetsManager: will save bet on game ' + gameId);
+            /* Only the four fields the server accepts: the game comes from the URL and the
+               owner from the token. */
+            var body = {
+                HomeScore: betData.HomeScore,
+                AwayScore: betData.AwayScore,
+                CardsMark: betData.CardsMark,
+                CornersMark: betData.CornersMark
+            };
+            return $http.put('api/games/' + gameId + '/mybet', body, { tracker: 'saveBet' })
+                .then((res) => scope._retrieveInstance(res.data.BetId, res.data));
         },
 
         /* Use this function in order to get a bet instance by it's id */
@@ -116,29 +119,18 @@ angular.module('mundialitoApp').factory('BetsManager', ['$http', '$q', 'Bet', '$
             $log.debug('BetsManager: will fetch user bet of game ' + gameId + ' from server');
             $http.get('api/games/' + gameId + '/mybet', { tracker: 'getUserBetOnGame' })
                 .then((betData) => {
-                    if (betData.data.BetId != -1) {
-                        var bet = scope._retrieveInstance(betData.data.BetId, betData.data);
-                        deferred.resolve(bet);
+                    /* The no-bet placeholder is deliberately not pooled: it has no BetId,
+                       so every un-bet game would share one slot. */
+                    if (betData.data.HasBet) {
+                        deferred.resolve(scope._retrieveInstance(betData.data.BetId, betData.data));
+                    } else {
+                        deferred.resolve(betData.data);
                     }
-                    deferred.resolve(betData.data);
                 })
                 .catch(() => {
                     deferred.reject();
                 });
             return deferred.promise;
-        },
-
-        /*  This function is useful when we got somehow the bet data and we wish to store it or update the pool and get a general bet instance in return */
-        setBet: function(betData) {
-            $log.debug('BetsManager: will set bet ' + betData.BetId + ' to -' + angular.toJson(betData));
-            var scope = this;
-            var bet = this._search(betData.BetId);
-            if (bet) {
-                bet.setData(betData);
-            } else {
-                bet = scope._retrieveInstance(betData.BetId, betData);
-            }
-            return bet;
         }
 
     };

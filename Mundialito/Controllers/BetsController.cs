@@ -77,72 +77,110 @@ public class BetsController : ControllerBase
         return bets.Where(bet => !bet.IsOpenForBetting(dateTimeProvider.UTCNow) || httpContextAccessor.HttpContext?.User.Identity.Name == username).Select(bet => new BetViewModel(bet, dateTimeProvider.UTCNow));
     }
 
-    [HttpPost]
-    [Authorize(Policy = Policies.ActiveOrAdmin)]
-    public async Task<ActionResult<BetViewModel>> PostBet(NewBetModel bet)
+    /// <summary>
+    /// The caller's bet on a game, read and written at one address. Absolute routes so the
+    /// two halves of the resource live beside the validator, mail and audit dependencies
+    /// they need, rather than dragging those into GamesController.
+    /// </summary>
+    [HttpGet("/api/games/{gameId}/mybet")]
+    public async Task<ActionResult<BetViewModel>> GetMyBet(int gameId)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
             return Unauthorized();
-        var newBet = new Bet
+        var game = gamesRepository.GetGame(gameId);
+        if (game == null)
+            return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", gameId)});
+        var bet = betsRepository.GetUserBetOnGame(user.UserName, gameId);
+        if (bet == null)
         {
-            UserId = user.Id,
-            GameId = bet.GameId,
-            HomeScore = bet.HomeScore,
-            AwayScore = bet.AwayScore,
-            CardsMark = bet.CardsMark,
-            CornersMark = bet.CornersMark
-        };
-        try
-        {
-            betValidator.ValidateNewBet(newBet);
+            /* "You have not bet on this game" is a successful answer to a legitimate
+               question, and the client resolves it in a route resolver where a rejection
+               would abort the route change - so 200 with HasBet false, not 404. */
+            logger.LogInformation("No bet found for game {} and user {}", gameId, user.UserName);
+            return Ok(new BetViewModel
+            {
+                HasBet = false,
+                HomeScore = null,
+                AwayScore = null,
+                IsOpenForBetting = game.IsOpen(dateTimeProvider.UTCNow),
+                IsResolved = false,
+                Game = new BetGame(game)
+            });
         }
-        catch (Exception e)
-        {
-            return BadRequest(new ErrorMessage{ Message = e.Message});
-        }
-        var res = betsRepository.InsertBet(newBet);
-        logger.LogInformation("Posting new Bet from {}", user.UserName);
-        betsRepository.Save();
-        bet.BetId = res.BetId;
-        AddLog(ActionType.CREATE, string.Format("Posting new Bet: {0}", res));
-        if (ShouldSendMail())
-            SendBetMail(newBet, user);
-        logger.LogInformation("Bet os user {} was saved", user.UserName);
-        return Ok(new BetViewModel(res, dateTimeProvider.UTCNow));
+        return Ok(new BetViewModel(bet, dateTimeProvider.UTCNow));
     }
 
-    [HttpPut("{id}")]
+    /// <summary>
+    /// Idempotent upsert of the caller's bet on a game, keyed by the (user, game) pair the
+    /// database already declares unique. It replaces POST /api/bets + PUT /api/bets/{id}:
+    /// with no bet id in the request a caller can only ever address their own bet, and with
+    /// no game id in the body a bet cannot be moved to another game. 201 on create, 200 on
+    /// update - the only way to observe which branch ran from outside.
+    /// </summary>
+    [HttpPut("/api/games/{gameId}/mybet")]
     [Authorize(Policy = Policies.ActiveOrAdmin)]
-    public async Task<ActionResult<BetViewModel>> UpdateBet(int id, UpdateBetModel bet)
+    public async Task<ActionResult<BetViewModel>> PutMyBet(int gameId, SaveBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
         if (user == null)
-        {
             return Unauthorized();
+        var game = gamesRepository.GetGame(gameId);
+        if (game == null)
+            return NotFound(new ErrorMessage{ Message = string.Format("Game with id '{0}' not found", gameId)});
+        try
+        {
+            betValidator.ValidateBetUpsert(game);
         }
-        var betToUpdate = betsRepository.GetBet(id);
-        betToUpdate.BetId = id;
-        betToUpdate.HomeScore = bet.HomeScore;
-        betToUpdate.AwayScore = bet.AwayScore;
-        betToUpdate.CornersMark = bet.CornersMark;
-        betToUpdate.CardsMark = bet.CardsMark;
-        betToUpdate.GameId = bet.GameId;
-        betToUpdate.UserId = user.Id;
-        try {
-            betValidator.ValidateUpdateBet(betToUpdate);
-        } catch (UnauthorizedAccessException e) {
-            return Unauthorized(new ErrorMessage{ Message = e.Message});
-        } catch (Exception e) {
-            return BadRequest(new ErrorMessage{ Message = e.Message});
+        catch (GameClosedForBettingException e)
+        {
+            /* 409, not 400: "you were too late" is a different thing from "your request was
+               malformed" and should not share its Sentry fingerprint. */
+            AddLog(ActionType.ERROR, e.Message);
+            return Conflict(new ErrorMessage{ Message = e.Message});
         }
-        logger.LogInformation("Updating bet from {}", user.UserName);
-        betsRepository.Save();
-        AddLog(ActionType.UPDATE, string.Format("Updating Bet: {0}", betToUpdate));
+
+        var existing = betsRepository.GetUserBetOnGame(user.UserName, gameId);
+        var isCreate = existing == null;
+        var target = existing ?? new Bet
+        {
+            UserId = user.Id,
+            User = user,
+            GameId = gameId,
+            Game = game
+        };
+        target.HomeScore = bet.HomeScore!.Value;
+        target.AwayScore = bet.AwayScore!.Value;
+        target.CardsMark = bet.CardsMark;
+        target.CornersMark = bet.CornersMark;
+        if (isCreate)
+            target = betsRepository.InsertBet(target);
+
+        logger.LogInformation("Saving bet of {} on game {}", user.UserName, gameId);
+        try
+        {
+            betsRepository.Save();
+        }
+        catch (DuplicateBetException e)
+        {
+            /* Two concurrent first saves both see "no existing bet" and both insert; one
+               loses on IX_Bets_UserId_GameId. Answering 409 rather than re-reading and
+               retrying keeps this handler free of a detach-and-replay path for a race the
+               client's in-flight guard already prevents in practice. Retrying is safe:
+               the endpoint is idempotent. */
+            logger.LogWarning("Concurrent first bet of {} on game {}: {}", user.UserName, gameId, e.Message);
+            return Conflict(new ErrorMessage{ Message = "Your bet on this game was just saved by another request, please reload and try again"});
+        }
+
+        /* These two message texts are load-bearing: the ActionLogs query in #171 that tells
+           a post-deadline write apart from a rejected create matches on them. */
+        AddLog(isCreate ? ActionType.CREATE : ActionType.UPDATE,
+            string.Format(isCreate ? "Posting new Bet: {0}" : "Updating Bet: {0}", target));
         if (ShouldSendMail())
-            SendBetMail(betToUpdate, user);
-        logger.LogInformation("Bet {} of {} was updated", id, user.UserName);
-        return Ok(new BetViewModel(betToUpdate, dateTimeProvider.UTCNow));
+            SendBetMail(target, user);
+        logger.LogInformation("Bet {} of {} was saved", target.BetId, user.UserName);
+        var view = new BetViewModel(target, dateTimeProvider.UTCNow);
+        return isCreate ? StatusCode(StatusCodes.Status201Created, view) : Ok(view);
     }
 
     [HttpDelete("{id}")]
@@ -154,9 +192,11 @@ public class BetsController : ControllerBase
             return Unauthorized();
         try {
             betValidator.ValidateDeleteBet(id, user.Id);
-        } catch (UnauthorizedAccessException e) {
+        } catch (BetForbiddenException e) {
+            AddLog(ActionType.UNAUTHORIZED_ACCESS, e.Message);
             return Unauthorized(e.Message);
-        } catch (Exception e) {
+        } catch (BetValidationException e) {
+            AddLog(ActionType.ERROR, e.Message);
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         logger.LogInformation("Deleting bet {} of {}", id, user.UserName);
