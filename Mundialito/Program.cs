@@ -164,6 +164,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 // claim baked into the 60 day JWT, so activating or deactivating a user takes effect at
 // once instead of at their next login. Scoped, not singleton: the chain reaches the
 // (scoped) MundialitoDbContext.
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<ICurrentUserRoleProvider, CurrentUserRoleProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, CurrentRoleHandler>();
 builder.Services.AddScoped<IAuthorizationMiddlewareResultHandler, ForbiddenMessageResultHandler>();

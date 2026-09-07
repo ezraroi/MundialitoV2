@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Mundialito.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
@@ -29,8 +30,9 @@ public class GeneralBetsController : ControllerBase
     private readonly GeneralBetsService generalBetsService;
     private readonly ICurrentUserRoleProvider currentUserRoleProvider;
     private readonly ILogger logger;
+    private readonly ICurrentUser currentUser;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider, ICurrentUser currentUser)
     {
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
@@ -43,6 +45,7 @@ public class GeneralBetsController : ControllerBase
         this.generalBetsService = generalBetsService;
         this.currentUserRoleProvider = currentUserRoleProvider;
         this.logger = logger;
+        this.currentUser = currentUser;
     }
 
     [HttpGet]
@@ -103,7 +106,7 @@ public class GeneralBetsController : ControllerBase
             actionLogger.Log(ActionType.ERROR, ObjectType, validate);
             return BadRequest(new ErrorMessage { Message = validate });
         }
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var winningTeam = teamsRepository.GetTeam(newBet.WinningTeam.TeamId);
@@ -143,7 +146,7 @@ public class GeneralBetsController : ControllerBase
             actionLogger.Log(ActionType.ERROR, ObjectType, validate);
             return BadRequest(new ErrorMessage { Message = validate });
         }
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var betToUpdate = generalBetsRepository.GetGeneralBet(id);
