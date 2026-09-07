@@ -4,6 +4,7 @@ using Mundialito.DAL.ActionLogs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Mundialito.Models;
+using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
 
@@ -38,7 +39,7 @@ public class StadiumsController : ControllerBase
 
 
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     [HttpPost]
     public Stadium PostStadium(Stadium stadium)
     {
@@ -48,7 +49,7 @@ public class StadiumsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public Stadium PutStadium(int id, Stadium stadium)
     {
         var stadiumToUpdate = stadiumsRepository.GetStadium(id);
@@ -60,7 +61,7 @@ public class StadiumsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public void DeleteStadium(int id)
     {
         logger.LogInformation("Deleting Stadium {0}", id);

@@ -57,8 +57,11 @@ namespace Mundialito.Auth
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.Email, user.Email)
+                // Deliberately no role claim. The token lives for 60 days, so a role baked
+                // in here would keep an activated user locked out, and a deactivated user
+                // authorized, until it expired. Authorization reads the role from the
+                // database instead - see Auth/Authorization/CurrentRoleHandler.
             };
                 return claims;
             }

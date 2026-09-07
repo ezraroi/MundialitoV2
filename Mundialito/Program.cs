@@ -1,6 +1,9 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
+using Mundialito.Auth.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -143,6 +146,26 @@ builder.Services.AddScoped<TournamentTimesUtils, TournamentTimesUtils>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddScoped<GeneralBetsService, GeneralBetsService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+// Authorization reads the role from the database per request rather than from the role
+// claim baked into the 60 day JWT, so activating or deactivating a user takes effect at
+// once instead of at their next login. Scoped, not singleton: the chain reaches the
+// (scoped) MundialitoDbContext.
+builder.Services.AddScoped<ICurrentUserRoleProvider, CurrentUserRoleProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, CurrentRoleHandler>();
+builder.Services.AddScoped<IAuthorizationMiddlewareResultHandler, ForbiddenMessageResultHandler>();
+builder.Services.AddAuthorization(options =>
+{
+	// The scheme is named explicitly so these policies do not depend on AddAuthentication
+	// (above) having overridden the schemes AddIdentity registered before it.
+	options.AddPolicy(Policies.ActiveOrAdmin, policy => policy
+		.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+		.RequireAuthenticatedUser()
+		.AddRequirements(new CurrentRoleRequirement(Role.Active, Role.Admin)));
+	options.AddPolicy(Policies.AdminOnly, policy => policy
+		.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+		.RequireAuthenticatedUser()
+		.AddRequirements(new CurrentRoleRequirement(Role.Admin)));
+});
 builder.Services.AddCors(options =>
 		{
 			options.AddPolicy("CorsPolicy", builder =>

@@ -1,0 +1,27 @@
+# Local development database only.
+#
+# The app itself is NOT containerised on purpose: it deploys to Azure App Service from a
+# `dotnet publish` artifact (.github/workflows/main_champs26.yml), so a Dockerfile here would
+# be a second build definition that CI never exercises and that would drift from the real one.
+# Run the app on the host with scripts/dev.sh, which is also a faster edit-run loop.
+#
+# Credentials match ConnectionStrings:App in Mundialito/appsettings.Development.json.
+# They are local-only and already committed there; do not reuse them anywhere real.
+
+services:
+  db:
+    image: postgres:16
+    container_name: mundialito-pg
+    environment:
+      POSTGRES_DB: mundialito
+      POSTGRES_USER: mundialito
+      POSTGRES_PASSWORD: mundialito
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mundialito -d mundialito"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    # No named volume: `dev.sh reset` drops the database anyway, and a stale volume is a
+    # frequent source of "why is my seed data old?".

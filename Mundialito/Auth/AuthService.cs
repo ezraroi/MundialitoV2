@@ -16,11 +16,13 @@ namespace Mundialito.Auth
             _tokenService = tokenService;
         }
 
-        public async Task<string> SignInWithGoogle(GoogleSigninModel model) 
+        public async Task<string?> SignInWithGoogle(GoogleSigninModel model)
         {
             var response = await _googleAuthService.GoogleSignIn(model);
+            // Returning "" here used to defeat the `token is null` check in AccountController,
+            // so a failed Google sign-in answered 200 OK with an empty AccessToken.
             if (response is null)
-                return "";
+                return null;
             return  _tokenService.CreateToken(response);
         }
     }

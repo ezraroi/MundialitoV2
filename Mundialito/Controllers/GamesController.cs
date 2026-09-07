@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.GeneralBets;
+using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
 
@@ -134,7 +135,7 @@ public class GamesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public ActionResult<NewGameModel> PostGame(NewGameModel game)
     {
         if (game.AwayTeam.TeamId == game.HomeTeam.TeamId)
@@ -162,7 +163,7 @@ public class GamesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public ActionResult<PutGameModelResult> PutGame(int id, PutGameModel game)
     {
         var item = gamesRepository.GetGame(id);
@@ -197,7 +198,7 @@ public class GamesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public IActionResult DeleteGame(int id)
     {
         var game = gamesRepository.GetGame(id);

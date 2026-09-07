@@ -8,6 +8,27 @@ Mundialito is a football tournament betting web app. It runs as a single ASP.NET
 
 ## Commands
 
+### Local environment (run from the repo root)
+```bash
+./scripts/dev.sh up       # Postgres container + app + seeded test users, prints credentials
+./scripts/dev.sh verify   # asserts a role change applies to an already-issued token
+./scripts/dev.sh reset    # wipe the DB and re-seed (see below for when you need this)
+./scripts/dev.sh down     # stop both
+```
+It seeds admin `roez`/`123456`, plus `dev_active` and `dev_disabled` (both `123456`) so the
+Active and Disabled paths can be exercised without clicking through the admin UI.
+
+The database is containerised (`compose.yml`); **the app deliberately is not** — it deploys to
+Azure App Service from a `dotnet publish` artifact, so a Dockerfile here would be a second
+build definition that CI never exercises.
+
+`dev.sh` runs the `LocalDev` tournament creator, whose fixtures are generated *relative to the
+moment of seeding*: three games already played, one closing in five minutes, four open. Every
+other creator hard-codes a real tournament's dates, so with the committed
+`appsettings.Development.json` there is no open game and the bet flows cannot be tested at all.
+Seeding is gated on `Teams.Count() == 0`, so once those relative fixtures age out, run
+`./scripts/dev.sh reset`.
+
 ### Backend (run from `Mundialito/`)
 ```bash
 # Run the app
