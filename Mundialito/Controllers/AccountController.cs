@@ -227,7 +227,7 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<AuthResponse>> GoogleSignIn(GoogleSigninModel model)
     {
         var token = await _authService.SignInWithGoogle(model);
-        if (token is null)
+        if (string.IsNullOrEmpty(token))
             return BadRequest(new ErrorMessage { Message = "Bad credentials" });
         return Ok(new AuthResponse { AccessToken = token });
     }
