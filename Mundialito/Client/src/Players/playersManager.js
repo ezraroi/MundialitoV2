@@ -26,6 +26,22 @@ angular.module('mundialitoApp').factory('PlayersManager', ['$http', '$q', 'Playe
             ];
         },
 
+        /* Use this function in order to add a new player. The caller is expected to push the
+           result onto the array it already holds - both this factory's playersPromise and
+           $http's own cache keep serving that same array, so replacing it is not an option. */
+        addPlayer: function (playerData) {
+            var deferred = $q.defer();
+            var scope = this;
+            $log.debug('PlayersManager: will add new player - ' + angular.toJson(playerData));
+            $http.post('api/players', playerData, { tracker: 'addPlayer' }).then((res) => {
+                var player = scope._retrieveInstance(res.data.PlayerId, res.data);
+                deferred.resolve(player);
+            }).catch((e) => {
+                deferred.reject(e);
+            });
+            return deferred.promise;
+        },
+
         /* Use this function in order to get instances of all the players */
         loadAllPlayers: function () {
             if (playersPromise) {

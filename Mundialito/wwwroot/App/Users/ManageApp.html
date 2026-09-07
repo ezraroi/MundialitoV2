@@ -33,6 +33,50 @@
     </div>
 </div>
 <!-- End of Users list -->
+<!-- Golden boot players -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info" cg-busy="playersPromise">
+            <div class="panel-heading">
+                <i class="fa-solid fa-crown"></i> Golden Boot Players
+                <span class="pull-right badge" ng-if="players">{{players.length}}</span>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <th>Name</th>
+                        <th>Actions</th>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="player in players">
+                            <td>{{player.Name}}</td>
+                            <td>
+                                <button title="delete" type="button" class="btn btn-danger btn-sm"
+                                    ng-click="deletePlayer(player)" tooltip="Delete Player"><i
+                                        class="fa fa-times-circle"></i> <span class="hidden-xs">Delete</span></button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted" ng-if="players.length === 0">
+                        <i class="fa fa-info-circle"></i> No players yet.
+                    </p>
+                </div>
+                <form class="form-inline" name="addPlayerForm" ng-submit="addPlayer()" novalidate>
+                    <div class="form-group">
+                        <label class="sr-only" for="newPlayerName">Player name</label>
+                        <input type="text" class="form-control" id="newPlayerName" name="newPlayerName"
+                            ng-model="newPlayerName" placeholder="New player name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" ng-disabled="addPlayerForm.$invalid">
+                        <i class="fa fa-plus-circle"></i> Add</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of golden boot players -->
 <!-- General Bets -->
 <div class="row" ng-if="generalBets.length > 0">
     <div class="col-md-12">

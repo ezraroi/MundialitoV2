@@ -26,6 +26,13 @@ public class GeneralBetsRepository : GenericRepository<GeneralBet>, IGeneralBets
         return Context.GeneralBets.Any(bet => bet.User.UserName == username);
     }
             
+    /// <summary>Counts on the foreign key column rather than the navigation property, so
+    /// this is a single index scan of IX_GeneralBets_GoldBootPlayerId with no join.</summary>
+    public int CountGeneralBetsOnPlayer(int playerId)
+    {
+        return Context.GeneralBets.Count(bet => bet.GoldBootPlayerId == playerId);
+    }
+
     public GeneralBet GetGeneralBet(int betId)
     {
         return Context.GeneralBets.Include(bet => bet.User).Include(bet => bet.WinningTeam).Include(bet => bet.GoldBootPlayer).SingleOrDefault(bet => bet.GeneralBetId == betId);

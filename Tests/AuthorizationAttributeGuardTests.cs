@@ -76,6 +76,26 @@ public class AuthorizationAttributeGuardTests
         Assert.That(gated, Is.EquivalentTo(adminActions));
     }
 
+    /// <summary>DeletePlayer is the action that stands between an admin misclick and other
+    /// users' general bets - the FK to Players cascades, so an ungated delete would take
+    /// those bets with it. Named rather than left to the count below, which is order blind:
+    /// dropping the policy here and adding one elsewhere would keep the count green.</summary>
+    [Test]
+    public void AdminOnlyPlayerActionsAreAllGated()
+    {
+        var adminActions = new[] { "PostPlayer", "DeletePlayer" };
+
+        var gated = typeof(PlayersController)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => adminActions.Contains(m.Name))
+            .Where(m => m.GetCustomAttributes<AuthorizeAttribute>(inherit: false)
+                .Any(a => a.Policy == Policies.AdminOnly))
+            .Select(m => m.Name)
+            .ToList();
+
+        Assert.That(gated, Is.EquivalentTo(adminActions));
+    }
+
     [Test]
     public void ExpectedNumberOfActionsAreRoleGated()
     {
@@ -85,13 +105,14 @@ public class AuthorizationAttributeGuardTests
             .ToDictionary(g => g.Key, g => g.Count());
 
         // 4 player-facing writes (2 bets - the mybet upsert and delete - plus 2 general
-        // bets), 15 admin actions (SimulateGame joined its PostGame/PutGame/DeleteGame
-        // siblings, which it had been missing).
+        // bets), 17 admin actions (SimulateGame joined its PostGame/PutGame/DeleteGame
+        // siblings, which it had been missing; PostPlayer and DeletePlayer let an admin
+        // edit the golden boot player list).
         // A silently dropped attribute would leave an endpoint open to any signed-in user.
         Assert.Multiple(() =>
         {
             Assert.That(byPolicy.GetValueOrDefault(Policies.ActiveOrAdmin), Is.EqualTo(4));
-            Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(15));
+            Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(17));
         });
     }
 }

@@ -46,8 +46,8 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    managePage: ['security', '$location', '$q', '$timeout', 'UsersManager', 'GeneralBetsManager',
-                        function (security, $location, $q, $timeout, UsersManager, GeneralBetsManager) {
+                    managePage: ['security', '$location', '$q', '$timeout', 'UsersManager', 'GeneralBetsManager', 'PlayersManager',
+                        function (security, $location, $q, $timeout, UsersManager, GeneralBetsManager, PlayersManager) {
                             function waitForAdminUser(attempt) {
                                 if (security.user) {
                                     if (security.user.Roles === 'Admin') {
@@ -67,7 +67,8 @@ angular.module('mundialitoApp', ['key-value-editor', 'security', 'ngSanitize', '
                             return waitForAdminUser(0).then(function () {
                                 return $q.all({
                                     users: UsersManager.loadAllUsers(),
-                                    generalBets: GeneralBetsManager.loadAllGeneralBets()
+                                    generalBets: GeneralBetsManager.loadAllGeneralBets(),
+                                    players: PlayersManager.loadAllPlayers()
                                 });
                             });
                         }]
@@ -1670,6 +1671,27 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
             return (url || 'unknown').split('?')[0].replace(/\/\d+(?=\/|$)/g, '/:id');
         }
 
+        /* A 4xx whose body carries a Message is a rule the API meant to enforce - "this
+           player is picked by a general bet", "general bets are already closed", "your
+           account is not approved yet". Nothing failed: the server was asked to do
+           something it is designed to refuse, the user was told why, and there is nobody
+           to page. Reporting those buries the 4xx that are real defects under refusals
+           that recur by design.
+
+           The body shape is what separates them. That sentence is only ever written by a
+           deliberate BadRequest/NotFound/Forbidden branch (ErrorMessage in Mundialito.Models
+           - no controller turns a caught exception into one). A bug or a contract mismatch
+           surfaces as ASP.NET's own shapes instead - ProblemDetails {type,title,errors},
+           MundialitoValidationModelAttribute's {ModelState}, or an empty body - and is
+           still reported, which is what caught the PUT /api/bets/:id 400. 5xx is never a
+           deliberate refusal, so it reports whatever the body says. */
+        function isDeliberateRefusal(response) {
+            return response.status >= 400 && response.status < 500
+                && response.data
+                && typeof response.data.Message === 'string'
+                && response.data.Message.length > 0;
+        }
+
         function captureHttpError(response) {
             /* Sentry is a bare global loaded by Views/Home/Index.cshtml. An ad-blocker
                eating sentry/*.js must not take HTTP error handling down with it. */
@@ -1679,6 +1701,9 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
             var config = response.config || {};
             /* Deliberately ignored errors and routine token expiry are not worth reporting. */
             if (config.ignoreError || response.status === 401) {
+                return;
+            }
+            if (isDeliberateRefusal(response)) {
                 return;
             }
             var method = (config.method || 'GET').toUpperCase();
@@ -2081,6 +2106,12 @@ angular.module('mundialitoApp').factory('Player', ['$http', '$log', function ($h
     Player.prototype = {
         setData: function (playerData) {
             angular.extend(this, playerData);
+        },
+        delete: function () {
+            if (confirm('Are you sure you would like to delete player ' + this.Name + '?')) {
+                $log.debug('Player: Will delete player ' + this.PlayerId);
+                return $http.delete('api/players/' + this.PlayerId, { tracker: 'deletePlayer' });
+            }
         }
     };
     return Player;
@@ -2112,6 +2143,22 @@ angular.module('mundialitoApp').factory('PlayersManager', ['$http', '$q', 'Playe
             return [
                 { property: 'Name', label: 'Name', type: 'text', attr: { required: true } }
             ];
+        },
+
+        /* Use this function in order to add a new player. The caller is expected to push the
+           result onto the array it already holds - both this factory's playersPromise and
+           $http's own cache keep serving that same array, so replacing it is not an option. */
+        addPlayer: function (playerData) {
+            var deferred = $q.defer();
+            var scope = this;
+            $log.debug('PlayersManager: will add new player - ' + angular.toJson(playerData));
+            $http.post('api/players', playerData, { tracker: 'addPlayer' }).then((res) => {
+                var player = scope._retrieveInstance(res.data.PlayerId, res.data);
+                deferred.resolve(player);
+            }).catch((e) => {
+                deferred.reject(e);
+            });
+            return deferred.promise;
         },
 
         /* Use this function in order to get instances of all the players */
@@ -2594,14 +2641,43 @@ angular.module('mundialitoApp').factory('TeamsManager', ['$http', '$q', 'Team','
 }]);
 
 'use strict';
-angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'managePage', 'UsersManager', function ($scope, $log, Alert, managePage, UsersManager) {
+angular.module('mundialitoApp').controller('ManageAppCtrl', ['$scope', '$log', 'Alert', 'managePage', 'UsersManager', 'PlayersManager', function ($scope, $log, Alert, managePage, UsersManager, PlayersManager) {
     $scope.users = managePage.users;
     $scope.generalBets = managePage.generalBets;
+    $scope.players = managePage.players;
+    $scope.newPlayerName = '';
     $scope.deleteUser = (user) => {
         var scope = user;
         $scope.deleteUserPromise = user.delete().then(() => {
             Alert.success('User was deleted successfully');
             $scope.users.splice($scope.users.indexOf(scope), 1);
+        });
+    };
+
+    /* Both of these mutate the array the route resolve handed over. PlayersManager memoizes
+       its promise and $http caches api/players on top of that, so the array itself is what
+       every other view will keep seeing - swapping it out would leave them stale. */
+    $scope.addPlayer = () => {
+        var name = ($scope.newPlayerName || '').trim();
+        if (!name) {
+            return;
+        }
+        $scope.playersPromise = PlayersManager.addPlayer({ Name: name }).then((player) => {
+            Alert.success('Player was added successfully');
+            $scope.newPlayerName = '';
+            $scope.players.push(player);
+        });
+    };
+
+    $scope.deletePlayer = (player) => {
+        var promise = player.delete();
+        /* delete() returns nothing when the admin dismisses the confirm. */
+        if (!promise) {
+            return;
+        }
+        $scope.playersPromise = promise.then(() => {
+            Alert.success('Player was deleted successfully');
+            $scope.players.splice($scope.players.indexOf(player), 1);
         });
     };
 

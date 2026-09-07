@@ -90,6 +90,27 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
             return (url || 'unknown').split('?')[0].replace(/\/\d+(?=\/|$)/g, '/:id');
         }
 
+        /* A 4xx whose body carries a Message is a rule the API meant to enforce - "this
+           player is picked by a general bet", "general bets are already closed", "your
+           account is not approved yet". Nothing failed: the server was asked to do
+           something it is designed to refuse, the user was told why, and there is nobody
+           to page. Reporting those buries the 4xx that are real defects under refusals
+           that recur by design.
+
+           The body shape is what separates them. That sentence is only ever written by a
+           deliberate BadRequest/NotFound/Forbidden branch (ErrorMessage in Mundialito.Models
+           - no controller turns a caught exception into one). A bug or a contract mismatch
+           surfaces as ASP.NET's own shapes instead - ProblemDetails {type,title,errors},
+           MundialitoValidationModelAttribute's {ModelState}, or an empty body - and is
+           still reported, which is what caught the PUT /api/bets/:id 400. 5xx is never a
+           deliberate refusal, so it reports whatever the body says. */
+        function isDeliberateRefusal(response) {
+            return response.status >= 400 && response.status < 500
+                && response.data
+                && typeof response.data.Message === 'string'
+                && response.data.Message.length > 0;
+        }
+
         function captureHttpError(response) {
             /* Sentry is a bare global loaded by Views/Home/Index.cshtml. An ad-blocker
                eating sentry/*.js must not take HTTP error handling down with it. */
@@ -99,6 +120,9 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
             var config = response.config || {};
             /* Deliberately ignored errors and routine token expiry are not worth reporting. */
             if (config.ignoreError || response.status === 401) {
+                return;
+            }
+            if (isDeliberateRefusal(response)) {
                 return;
             }
             var method = (config.method || 'GET').toUpperCase();
