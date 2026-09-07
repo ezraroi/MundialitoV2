@@ -40,7 +40,11 @@ app_env() {
   App__TournamentDBCreatorName=LocalDev
   App__TournamentStartDate="$(date -u -v+1d '+%d/%m/%Y %H:%M' 2>/dev/null || date -u -d '+1 day' '+%d/%m/%Y %H:%M')"
   App__TournamentEndDate="$(date -u -v+180d '+%d/%m/%Y %H:%M' 2>/dev/null || date -u -d '+180 days' '+%d/%m/%Y %H:%M')"
+  # The real signing key is a secret and is not committed; production gets it from an App
+  # Service application setting. This throwaway is local-only and signs nothing that matters.
+  JwtTokenSettings__SymmetricSecurityKey="${JwtTokenSettings__SymmetricSecurityKey:-local-development-only-do-not-use-anywhere-real}"
   export ASPNETCORE_ENVIRONMENT App__TournamentDBCreatorName App__TournamentStartDate App__TournamentEndDate
+  export JwtTokenSettings__SymmetricSecurityKey
 }
 
 app_running() { [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; }

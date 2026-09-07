@@ -29,6 +29,12 @@ other creator hard-codes a real tournament's dates, so with the committed
 Seeding is gated on `Teams.Count() == 0`, so once those relative fixtures age out, run
 `./scripts/dev.sh reset`.
 
+> **The JWT signing key is not committed.** `JwtTokenSettings:SymmetricSecurityKey` must come
+> from configuration — on App Service, the application setting
+> `JwtTokenSettings__SymmetricSecurityKey`. Startup throws if it is missing or under 32 bytes.
+> `scripts/dev.sh` supplies a throwaway local key, so a plain `dotnet run` outside that script
+> needs the env var set yourself.
+
 ### Backend (run from `Mundialito/`)
 ```bash
 # Run the app
