@@ -92,7 +92,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Active,Admin")]
+    [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<ActionResult<NewGeneralBetModel>> PostBet(NewGeneralBetModel newBet)
     {
         if (generalBetsRepository.IsGeneralBetExists(httpContextAccessor.HttpContext?.User.Identity.Name))
@@ -134,7 +134,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Active,Admin")]
+    [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<ActionResult<UpdateGenralBetModel>> UpdateBet(int id, UpdateGenralBetModel bet)
     {
         var validate = Validate();
@@ -172,7 +172,7 @@ public class GeneralBetsController : ControllerBase
     }
 
     [HttpPut("{id}/resolve")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public IActionResult ResolveGeneralBet(int id, ResolveGeneralBetModel resolvedBet)
     {
         if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsResolveTime())

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Mundialito.Models;
 using Mundialito.DAL.Bets;
+using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
 
@@ -50,7 +51,7 @@ public class TeamsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public Team PostTeam(Team team)
     {
         var res = teamsRepository.InsertTeam(team);
@@ -59,7 +60,7 @@ public class TeamsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public Team PutTeam(int id, Team team)
     {
         var teamToUpdate = teamsRepository.GetTeam(id);
@@ -75,7 +76,7 @@ public class TeamsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public void DeleteTeam(int id)
     {
         logger.LogInformation("Deleting Team {0}", id);

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mundialito.Configuration;
 using Microsoft.Extensions.Options;
 using Mundialito.Mail;
+using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
 
@@ -77,7 +78,7 @@ public class BetsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Active,Admin")]
+    [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<ActionResult<BetViewModel>> PostBet(NewBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
@@ -112,7 +113,7 @@ public class BetsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Active,Admin")]
+    [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<ActionResult<BetViewModel>> UpdateBet(int id, UpdateBetModel bet)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
@@ -145,7 +146,7 @@ public class BetsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Active,Admin")]
+    [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<IActionResult> DeleteBet(int id)
     {
         var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);

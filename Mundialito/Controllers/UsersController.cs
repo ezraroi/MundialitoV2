@@ -8,6 +8,7 @@ using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
 using Mundialito.Logic;
 using Mundialito.Models;
+using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
 
@@ -160,7 +161,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("MakeAdmin/{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public async Task<IActionResult> MakeAdmin(string id)
     {
         var user = await userManager.FindByIdAsync(id);
@@ -181,7 +182,7 @@ public class UsersController : ControllerBase
 
 
     [HttpPost("{id}/activate")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public async Task<IActionResult> Activate(string id)
     {
         var user = await userManager.FindByIdAsync(id);
@@ -205,7 +206,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}/activate")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public async Task<IActionResult> DeActivate(string id)
     {
         var user = await userManager.FindByIdAsync(id);
@@ -229,7 +230,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public async Task<IActionResult> DeleteUser(string id)
     {
         var user = await userManager.FindByIdAsync(id);
