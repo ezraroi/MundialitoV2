@@ -8,6 +8,7 @@ using Mundialito.DAL.Players;
 using Mundialito.DAL.Teams;
 using Mundialito.Logic;
 using Mundialito.Models;
+using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
 
@@ -26,9 +27,10 @@ public class GeneralBetsController : ControllerBase
     private readonly ITeamsRepository teamsRepository;
     private readonly IPlayersRepository playersRepository;
     private readonly GeneralBetsService generalBetsService;
+    private readonly ICurrentUserRoleProvider currentUserRoleProvider;
     private readonly ILogger logger;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogsRepository actionLogsRepository, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider)
     {
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
@@ -39,13 +41,17 @@ public class GeneralBetsController : ControllerBase
         this.teamsRepository = teamsRepository;
         this.playersRepository = playersRepository;
         this.generalBetsService = generalBetsService;
+        this.currentUserRoleProvider = currentUserRoleProvider;
         this.logger = logger;
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<GeneralBetViewModel>> GetAllGeneralBets()
+    public async Task<ActionResult<IEnumerable<GeneralBetViewModel>>> GetAllGeneralBets()
     {
-        if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime() && httpContextAccessor.HttpContext?.User.IsInRole("Admin") == false)
+        // Admins may look before the deadline. The role has to come from the database:
+        // User.IsInRole would read the snapshot baked into the caller's 60 day token.
+        var isAdmin = await currentUserRoleProvider.GetCurrentRoleAsync() == Role.Admin;
+        if (dateTimeProvider.UTCNow < tournamentTimesUtils.GetGeneralBetsCloseTime() && !isAdmin)
         {
             return BadRequest(new ErrorMessage { Message = "General bets are still open for betting, you can't see other users bets yet" });
         }
