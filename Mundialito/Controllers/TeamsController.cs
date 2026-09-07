@@ -54,16 +54,7 @@ public class TeamsController : ControllerBase
     [Authorize(Policy = Policies.AdminOnly)]
     public Team PostTeam(TeamModel team)
     {
-        var res = teamsRepository.InsertTeam(new Team
-        {
-            Name = team.Name,
-            Flag = team.Flag,
-            Logo = team.Logo,
-            ShortName = team.ShortName,
-            TournamentTeamId = team.TournamentTeamId,
-            TeamPage = team.TeamPage,
-            IntegrationsData = team.IntegrationsData
-        });
+        var res = teamsRepository.InsertTeam(team.ToTeam());
         teamsRepository.Save();
         return res;
     }
@@ -75,13 +66,7 @@ public class TeamsController : ControllerBase
         var teamToUpdate = teamsRepository.GetTeam(id);
         if (teamToUpdate == null)
             return NotFound(new ErrorMessage{ Message = string.Format("Team with id '{0}' not found", id)});
-        teamToUpdate.Name = team.Name;
-        teamToUpdate.Flag = team.Flag;
-        teamToUpdate.Logo = team.Logo;
-        teamToUpdate.ShortName = team.ShortName;
-        teamToUpdate.TournamentTeamId = team.TournamentTeamId;
-        teamToUpdate.TeamPage = team.TeamPage;
-        teamToUpdate.IntegrationsData = team.IntegrationsData;
+        team.ApplyTo(teamToUpdate);
         teamsRepository.Save();
         // The stored row, not the object the caller sent - those differ, and the caller's
         // copy carries no TeamId on create.

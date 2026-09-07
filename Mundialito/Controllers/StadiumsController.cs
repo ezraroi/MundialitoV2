@@ -43,12 +43,7 @@ public class StadiumsController : ControllerBase
     [HttpPost]
     public Stadium PostStadium(StadiumModel stadium)
     {
-        var res = stadiumsRepository.InsertStadium(new Stadium
-        {
-            Name = stadium.Name,
-            City = stadium.City,
-            Capacity = stadium.Capacity
-        });
+        var res = stadiumsRepository.InsertStadium(stadium.ToStadium());
         stadiumsRepository.Save();
         return res;
     }
@@ -60,9 +55,7 @@ public class StadiumsController : ControllerBase
         var stadiumToUpdate = stadiumsRepository.GetStadium(id);
         if (stadiumToUpdate == null)
             return NotFound(new ErrorMessage{ Message = string.Format("Stadium with id '{0}' not found", id)});
-        stadiumToUpdate.Name = stadium.Name;
-        stadiumToUpdate.City = stadium.City;
-        stadiumToUpdate.Capacity = stadium.Capacity;
+        stadium.ApplyTo(stadiumToUpdate);
         stadiumsRepository.Save();
         // The stored row, not the object the caller sent.
         return Ok(stadiumToUpdate);

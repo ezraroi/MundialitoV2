@@ -8,6 +8,7 @@ using Mundialito.Controllers;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
 using Mundialito.DAL.Bets;
+using Mundialito.DAL.GeneralBets;
 using Mundialito.DAL.Games;
 using Mundialito.DAL.Teams;
 using Mundialito.Logic;
@@ -49,10 +50,10 @@ public static class BetsTestHarness
         public IReadOnlyList<Bet> All => bets;
 
         public IEnumerable<Bet> GetBets() => bets;
-        // The fake cannot model detachment - it hands back the same instances either way.
-        // That the real thing reads untracked is checked end to end by scripts/dev.sh verify,
-        // which asserts the stored row after a simulation.
-        public IEnumerable<Bet> GetBetsNoTracking() => bets;
+        // Copies, the way AsNoTracking hands back objects with no relationship to the stored
+        // ones. Modelling that matters: a caller that mutates an untracked read and expects
+        // the change to show up elsewhere is exactly the bug this fake has to be able to fail.
+        public IEnumerable<Bet> GetBetsNoTracking() => bets.Select(Detached).ToList();
         public Bet GetBet(int betId) => bets.FirstOrDefault(b => b.BetId == betId)!;
         public IEnumerable<Bet> GetGameBets(int gameId) => bets.Where(b => b.GameId == gameId);
         public Bet GetUserBetOnGame(string username, int gameId) =>
@@ -78,7 +79,11 @@ public static class BetsTestHarness
         public FakeGamesRepository(IEnumerable<Game> games) => this.games = games.ToList();
 
         public Game GetGame(int gameId) => games.FirstOrDefault(g => g.GameId == gameId)!;
-        public Game GetGameNoTracking(int gameId) => GetGame(gameId);
+        public Game GetGameNoTracking(int gameId)
+        {
+            var game = GetGame(gameId);
+            return game == null ? null! : Detached(game);
+        }
         public IEnumerable<Game> GetGames() => games;
 
         public Game InsertGame(Game game) => throw new NotImplementedException();
@@ -101,8 +106,13 @@ public static class BetsTestHarness
             entries.Add((actionType, objectType, message));
     }
 
-    private sealed class FakeUserStore : IUserStore<MundialitoUser>
+    private sealed class FakeUserStore : IUserStore<MundialitoUser>, IQueryableUserStore<MundialitoUser>
     {
+        private readonly MundialitoUser[] users;
+        public FakeUserStore(params MundialitoUser[] users) => this.users = users;
+
+        public IQueryable<MundialitoUser> Users => users.AsQueryable();
+
         public void Dispose() { }
         public Task<string> GetUserIdAsync(MundialitoUser user, CancellationToken t) => throw new NotImplementedException();
         public Task<string?> GetUserNameAsync(MundialitoUser user, CancellationToken t) => throw new NotImplementedException();
@@ -126,11 +136,65 @@ public static class BetsTestHarness
     {
         private readonly MundialitoUser? user;
 
-        public FakeUserManager(MundialitoUser? user)
-            : base(new FakeUserStore(), null!, null!, null!, null!, null!, null!, null!, null!) => this.user = user;
+        public FakeUserManager(MundialitoUser? user, params MundialitoUser[] allUsers)
+            : base(new FakeUserStore(allUsers.Length > 0 ? allUsers : (user == null ? Array.Empty<MundialitoUser>() : new[] { user })),
+                   null!, null!, null!, null!, null!, null!, null!, null!) => this.user = user;
 
         public override Task<MundialitoUser?> FindByNameAsync(string userName) => Task.FromResult(user);
     }
+
+    public sealed class FakeGeneralBetsRepository : IGeneralBetsRepository
+    {
+        private readonly List<GeneralBet> generalBets;
+        public FakeGeneralBetsRepository(IEnumerable<GeneralBet> generalBets) => this.generalBets = generalBets.ToList();
+
+        public IEnumerable<GeneralBet> GetGeneralBets() => generalBets;
+
+        public GeneralBet GetGeneralBet(int betId) => throw new NotImplementedException();
+        public GeneralBet GetUserGeneralBet(string username) => throw new NotImplementedException();
+        public bool IsGeneralBetExists(string userId) => throw new NotImplementedException();
+        public GeneralBet InsertGeneralBet(GeneralBet bet) => throw new NotImplementedException();
+        public void DeleteGeneralBet(int betId) => throw new NotImplementedException();
+        public void UpdateGeneralBet(GeneralBet bet) => throw new NotImplementedException();
+        public void Save() => throw new NotImplementedException();
+    }
+
+    /// <summary>A copy sharing nothing mutable with the original - what AsNoTracking gives
+    /// back. The teams hang off the copy unchanged; nothing mutates those.</summary>
+    private static Game Detached(Game game) => new Game
+    {
+        GameId = game.GameId,
+        Type = game.Type,
+        Date = game.Date,
+        HomeTeamId = game.HomeTeamId,
+        AwayTeamId = game.AwayTeamId,
+        HomeTeam = game.HomeTeam,
+        AwayTeam = game.AwayTeam,
+        StadiumId = game.StadiumId,
+        HomeScore = game.HomeScore,
+        AwayScore = game.AwayScore,
+        CardsMark = game.CardsMark,
+        CornersMark = game.CornersMark,
+    };
+
+    private static Bet Detached(Bet bet) => new Bet
+    {
+        BetId = bet.BetId,
+        UserId = bet.UserId,
+        User = bet.User,
+        GameId = bet.GameId,
+        Game = bet.Game == null ? null! : Detached(bet.Game),
+        HomeScore = bet.HomeScore,
+        AwayScore = bet.AwayScore,
+        CornersMark = bet.CornersMark,
+        CardsMark = bet.CardsMark,
+        Points = bet.Points,
+        CornersWin = bet.CornersWin,
+        CardsWin = bet.CardsWin,
+        GameMarkWin = bet.GameMarkWin,
+        ResultWin = bet.ResultWin,
+        MaxPoints = bet.MaxPoints,
+    };
 
     public static MundialitoUser MakeUser(string userName) =>
         new MundialitoUser { Id = userName + "-id", UserName = userName, FirstName = "F", LastName = "L" };
@@ -189,6 +253,33 @@ public static class BetsTestHarness
             httpContextAccessor: new HttpContextAccessor { HttpContext = httpContext },
             config: Options.Create(new Config()),
             emailSender: null!);
+    }
+
+    /// <summary>A GamesController over fakes, with the real TableBuilder and BetsResolver -
+    /// the point of the simulation tests is what those two do to the objects they are handed.</summary>
+    public static GamesController MakeGamesController(
+        IBetsRepository bets,
+        IGamesRepository games,
+        params MundialitoUser[] users)
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Name, users.FirstOrDefault()?.UserName ?? "admin") }, "TestAuth"))
+        };
+        var config = Options.Create(new Config());
+        return new GamesController(
+            logger: NullLogger<GamesController>(),
+            gamesRepository: games,
+            betsRepository: bets,
+            betsResolver: new BetsResolver(NullLogger<BetsResolver>(), new FixedClock()),
+            dateTimeProvider: new FixedClock(),
+            actionLogger: new FakeActionLogger(),
+            config: config,
+            httpContextAccessor: new HttpContextAccessor { HttpContext = httpContext },
+            userManager: new FakeUserManager(users.FirstOrDefault(), users),
+            tableBuilder: new TableBuilder(new FixedClock(), new TournamentTimesUtils(config)),
+            generalBetsRepository: new FakeGeneralBetsRepository(Array.Empty<GeneralBet>()));
     }
 
     private static ILogger<T> NullLogger<T>() => new NoopLogger<T>();
