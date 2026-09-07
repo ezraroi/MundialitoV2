@@ -357,6 +357,20 @@ print(next((u.get('Points') for u in t if u.get('Username') == '$u'), '-'))")
   fi
 
   echo
+  bold "Every action that resolves its caller still resolves it"
+
+  # Eleven actions across five controllers used to each run their own
+  # FindByNameAsync(Identity.Name); they share one ICurrentUser now. These are the ones
+  # scripts above do not already touch - a caller that fails to resolve answers 401, so a
+  # 200 here is the whole assertion.
+  check "GET /api/users/me" 200 "$(api_code GET /api/users/me "$t")"
+  check "GET /api/users/me/progress" 200 "$(api_code GET /api/users/me/progress "$t")"
+  check "GET /api/account/UserInfo" 200 "$(api_code GET /api/account/UserInfo "$t")"
+  check "GET /api/stats/me" 200 "$(api_code GET /api/stats/me "$t")"
+  check "follow another user" 200 "$(api_code POST "/api/users/follow/$ACTIVE_USER" "$t")"
+  check "unfollow them again" 200 "$(api_code DELETE "/api/users/follow/$ACTIVE_USER" "$t")"
+
+  echo
   [ "$fails" = "0" ] && bold "all checks passed" || { bold "checks FAILED"; return 1; }
 }
 

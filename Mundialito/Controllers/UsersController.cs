@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Mundialito.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,8 +29,9 @@ public class UsersController : ControllerBase
     private readonly TableBuilder tableBuilder;
     private readonly MundialitoDbContext mundialitoDbContext;
     private readonly ILogger logger;
+    private readonly ICurrentUser currentUser;
 
-    public UsersController(ILogger<UsersController> logger, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, GeneralBetsService generalBetsService, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext)
+    public UsersController(ILogger<UsersController> logger, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, UserManager<MundialitoUser> userManager, IBetsRepository betsRepository, IDateTimeProvider dateTimeProvider, TournamentTimesUtils tournamentTimesUtils, GeneralBetsService generalBetsService, TableBuilder tableBuilder, MundialitoDbContext mundialitoDbContext, ICurrentUser currentUser)
     {
         this.actionLogger = actionLogger;
         this.httpContextAccessor = httpContextAccessor;
@@ -39,6 +41,7 @@ public class UsersController : ControllerBase
         this.tournamentTimesUtils = tournamentTimesUtils;
         this.generalBetsService = generalBetsService;
         this.logger = logger;
+        this.currentUser = currentUser;
         this.tableBuilder = tableBuilder;
         this.mundialitoDbContext = mundialitoDbContext;
     }
@@ -54,7 +57,7 @@ public class UsersController : ControllerBase
     [Authorize]
     public async Task<ActionResult> FollowUserAsync(string username)
     {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var followee = await userManager.FindByNameAsync(username);
@@ -77,7 +80,7 @@ public class UsersController : ControllerBase
     [Authorize]
     public async Task<ActionResult> UnfollowUserAsync(string username)
     {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var followee = await userManager.FindByNameAsync(username);
@@ -154,7 +157,7 @@ public class UsersController : ControllerBase
     [HttpGet("me/progress")]
     public async Task<ActionResult<IEnumerable<UserCompareModel>>> Progress()
     {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized(new ErrorMessage { Message = "User not found" });
         return Ok(CompareUsers(new List<MundialitoUser> { user }));

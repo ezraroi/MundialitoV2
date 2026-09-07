@@ -126,6 +126,38 @@ public class BetUpsertTests
         });
     }
 
+    /// <summary>The caller passed [Authorize] but no longer exists - a deleted account with a
+    /// live token. That is unauthenticated, not a server fault, and every action resolving a
+    /// caller has to keep saying so; before ICurrentUser each of the eleven said it for itself.</summary>
+    [Test]
+    public async Task PutMyBet_CallerNoLongerExists_ReturnsUnauthorized()
+    {
+        var game = MakeGame(100, open: true);
+        var bets = new FakeBetsRepository(Array.Empty<Bet>());
+        var games = new FakeGamesRepository(new[] { game });
+        var controller = MakeController(bets, games, MakeValidator(bets, games), caller: null);
+
+        var result = await controller.PutMyBet(game.GameId, Save(1, 1));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Result, Is.InstanceOf<UnauthorizedResult>());
+            Assert.That(bets.All, Is.Empty);
+            Assert.That(bets.SaveCount, Is.Zero);
+        });
+    }
+
+    [Test]
+    public async Task GetMyBet_CallerNoLongerExists_ReturnsUnauthorized()
+    {
+        var game = MakeGame(100, open: true);
+        var bets = new FakeBetsRepository(Array.Empty<Bet>());
+        var games = new FakeGamesRepository(new[] { game });
+        var controller = MakeController(bets, games, MakeValidator(bets, games), caller: null);
+
+        Assert.That((await controller.GetMyBet(game.GameId)).Result, Is.InstanceOf<UnauthorizedResult>());
+    }
+
     [Test]
     public async Task PutMyBet_UnknownGame_ReturnsNotFound()
     {

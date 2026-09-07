@@ -6,11 +6,11 @@ using System.Text;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.Games;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Configuration;
 using Microsoft.Extensions.Options;
 using Mundialito.Mail;
+using Mundialito.Auth;
 using Mundialito.Auth.Authorization;
 
 namespace Mundialito.Controllers;
@@ -26,17 +26,17 @@ public class BetsController : ControllerBase
     private readonly IBetValidator betValidator;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IActionLogger actionLogger;
-    private readonly UserManager<MundialitoUser> userManager;
+    private readonly ICurrentUser currentUser;
     private readonly Config config;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IEmailSender emailSender;
     private readonly ILogger logger;
 
-    public BetsController(ILogger<BetsController> logger, IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IGamesRepository gamesRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
+    public BetsController(ILogger<BetsController> logger, IBetsRepository betsRepository, IBetValidator betValidator, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IGamesRepository gamesRepository, ICurrentUser currentUser, IHttpContextAccessor httpContextAccessor, IOptions<Config> config, IEmailSender emailSender)
     {
         this.config = config.Value;
         this.httpContextAccessor = httpContextAccessor;
-        this.userManager = userManager;
+        this.currentUser = currentUser;
         this.gamesRepository = gamesRepository;
         this.betsRepository = betsRepository;
         this.betValidator = betValidator;
@@ -85,7 +85,7 @@ public class BetsController : ControllerBase
     [HttpGet("/api/games/{gameId}/mybet")]
     public async Task<ActionResult<BetViewModel>> GetMyBet(int gameId)
     {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var game = gamesRepository.GetGame(gameId);
@@ -122,7 +122,7 @@ public class BetsController : ControllerBase
     [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<ActionResult<BetViewModel>> PutMyBet(int gameId, SaveBetModel bet)
     {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var game = gamesRepository.GetGame(gameId);
@@ -187,7 +187,7 @@ public class BetsController : ControllerBase
     [Authorize(Policy = Policies.ActiveOrAdmin)]
     public async Task<IActionResult> DeleteBet(int id)
     {
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         try {

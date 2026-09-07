@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Mundialito.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
@@ -23,26 +23,26 @@ public class GeneralBetsController : ControllerBase
     private readonly IActionLogger actionLogger;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TournamentTimesUtils tournamentTimesUtils;
-    private readonly UserManager<MundialitoUser> userManager;
     private readonly ITeamsRepository teamsRepository;
     private readonly IPlayersRepository playersRepository;
     private readonly GeneralBetsService generalBetsService;
     private readonly ICurrentUserRoleProvider currentUserRoleProvider;
     private readonly ILogger logger;
+    private readonly ICurrentUser currentUser;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider, ICurrentUser currentUser)
     {
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogger = actionLogger;
         this.httpContextAccessor = httpContextAccessor;
         this.tournamentTimesUtils = tournamentTimesUtils;
-        this.userManager = userManager;
         this.teamsRepository = teamsRepository;
         this.playersRepository = playersRepository;
         this.generalBetsService = generalBetsService;
         this.currentUserRoleProvider = currentUserRoleProvider;
         this.logger = logger;
+        this.currentUser = currentUser;
     }
 
     [HttpGet]
@@ -103,7 +103,7 @@ public class GeneralBetsController : ControllerBase
             actionLogger.Log(ActionType.ERROR, ObjectType, validate);
             return BadRequest(new ErrorMessage { Message = validate });
         }
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var winningTeam = teamsRepository.GetTeam(newBet.WinningTeam.TeamId);
@@ -143,7 +143,7 @@ public class GeneralBetsController : ControllerBase
             actionLogger.Log(ActionType.ERROR, ObjectType, validate);
             return BadRequest(new ErrorMessage { Message = validate });
         }
-        var user = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var user = await currentUser.GetAsync();
         if (user == null)
             return Unauthorized();
         var betToUpdate = generalBetsRepository.GetGeneralBet(id);

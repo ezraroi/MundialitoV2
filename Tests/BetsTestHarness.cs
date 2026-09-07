@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Mundialito.Auth;
 using Mundialito.Configuration;
 using Mundialito.Controllers;
 using Mundialito.DAL.Accounts;
@@ -196,6 +197,15 @@ public static class BetsTestHarness
         MaxPoints = bet.MaxPoints,
     };
 
+    /// <summary>The caller of a request. Constructed with null to exercise the "authenticated
+    /// but the user is gone" path every write action has to answer with a 401.</summary>
+    public sealed class FakeCurrentUser : ICurrentUser
+    {
+        private readonly MundialitoUser? user;
+        public FakeCurrentUser(MundialitoUser? user) => this.user = user;
+        public Task<MundialitoUser?> GetAsync() => Task.FromResult(user);
+    }
+
     public static MundialitoUser MakeUser(string userName) =>
         new MundialitoUser { Id = userName + "-id", UserName = userName, FirstName = "F", LastName = "L" };
 
@@ -249,7 +259,7 @@ public static class BetsTestHarness
             dateTimeProvider: new FixedClock(),
             actionLogger: actionLogger ?? new FakeActionLogger(),
             gamesRepository: games,
-            userManager: new FakeUserManager(caller),
+            currentUser: new FakeCurrentUser(caller),
             httpContextAccessor: new HttpContextAccessor { HttpContext = httpContext },
             config: Options.Create(new Config()),
             emailSender: null!);

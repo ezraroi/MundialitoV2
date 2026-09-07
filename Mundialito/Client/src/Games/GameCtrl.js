@@ -1,5 +1,5 @@
 ﻿'use strict';
-angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', 'security', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players, security) {
+angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Constants', 'UsersManager', 'GamesManager', 'BetsManager', 'game', 'userBet', 'Alert', '$location', 'PluginsProvider', 'keyValueEditorUtils', 'MundialitoUtils', 'teams', 'players', 'security', '$interval', function ($scope, $log, Constants, UsersManager, GamesManager, BetsManager, game, userBet, Alert, $location, PluginsProvider, keyValueEditorUtils, MundialitoUtils, teams, players, security, $interval) {
     $scope.game = game;
     $scope.teamsDic = {};
     $scope.playersDic = {};
@@ -7,6 +7,12 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
     $scope.plugins = {};
     $scope.userBet = userBet;
     $scope.savingBet = false;
+    /* Whether betting is still open, as opposed to what the server thought at page load.
+       Deliberately not game.IsOpen: twelve ng-ifs read that, including the admin Edit Game
+       form, which swaps its Date picker for four required score fields when a game closes -
+       flipping it under an admin mid-edit would take away the field they are typing in and
+       disable Save. This flag gates the bet panel and nothing else. */
+    $scope.betFormOpen = game.IsOpen;
     $scope.showEditForm = false;
     $scope.gameActiveTab = 0;
     $scope.betsHighlightsOpen = false;
@@ -148,6 +154,42 @@ angular.module('mundialitoApp').controller('GameCtrl', ['$scope', '$log', 'Const
             $scope.savingBet = false;
         });
     };
+
+    /* game.IsOpen is a snapshot the server computed at page load and nothing re-evaluates it,
+       so a page left open past kickoff kept showing a live Save button - and the save was
+       then refused, which is the path that used to save the bet anyway (#171). Close the form
+       at the deadline instead. UX only: the server remains the authority on the deadline, and
+       CloseTime is the same value it decides with - GameExtensionMethods.IsOpen and
+       BetValidator both compare against CloseTime, not kickoff. Sent as UTC.
+
+       invokeApply false so the page is not digested once a second for as long as it is open -
+       which is exactly the situation this exists for. The one flip asks for a digest itself. */
+    function closeBetFormAtDeadline() {
+        if (!$scope.betFormOpen) {
+            return;
+        }
+        var tick = $interval(() => {
+            /* Read CloseTime each tick rather than capturing it: an admin editing the game's
+               date from this same page moves the deadline, and the form should follow it. */
+            var closeTime = new Date($scope.game.CloseTime).getTime();
+            if (isNaN(closeTime)) {
+                $log.warn('GameCtrl: game ' + $scope.game.GameId + ' has no usable CloseTime, leaving the bet form open');
+                $interval.cancel(tick);
+                return;
+            }
+            if (Date.now() < closeTime) {
+                return;
+            }
+            $interval.cancel(tick);
+            $scope.$evalAsync(() => {
+                $log.debug('GameCtrl: betting closed on game ' + $scope.game.GameId);
+                $scope.betFormOpen = false;
+            });
+        }, 1000, 0, false);
+        /* Without this every visit to a game page leaks a timer. */
+        $scope.$on('$destroy', () => $interval.cancel(tick));
+    }
+    closeBetFormAtDeadline();
 
     $scope.simulateGame = () => {
         $log.debug('GameCtrl: simulating game');

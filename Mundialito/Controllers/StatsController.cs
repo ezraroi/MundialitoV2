@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Mundialito.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,16 +21,16 @@ public class StatsController : ControllerBase
     private readonly IBetsRepository betsRepository;
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly UserManager<MundialitoUser> userManager;
-    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly ICurrentUser currentUser;
     private readonly TableBuilder tableBuilder;
     private readonly MundialitoDbContext mundialitoDbContext;
 
-    public StatsController(IGamesRepository gamesRepository, IBetsRepository betsRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository, MundialitoDbContext mundialitoDbContext)
+    public StatsController(IGamesRepository gamesRepository, IBetsRepository betsRepository, UserManager<MundialitoUser> userManager, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository, MundialitoDbContext mundialitoDbContext, ICurrentUser currentUser)
     {
         this.gamesRepository = gamesRepository;
         this.betsRepository = betsRepository;
         this.userManager = userManager;
-        this.httpContextAccessor = httpContextAccessor;
+        this.currentUser = currentUser;
         this.tableBuilder = tableBuilder;
         this.generalBetsRepository = generalBetsRepository;
         this.mundialitoDbContext = mundialitoDbContext;
@@ -39,7 +40,7 @@ public class StatsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<StatsModel>> GetMyStats() 
     {
-        var loggedUser = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var loggedUser = await currentUser.GetAsync();
         if (loggedUser == null)
             return Unauthorized(new ErrorMessage { Message = "You must be logged in" });
         var followees = await mundialitoDbContext.UserFollows
@@ -56,7 +57,7 @@ public class StatsController : ControllerBase
         var requestedUser = await userManager.FindByNameAsync(username);
         if (requestedUser == null)
             return NotFound(new ErrorMessage { Message = "No such user" });
-        var loggedUser = await userManager.FindByNameAsync(httpContextAccessor.HttpContext?.User.Identity.Name);
+        var loggedUser = await currentUser.GetAsync();
         if (loggedUser == null)
             return Unauthorized(new ErrorMessage { Message = "You must be logged in" });
         return await CalcStats(requestedUser, loggedUser, Enumerable.Empty<MundialitoUser>());

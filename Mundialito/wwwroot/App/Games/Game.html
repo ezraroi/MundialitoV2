@@ -23,7 +23,7 @@
                     </div>
                 </div>
                 <div class="mu-match-header__chips">
-                    <span ng-show="game.IsOpen" class="label label-success"><i class="fa fa-unlock"></i> Open</span>
+                    <span ng-show="betFormOpen" class="label label-success"><i class="fa fa-unlock"></i> Open</span>
                     <span ng-show="game.IsPendingUpdate" class="label label-info"><i class="fa fa-clock"></i> Pending</span>
                     <span ng-show="game.IsBetResolved" class="label label-default"><i class="fa fa-check"></i> Resolved</span>
                     <span class="label label-default">
@@ -35,7 +35,7 @@
                 <div class="mu-match-header__meta">
                     <div><i class="fa-solid fa-location-dot"></i> {{game.Stadium.Name}}</div>
                     <div><i class="fa fa-calendar"></i> {{game.Date | date:'dd MMM yyyy, HH:mm'}}</div>
-                    <div ng-show="game.IsOpen"><i class="fa fa-clock"></i> Closes {{game.CloseTime | date:'dd MMM, HH:mm'}}</div>
+                    <div ng-show="betFormOpen"><i class="fa fa-clock"></i> Closes {{game.CloseTime | date:'dd MMM, HH:mm'}}</div>
                     <div ng-if="game.IsBetResolved">
                         <i class="fa fa-stop" style="color: #ffff00"></i> Cards {{game.CardsMark}}
                         <i class="fa fa-flag"></i> Corners {{game.CornersMark}}
@@ -72,21 +72,21 @@
 <!-- Your Bet -->
 <div class="row" ng-if="security.user.Roles !== 'Disabled'">
     <div class="col-xs-12">
-        <div ng-class="{ 'panel-default': !userBet.IsMaxPoints, 'panel-success': userBet.IsMaxPoints, 'panel-danger': userBet.IsResolved && userBet.Points == 0, 'mu-panel-bet': game.IsOpen }"
+        <div ng-class="{ 'panel-default': !userBet.IsMaxPoints, 'panel-success': userBet.IsMaxPoints, 'panel-danger': userBet.IsResolved && userBet.Points == 0, 'mu-panel-bet': betFormOpen }"
             class="panel">
             <div class="panel-heading">
                 <i class="fa fa-user"></i> Your Bet
                 <span ng-show="game.IsPendingUpdate" class="label label-info pull-right"><i class="fa fa-clock"></i>
                     Pending</span>
-                <span ng-show="game.IsOpen" class="label label-success pull-right"><i class="fa fa-unlock"></i> Open</span>
+                <span ng-show="betFormOpen" class="label label-success pull-right"><i class="fa fa-unlock"></i> Open</span>
                 <i class="fa-solid pull-right" style="padding-right: 3px;"
                     ng-class="{'fa-legal': !userBet.IsMaxPoints, 'fa-bullseye': userBet.IsMaxPoints, 'fa-skull-crossbones': userBet.IsResolved && userBet.Points == 0, 'fa-question': !userBet.IsResolved}"></i>
             </div>
             <div class="panel-body" cg-busy="updateBetPromise">
-                <div ng-if="!game.IsOpen && !userBet.HasBet" class="alert alert-danger mu-bet-closed-banner">
+                <div ng-if="!betFormOpen && !userBet.HasBet" class="alert alert-danger mu-bet-closed-banner">
                     <i class="fa fa-warning"></i> You haven't placed a bet and betting is closed.
                 </div>
-                <div ng-show="!game.IsOpen && userBet.HasBet">
+                <div ng-show="!betFormOpen && userBet.HasBet">
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>
@@ -109,7 +109,7 @@
                         </table>
                     </div>
                 </div>
-                <form class="mu-bet-form" novalidate name="userBetFrom" ng-show="game.IsOpen">
+                <form class="mu-bet-form" novalidate name="userBetFrom" ng-show="betFormOpen">
                     <div class="mu-bet-form__scores">
                         <div class="form-group">
                             <label for="{{game.HomeTeam.TeamId}}">
