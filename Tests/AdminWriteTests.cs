@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Mundialito.Controllers;
 using Mundialito.DAL.Games;
+using Mundialito.DAL.GeneralBets;
+using Mundialito.DAL.Players;
 using Mundialito.DAL.Stadiums;
 using Mundialito.DAL.Teams;
 using Mundialito.Models;
@@ -144,6 +147,119 @@ public class AdminWriteTests
             Assert.That(stadium.StadiumId, Is.EqualTo(1));
             Assert.That(stadium.Name, Is.EqualTo("Renamed"));
             Assert.That(repo.SaveCount, Is.EqualTo(1));
+        });
+    }
+
+    private sealed class FakePlayersRepository : IPlayersRepository
+    {
+        private readonly List<Player> players;
+        public FakePlayersRepository(IEnumerable<Player> players) => this.players = players.ToList();
+
+        public int SaveCount { get; private set; }
+        public IEnumerable<Player> GetPlayers() => players;
+        public Player GetPlayer(int playerId) => players.FirstOrDefault(p => p.PlayerId == playerId)!;
+        public Player InsertPlayer(Player player) { players.Add(player); return player; }
+        public void DeletePlayer(int playerId) => players.RemoveAll(p => p.PlayerId == playerId);
+        public void Save() => SaveCount++;
+        public void Dispose() { }
+    }
+
+    /// <summary>Only the golden boot usage count matters here; the rest of the interface is
+    /// the bet flow, which these tests never reach.</summary>
+    private sealed class FakeGeneralBetUsage : IGeneralBetsRepository
+    {
+        private readonly int count;
+        public FakeGeneralBetUsage(int count) => this.count = count;
+
+        public int CountGeneralBetsOnPlayer(int playerId) => count;
+
+        public IEnumerable<GeneralBet> GetGeneralBets() => throw new NotImplementedException();
+        public GeneralBet GetGeneralBet(int betId) => throw new NotImplementedException();
+        public GeneralBet GetUserGeneralBet(string username) => throw new NotImplementedException();
+        public bool IsGeneralBetExists(string userId) => throw new NotImplementedException();
+        public GeneralBet InsertGeneralBet(GeneralBet bet) => throw new NotImplementedException();
+        public void DeleteGeneralBet(int betId) => throw new NotImplementedException();
+        public void UpdateGeneralBet(GeneralBet bet) => throw new NotImplementedException();
+        public void Save() => throw new NotImplementedException();
+    }
+
+    private static Player ExistingPlayer() => new Player { PlayerId = 1, Name = "Harry Kane" };
+
+    private static PlayersController PlayersController(FakePlayersRepository repo, int usages) =>
+        new PlayersController(
+            logger: NullLogger<PlayersController>.Instance,
+            playersRepository: repo,
+            generalBetsRepository: new FakeGeneralBetUsage(usages),
+            actionLogger: new BetsTestHarness.FakeActionLogger());
+
+    [Test]
+    public void DeletePlayer_UnknownId_ReturnsNotFoundAndWritesNothing()
+    {
+        var repo = new FakePlayersRepository(new[] { ExistingPlayer() });
+        var controller = PlayersController(repo, usages: 0);
+
+        var result = controller.DeletePlayer(999999);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+            Assert.That(repo.SaveCount, Is.Zero);
+            Assert.That(repo.GetPlayers().Count(), Is.EqualTo(1));
+        });
+    }
+
+    /// <summary>The FK to Players cascades, so an unguarded delete would take the general
+    /// bets that picked this player with it rather than fail. This is the check that stops
+    /// an admin misclick from silently deleting other people's bets.</summary>
+    [Test]
+    public void DeletePlayer_PickedByAGeneralBet_ReturnsBadRequestAndWritesNothing()
+    {
+        var repo = new FakePlayersRepository(new[] { ExistingPlayer() });
+        var controller = PlayersController(repo, usages: 3);
+
+        var result = controller.DeletePlayer(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+            var message = ((ErrorMessage)((BadRequestObjectResult)result).Value!).Message;
+            Assert.That(message, Does.Contain("Harry Kane").And.Contain("3 general bets"));
+            Assert.That(repo.SaveCount, Is.Zero);
+            Assert.That(repo.GetPlayers().Count(), Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public void DeletePlayer_UnusedPlayer_DeletesAndSavesOnce()
+    {
+        var repo = new FakePlayersRepository(new[] { ExistingPlayer() });
+        var controller = PlayersController(repo, usages: 0);
+
+        var result = controller.DeletePlayer(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
+            Assert.That(repo.SaveCount, Is.EqualTo(1));
+            Assert.That(repo.GetPlayers(), Is.Empty);
+        });
+    }
+
+    [Test]
+    public void PostPlayer_InsertsTheNameAndSavesOnce()
+    {
+        var repo = new FakePlayersRepository(Array.Empty<Player>());
+        var controller = PlayersController(repo, usages: 0);
+
+        var created = controller.PostPlayer(new PlayerModel { Name = "Lamine Yamal" });
+
+        Assert.Multiple(() =>
+        {
+            // PlayerModel has no PlayerId to copy across, so a caller cannot choose the key.
+            Assert.That(created.PlayerId, Is.Zero);
+            Assert.That(created.Name, Is.EqualTo("Lamine Yamal"));
+            Assert.That(repo.SaveCount, Is.EqualTo(1));
+            Assert.That(repo.GetPlayers().Count(), Is.EqualTo(1));
         });
     }
 }

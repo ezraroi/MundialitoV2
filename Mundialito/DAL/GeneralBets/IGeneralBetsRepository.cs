@@ -10,6 +10,11 @@ public interface IGeneralBetsRepository
 
     bool IsGeneralBetExists(string userId);
 
+    /// <summary>How many general bets picked this player for the golden boot. The FK to
+    /// Players cascades, so deleting a player without asking this first would delete those
+    /// bets rather than fail.</summary>
+    int CountGeneralBetsOnPlayer(int playerId);
+
     GeneralBet InsertGeneralBet(GeneralBet bet);
 
     void DeleteGeneralBet(int betId);

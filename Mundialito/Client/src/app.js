@@ -46,8 +46,8 @@
                 templateUrl: 'App/Users/ManageApp.html',
                 controller: 'ManageAppCtrl',
                 resolve: {
-                    managePage: ['security', '$location', '$q', '$timeout', 'UsersManager', 'GeneralBetsManager',
-                        function (security, $location, $q, $timeout, UsersManager, GeneralBetsManager) {
+                    managePage: ['security', '$location', '$q', '$timeout', 'UsersManager', 'GeneralBetsManager', 'PlayersManager',
+                        function (security, $location, $q, $timeout, UsersManager, GeneralBetsManager, PlayersManager) {
                             function waitForAdminUser(attempt) {
                                 if (security.user) {
                                     if (security.user.Roles === 'Admin') {
@@ -67,7 +67,8 @@
                             return waitForAdminUser(0).then(function () {
                                 return $q.all({
                                     users: UsersManager.loadAllUsers(),
-                                    generalBets: GeneralBetsManager.loadAllGeneralBets()
+                                    generalBets: GeneralBetsManager.loadAllGeneralBets(),
+                                    players: PlayersManager.loadAllPlayers()
                                 });
                             });
                         }]

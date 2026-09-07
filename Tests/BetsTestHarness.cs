@@ -154,6 +154,7 @@ public static class BetsTestHarness
         public GeneralBet GetGeneralBet(int betId) => throw new NotImplementedException();
         public GeneralBet GetUserGeneralBet(string username) => throw new NotImplementedException();
         public bool IsGeneralBetExists(string userId) => throw new NotImplementedException();
+        public int CountGeneralBetsOnPlayer(int playerId) => throw new NotImplementedException();
         public GeneralBet InsertGeneralBet(GeneralBet bet) => throw new NotImplementedException();
         public void DeleteGeneralBet(int betId) => throw new NotImplementedException();
         public void UpdateGeneralBet(GeneralBet bet) => throw new NotImplementedException();
