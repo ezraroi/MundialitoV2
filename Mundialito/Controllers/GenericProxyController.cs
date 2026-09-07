@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Microsoft.AspNetCore.Mvc;
+using Mundialito.Models;
 
 namespace Mundialito.Controllers
 {
@@ -80,7 +81,10 @@ namespace Mundialito.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                // The message can carry the upstream URL, host names or driver detail. It
+                // belongs in the log, where it is already going, not in the response body.
+                _logger.LogError(ex, "Proxy request failed");
+                return StatusCode(500, new ErrorMessage { Message = "Upstream request failed" });
             }
         }
     }

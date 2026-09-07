@@ -52,18 +52,29 @@ public class TeamsController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = Policies.AdminOnly)]
-    public Team PostTeam(Team team)
+    public Team PostTeam(TeamModel team)
     {
-        var res = teamsRepository.InsertTeam(team);
+        var res = teamsRepository.InsertTeam(new Team
+        {
+            Name = team.Name,
+            Flag = team.Flag,
+            Logo = team.Logo,
+            ShortName = team.ShortName,
+            TournamentTeamId = team.TournamentTeamId,
+            TeamPage = team.TeamPage,
+            IntegrationsData = team.IntegrationsData
+        });
         teamsRepository.Save();
         return res;
     }
 
     [HttpPut("{id}")]
     [Authorize(Policy = Policies.AdminOnly)]
-    public Team PutTeam(int id, Team team)
+    public ActionResult<Team> PutTeam(int id, TeamModel team)
     {
         var teamToUpdate = teamsRepository.GetTeam(id);
+        if (teamToUpdate == null)
+            return NotFound(new ErrorMessage{ Message = string.Format("Team with id '{0}' not found", id)});
         teamToUpdate.Name = team.Name;
         teamToUpdate.Flag = team.Flag;
         teamToUpdate.Logo = team.Logo;
@@ -72,7 +83,9 @@ public class TeamsController : ControllerBase
         teamToUpdate.TeamPage = team.TeamPage;
         teamToUpdate.IntegrationsData = team.IntegrationsData;
         teamsRepository.Save();
-        return team;
+        // The stored row, not the object the caller sent - those differ, and the caller's
+        // copy carries no TeamId on create.
+        return Ok(teamToUpdate);
     }
 
     [HttpDelete("{id}")]

@@ -305,6 +305,58 @@ print(o[0] if o else "", o[1] if len(o) > 1 else "")')"
   fi
 
   echo
+  bold "Admin writes: a bad id is a 404, and a simulation stays in memory"
+
+  code=$(api_code PUT /api/teams/999999 "$admin" '{"Name":"X","ShortName":"XXX","Flag":"f.png","Logo":"l.png"}')
+  check "PUT an unknown team is refused" 404 "$code"
+  code=$(api_code PUT /api/stadiums/999999 "$admin" '{"Name":"X","City":"Y","Capacity":100}')
+  check "PUT an unknown stadium is refused" 404 "$code"
+
+  # A game past kickoff with no result entered - the only state SimulateGame accepts.
+  local gpending
+  gpending=$(api GET /api/games "$admin" | python3 -c '
+import sys, json
+p = [x["GameId"] for x in json.load(sys.stdin) if x.get("IsPendingUpdate")]
+print(p[0] if p else "")')
+  if [ -z "$gpending" ]; then
+    info "SKIP  no game is pending a result, cannot check the simulation"
+  elif ! db_running; then
+    info "SKIP  database container not running, cannot check the simulation"
+  else
+    code=$(api_code POST "/api/games/$gpending/simulate" "$t" '{"HomeScore":2,"AwayScore":1,"CardsMark":"1","CornersMark":"1"}')
+    check "simulating is admin only" 403 "$code"
+
+    # Betting on it closed days ago, so seed the bet directly - it is a fixture, not a case.
+    # An exact-score match, so the simulated table must show this user with points.
+    db_query "INSERT INTO \"Bets\" (\"UserId\",\"GameId\",\"HomeScore\",\"AwayScore\",\"CardsMark\",\"CornersMark\",\"CornersWin\",\"GameMarkWin\",\"ResultWin\",\"CardsWin\",\"MaxPoints\") VALUES ('$id', $gpending, 2, 1, '1', '1', false, false, false, false, false) ON CONFLICT DO NOTHING;" >/dev/null
+
+    local game_before bet_before game_after bet_after points
+    game_before=$(db_query "SELECT coalesce(\"HomeScore\"::text,'-'), coalesce(\"AwayScore\"::text,'-') FROM \"Games\" WHERE \"GameId\" = $gpending;")
+    bet_before=$(db_query "SELECT coalesce(\"Points\"::text,'-'), \"GameMarkWin\" FROM \"Bets\" WHERE \"UserId\" = '$id' AND \"GameId\" = $gpending;")
+
+    code=$(api_code POST "/api/games/$gpending/simulate" "$admin" '{"HomeScore":2,"AwayScore":1,"CardsMark":"1","CornersMark":"1"}')
+    check "an admin can simulate a pending game" 200 "$code"
+    points=$(python3 -c "
+import sys, json
+try: t = json.load(open('$RUN_DIR/body'))
+except Exception: print('-'); raise SystemExit
+print(next((u.get('Points') for u in t if u.get('Username') == '$u'), '-'))")
+    if [ "$points" != "-" ] && [ "${points:-0}" -gt 0 ] 2>/dev/null; then
+      info "PASS  the simulated result scored the bet ($points points)"
+    else
+      info "FAIL  the simulated table gave $u '$points' points"; fails=1
+    fi
+
+    game_after=$(db_query "SELECT coalesce(\"HomeScore\"::text,'-'), coalesce(\"AwayScore\"::text,'-') FROM \"Games\" WHERE \"GameId\" = $gpending;")
+    bet_after=$(db_query "SELECT coalesce(\"Points\"::text,'-'), \"GameMarkWin\" FROM \"Bets\" WHERE \"UserId\" = '$id' AND \"GameId\" = $gpending;")
+    if [ "$game_before" = "$game_after" ] && [ "$bet_before" = "$bet_after" ]; then
+      info "PASS  the simulation reached no row (game $game_after, bet $bet_after)"
+    else
+      info "FAIL  the simulation was persisted: game '$game_before'->'$game_after', bet '$bet_before'->'$bet_after'"; fails=1
+    fi
+  fi
+
+  echo
   [ "$fails" = "0" ] && bold "all checks passed" || { bold "checks FAILED"; return 1; }
 }
 

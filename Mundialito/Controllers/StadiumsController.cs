@@ -41,23 +41,31 @@ public class StadiumsController : ControllerBase
 
     [Authorize(Policy = Policies.AdminOnly)]
     [HttpPost]
-    public Stadium PostStadium(Stadium stadium)
+    public Stadium PostStadium(StadiumModel stadium)
     {
-        var res = stadiumsRepository.InsertStadium(stadium);
+        var res = stadiumsRepository.InsertStadium(new Stadium
+        {
+            Name = stadium.Name,
+            City = stadium.City,
+            Capacity = stadium.Capacity
+        });
         stadiumsRepository.Save();
         return res;
     }
 
     [HttpPut("{id}")]
     [Authorize(Policy = Policies.AdminOnly)]
-    public Stadium PutStadium(int id, Stadium stadium)
+    public ActionResult<Stadium> PutStadium(int id, StadiumModel stadium)
     {
         var stadiumToUpdate = stadiumsRepository.GetStadium(id);
+        if (stadiumToUpdate == null)
+            return NotFound(new ErrorMessage{ Message = string.Format("Stadium with id '{0}' not found", id)});
         stadiumToUpdate.Name = stadium.Name;
         stadiumToUpdate.City = stadium.City;
         stadiumToUpdate.Capacity = stadium.Capacity;
         stadiumsRepository.Save();
-        return stadium;
+        // The stored row, not the object the caller sent.
+        return Ok(stadiumToUpdate);
     }
 
     [HttpDelete("{id}")]

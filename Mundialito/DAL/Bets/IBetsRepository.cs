@@ -1,8 +1,13 @@
-﻿namespace Mundialito.DAL.Bets;
+﻿using Mundialito.DAL.Games;
+
+namespace Mundialito.DAL.Bets;
 
 public interface IBetsRepository
 {
     IEnumerable<Bet> GetBets();
+
+    /// <summary>Detached from the change tracker - see <see cref="IGamesRepository.GetGameNoTracking"/>.</summary>
+    IEnumerable<Bet> GetBetsNoTracking();
 
     IEnumerable<Bet> GetUserBets(string username);
 

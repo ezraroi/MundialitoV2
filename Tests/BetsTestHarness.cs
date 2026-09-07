@@ -49,6 +49,10 @@ public static class BetsTestHarness
         public IReadOnlyList<Bet> All => bets;
 
         public IEnumerable<Bet> GetBets() => bets;
+        // The fake cannot model detachment - it hands back the same instances either way.
+        // That the real thing reads untracked is checked end to end by scripts/dev.sh verify,
+        // which asserts the stored row after a simulation.
+        public IEnumerable<Bet> GetBetsNoTracking() => bets;
         public Bet GetBet(int betId) => bets.FirstOrDefault(b => b.BetId == betId)!;
         public IEnumerable<Bet> GetGameBets(int gameId) => bets.Where(b => b.GameId == gameId);
         public Bet GetUserBetOnGame(string username, int gameId) =>
@@ -74,6 +78,7 @@ public static class BetsTestHarness
         public FakeGamesRepository(IEnumerable<Game> games) => this.games = games.ToList();
 
         public Game GetGame(int gameId) => games.FirstOrDefault(g => g.GameId == gameId)!;
+        public Game GetGameNoTracking(int gameId) => GetGame(gameId);
         public IEnumerable<Game> GetGames() => games;
 
         public Game InsertGame(Game game) => throw new NotImplementedException();

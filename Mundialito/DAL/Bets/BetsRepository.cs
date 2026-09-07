@@ -17,6 +17,11 @@ public class BetsRepository : GenericRepository<Bet>, IBetsRepository
         return Context.Bets.Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam);
     }
 
+    public IEnumerable<Bet> GetBetsNoTracking()
+    {
+        return Context.Bets.AsNoTracking().Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam);
+    }
+
     public IEnumerable<Bet> GetUserBets(string username)
     {
         return Context.Bets.Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam).Where(bet => bet.User.UserName == username);

@@ -56,6 +56,26 @@ public class AuthorizationAttributeGuardTests
             "These actions reference a policy that Program.cs does not register: " + string.Join(", ", unknown));
     }
 
+    /// <summary>SimulateGame recomputes the whole table from a made-up result. It carried only
+    /// the class level [Authorize] while its PostGame/PutGame/DeleteGame siblings were
+    /// AdminOnly, so any signed-in user could run it (#172 item 3). Named rather than left to
+    /// the count below, so a regression says which action lost its policy.</summary>
+    [Test]
+    public void AdminOnlyGameActionsAreAllGated()
+    {
+        var adminActions = new[] { "PostGame", "PutGame", "DeleteGame", "SimulateGame" };
+
+        var gated = typeof(GamesController)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => adminActions.Contains(m.Name))
+            .Where(m => m.GetCustomAttributes<AuthorizeAttribute>(inherit: false)
+                .Any(a => a.Policy == Policies.AdminOnly))
+            .Select(m => m.Name)
+            .ToList();
+
+        Assert.That(gated, Is.EquivalentTo(adminActions));
+    }
+
     [Test]
     public void ExpectedNumberOfActionsAreRoleGated()
     {
@@ -65,12 +85,13 @@ public class AuthorizationAttributeGuardTests
             .ToDictionary(g => g.Key, g => g.Count());
 
         // 4 player-facing writes (2 bets - the mybet upsert and delete - plus 2 general
-        // bets), 14 admin actions.
+        // bets), 15 admin actions (SimulateGame joined its PostGame/PutGame/DeleteGame
+        // siblings, which it had been missing).
         // A silently dropped attribute would leave an endpoint open to any signed-in user.
         Assert.Multiple(() =>
         {
             Assert.That(byPolicy.GetValueOrDefault(Policies.ActiveOrAdmin), Is.EqualTo(4));
-            Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(14));
+            Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(15));
         });
     }
 }

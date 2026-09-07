@@ -22,6 +22,11 @@ public class GamesRepository : GenericRepository<Game>,IGamesRepository
         return Get().Include(game => game.HomeTeam).Include(game => game.AwayTeam).Include(game => game.Stadium).SingleOrDefault(game => game.GameId == gameId);
     }
 
+    public Game GetGameNoTracking(int gameId)
+    {
+        return Get().AsNoTracking().Include(game => game.HomeTeam).Include(game => game.AwayTeam).Include(game => game.Stadium).SingleOrDefault(game => game.GameId == gameId);
+    }
+
     public Game InsertGame(Game game)
     {
         return Insert((Game)game);
