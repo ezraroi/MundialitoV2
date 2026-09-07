@@ -147,6 +147,8 @@ public class GeneralBetsController : ControllerBase
         if (user == null)
             return Unauthorized();
         var betToUpdate = generalBetsRepository.GetGeneralBet(id);
+        if (betToUpdate == null)
+            return NotFound(new ErrorMessage { Message = string.Format("General Bet '{0}' dosen't exits", id) });
         if (betToUpdate.User.Id != user.Id)
         {
             actionLogger.Log(ActionType.UNAUTHORIZED_ACCESS, ObjectType, "You can't update a bet that is not yours");

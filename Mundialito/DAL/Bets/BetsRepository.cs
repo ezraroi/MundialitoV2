@@ -12,9 +12,19 @@ public class BetsRepository : GenericRepository<Bet>, IBetsRepository
         
     }
 
+    /// <summary>Every read here needs the same graph - the owner, the game and its two teams -
+    /// because BetViewModel and TableBuilder walk all of it.</summary>
+    private static IQueryable<Bet> WithGraph(IQueryable<Bet> bets) =>
+        bets.Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam);
+
     public IEnumerable<Bet> GetBets()
     {
-        return Context.Bets.Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.User).Include(bet => bet.Game).Include(bet => bet.Game.AwayTeam).Include(bet => bet.Game.HomeTeam);
+        return WithGraph(Context.Bets);
+    }
+
+    public IEnumerable<Bet> GetBetsNoTracking()
+    {
+        return WithGraph(Context.Bets.AsNoTracking());
     }
 
     public IEnumerable<Bet> GetUserBets(string username)

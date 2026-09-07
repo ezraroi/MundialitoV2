@@ -76,10 +76,18 @@ public class GamesController : ControllerBase
         return Ok(res);
     }
 
+    /// <summary>
+    /// What the table would look like if this game ended that way. A simulation must not be
+    /// able to reach the database, so everything it touches is read detached and mutated in
+    /// memory. It used to work on tracked entities and simply never call Save(), which made
+    /// it correct only for as long as nothing else in the request saved - a single audit log
+    /// call on this path would have written a made-up result and every recalculated point.
+    /// </summary>
     [HttpPost("{id}/simulate")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public ActionResult<IEnumerable<UserModel>> SimulateGame(int id, SimulateGameModel simulateGameModel)
     {
-        var item = gamesRepository.GetGame(id);
+        var item = gamesRepository.GetGameNoTracking(id);
         if (item == null)
             return NotFound(new ErrorMessage { Message = string.Format("Game with id '{0}' not found", id) });
         if (!item.IsPendingUpdate(dateTimeProvider.UTCNow))
@@ -89,12 +97,17 @@ public class GamesController : ControllerBase
         if (simulateGameModel.CornersMark == null || simulateGameModel.CardsMark == null)
             return BadRequest(new ErrorMessage { Message = "CornersMark and CardsMark must be provided" });
         logger.LogInformation("Simulating game {} with {}", id, simulateGameModel);
-        var bets = betsRepository.GetBets();
+        var bets = betsRepository.GetBetsNoTracking().ToList();
         item.AwayScore = simulateGameModel.AwayScore;
         item.HomeScore = simulateGameModel.HomeScore;
         item.CardsMark = simulateGameModel.CardsMark;
         item.CornersMark = simulateGameModel.CornersMark;
-        betsResolver.ResolveBets(item, betsRepository.GetGameBets(id));
+        var gameBets = bets.Where(bet => bet.GameId == id).ToList();
+        // With tracked reads, EF's identity map made bet.Game and the simulated game one
+        // object, so the table saw the simulated result through both. Detached they are two,
+        // and the table would score the game as still unplayed - so say it explicitly.
+        gameBets.ForEach(bet => bet.Game = item);
+        betsResolver.ResolveBets(item, gameBets);
         return Ok(tableBuilder.GetTable(userManager.Users.Select((user) => new UserWithPointsModel(user)), bets, generalBetsRepository.GetGeneralBets()));
     }
 
