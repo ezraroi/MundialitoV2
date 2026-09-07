@@ -66,3 +66,5 @@ _ReSharper*/
 *.userprefs
 *.DS_Store
 .fake
+# local dev runtime (scripts/dev.sh)
+.dev/
