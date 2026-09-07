@@ -204,7 +204,6 @@ public class GamesController : ControllerBase
         }
     }
 
-
     private void AddMonkeyBet(Game res)
     {
         var monkeyUserName = config.MonkeyUserName;
@@ -243,5 +242,4 @@ public class GamesController : ControllerBase
         }
     }
 }
-
 

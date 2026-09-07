@@ -25,8 +25,10 @@ public class ActionLogger : IActionLogger
 
     public void Log(ActionType actionType, string objectType, string message)
     {
-        // A failure to record the audit trail must not fail the action being audited - that
-        // was true of all five copies of this method and is kept deliberately.
+        // A failure to record the audit trail must not fail the action being audited - true
+        // of every copy this replaces, and kept deliberately. The severity is LogError
+        // throughout; UsersController's copy alone used LogInformation, which under-reported
+        // a silently missing audit row.
         try
         {
             using var scope = scopeFactory.CreateScope();

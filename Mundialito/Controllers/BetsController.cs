@@ -207,7 +207,6 @@ public class BetsController : ControllerBase
         return Ok();
     }
 
-
     private bool ShouldSendMail()
     {
         return config.SendBetMail;

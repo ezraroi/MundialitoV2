@@ -10,8 +10,14 @@ namespace Tests;
 /// Audit logging must not share the transaction it audits. Every repository in a request
 /// shares one MundialitoDbContext, so an audit write through that context commits whatever
 /// business change happens to be pending - which is how a rejected bet update came to be
-/// saved anyway (#171). <see cref="ActionLogger"/> opens its own scope; these tests fail
-/// the build if anything routes around it.
+/// saved anyway (#171). <see cref="ActionLogger"/> opens its own scope; these tests fail the
+/// build if anything takes the shared repository in order to log.
+///
+/// Their reach is constructor dependencies, so they cannot see a class that writes an
+/// ActionLog through an injected MundialitoDbContext. Nothing does today - UsersController
+/// holds the context for UserFollows, which is business data, not the audit trail - but that
+/// is the blind spot, and closing it needs the shared unit-of-work work in item 1 of #172
+/// rather than a bigger reflection query.
 /// </summary>
 [TestFixture]
 public class AuditLoggingGuardTests

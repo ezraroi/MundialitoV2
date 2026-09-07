@@ -180,7 +180,6 @@ public class UsersController : ControllerBase
         return Ok();
     }
 
-
     [HttpPost("{id}/activate")]
     [Authorize(Policy = Policies.AdminOnly)]
     public async Task<IActionResult> Activate(string id)
@@ -306,7 +305,6 @@ public class UsersController : ControllerBase
         }
         return resEntries;
     }
-
 
     private IEnumerable<UserWithPointsModel> GetTableDetails(IEnumerable<MundialitoUser> users)
     {
