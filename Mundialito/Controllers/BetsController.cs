@@ -97,8 +97,9 @@ public class BetsController : ControllerBase
         {
             betValidator.ValidateNewBet(newBet);
         }
-        catch (Exception e)
+        catch (BetValidationException e)
         {
+            AddLog(ActionType.ERROR, e.Message);
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         var res = betsRepository.InsertBet(newBet);
@@ -122,20 +123,26 @@ public class BetsController : ControllerBase
             return Unauthorized();
         }
         var betToUpdate = betsRepository.GetBet(id);
-        betToUpdate.BetId = id;
+        if (betToUpdate == null)
+            return NotFound(new ErrorMessage{ Message = string.Format("Bet with id '{0}' not found", id)});
+        /* Load, authorize, validate - and only then mutate. Every repository in a request
+           shares one DbContext, so anything written to the tracked entity before the checks
+           pass is committed by the next Save() on any repository, rejection or not. */
+        try {
+            betValidator.ValidateUpdateBet(betToUpdate, user.Id);
+        } catch (BetForbiddenException e) {
+            AddLog(ActionType.UNAUTHORIZED_ACCESS, e.Message);
+            return Unauthorized(new ErrorMessage{ Message = e.Message});
+        } catch (BetValidationException e) {
+            AddLog(ActionType.ERROR, e.Message);
+            return BadRequest(new ErrorMessage{ Message = e.Message});
+        }
+        /* GameId and UserId are deliberately not assigned: a bet's game is fixed at creation
+           and its owner is whoever created it. Neither is the caller's to change. */
         betToUpdate.HomeScore = bet.HomeScore;
         betToUpdate.AwayScore = bet.AwayScore;
         betToUpdate.CornersMark = bet.CornersMark;
         betToUpdate.CardsMark = bet.CardsMark;
-        betToUpdate.GameId = bet.GameId;
-        betToUpdate.UserId = user.Id;
-        try {
-            betValidator.ValidateUpdateBet(betToUpdate);
-        } catch (UnauthorizedAccessException e) {
-            return Unauthorized(new ErrorMessage{ Message = e.Message});
-        } catch (Exception e) {
-            return BadRequest(new ErrorMessage{ Message = e.Message});
-        }
         logger.LogInformation("Updating bet from {}", user.UserName);
         betsRepository.Save();
         AddLog(ActionType.UPDATE, string.Format("Updating Bet: {0}", betToUpdate));
@@ -154,9 +161,11 @@ public class BetsController : ControllerBase
             return Unauthorized();
         try {
             betValidator.ValidateDeleteBet(id, user.Id);
-        } catch (UnauthorizedAccessException e) {
+        } catch (BetForbiddenException e) {
+            AddLog(ActionType.UNAUTHORIZED_ACCESS, e.Message);
             return Unauthorized(e.Message);
-        } catch (Exception e) {
+        } catch (BetValidationException e) {
+            AddLog(ActionType.ERROR, e.Message);
             return BadRequest(new ErrorMessage{ Message = e.Message});
         }
         logger.LogInformation("Deleting bet {} of {}", id, user.UserName);
