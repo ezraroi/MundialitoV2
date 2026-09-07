@@ -28,7 +28,7 @@ public class AccountController : ControllerBase
     private readonly IEmailSender _emailSender;
     private readonly AuthService _authService;
     private readonly ILogger _logger;
-    private readonly ICurrentUser currentUser;
+    private readonly ICurrentUser _currentUser;
 
 
     public AccountController(ILogger<AccountController> logger, UserManager<MundialitoUser> userManager, MundialitoDbContext context,
@@ -43,7 +43,7 @@ public class AccountController : ControllerBase
         _httpContextAccessor = httpContextAccessor;
         _emailSender = emailSender;
         _authService = authService;
-        this.currentUser = currentUser;
+        _currentUser = currentUser;
         _logger = logger;
     }
 
@@ -129,6 +129,8 @@ public class AccountController : ControllerBase
     [Authorize]
     public async Task<ActionResult<UserInfoViewModel>> GetUserInfo()
     {
+        // Not ICurrentUser: this one needs the follow graph eagerly loaded, and that is a
+        // different query rather than the same one repeated.
         var user = await _context.Users.Include(u => u.Followers)
                 .ThenInclude(f => f.Follower).Include(u => u.Followees).ThenInclude(f => f.Followee)
             .FirstOrDefaultAsync(u => u.UserName == _httpContextAccessor.HttpContext.User.Identity.Name);
@@ -155,7 +157,7 @@ public class AccountController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        var user = await currentUser.GetAsync();
+        var user = await _currentUser.GetAsync();
         if (user == null)
         {
             return Unauthorized(ModelState);

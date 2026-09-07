@@ -22,17 +22,15 @@ public class StatsController : ControllerBase
     private readonly IGeneralBetsRepository generalBetsRepository;
     private readonly UserManager<MundialitoUser> userManager;
     private readonly ICurrentUser currentUser;
-    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TableBuilder tableBuilder;
     private readonly MundialitoDbContext mundialitoDbContext;
 
-    public StatsController(IGamesRepository gamesRepository, IBetsRepository betsRepository, UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository, MundialitoDbContext mundialitoDbContext, ICurrentUser currentUser)
+    public StatsController(IGamesRepository gamesRepository, IBetsRepository betsRepository, UserManager<MundialitoUser> userManager, TableBuilder tableBuilder, IGeneralBetsRepository generalBetsRepository, MundialitoDbContext mundialitoDbContext, ICurrentUser currentUser)
     {
         this.gamesRepository = gamesRepository;
         this.betsRepository = betsRepository;
         this.userManager = userManager;
         this.currentUser = currentUser;
-        this.httpContextAccessor = httpContextAccessor;
         this.tableBuilder = tableBuilder;
         this.generalBetsRepository = generalBetsRepository;
         this.mundialitoDbContext = mundialitoDbContext;

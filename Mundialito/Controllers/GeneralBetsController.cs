@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Mundialito.Auth;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.ActionLogs;
@@ -24,7 +23,6 @@ public class GeneralBetsController : ControllerBase
     private readonly IActionLogger actionLogger;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly TournamentTimesUtils tournamentTimesUtils;
-    private readonly UserManager<MundialitoUser> userManager;
     private readonly ITeamsRepository teamsRepository;
     private readonly IPlayersRepository playersRepository;
     private readonly GeneralBetsService generalBetsService;
@@ -32,14 +30,13 @@ public class GeneralBetsController : ControllerBase
     private readonly ILogger logger;
     private readonly ICurrentUser currentUser;
 
-    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, UserManager<MundialitoUser> userManager, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider, ICurrentUser currentUser)
+    public GeneralBetsController(ILogger<GeneralBetsController> logger, IGeneralBetsRepository generalBetsRepository, IDateTimeProvider dateTimeProvider, IActionLogger actionLogger, IHttpContextAccessor httpContextAccessor, TournamentTimesUtils tournamentTimesUtils, ITeamsRepository teamsRepository, IPlayersRepository playersRepository, GeneralBetsService generalBetsService, ICurrentUserRoleProvider currentUserRoleProvider, ICurrentUser currentUser)
     {
         this.generalBetsRepository = generalBetsRepository;
         this.dateTimeProvider = dateTimeProvider;
         this.actionLogger = actionLogger;
         this.httpContextAccessor = httpContextAccessor;
         this.tournamentTimesUtils = tournamentTimesUtils;
-        this.userManager = userManager;
         this.teamsRepository = teamsRepository;
         this.playersRepository = playersRepository;
         this.generalBetsService = generalBetsService;

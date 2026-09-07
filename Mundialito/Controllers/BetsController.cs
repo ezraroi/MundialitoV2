@@ -6,7 +6,6 @@ using System.Text;
 using Mundialito.DAL.Accounts;
 using Mundialito.DAL.Games;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mundialito.Configuration;
 using Microsoft.Extensions.Options;

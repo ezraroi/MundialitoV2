@@ -18,14 +18,16 @@ public class CurrentUser : ICurrentUser
 {
     private readonly UserManager<MundialitoUser> userManager;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly ILogger<CurrentUser> logger;
 
     private bool resolved;
     private MundialitoUser? user;
 
-    public CurrentUser(UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor)
+    public CurrentUser(UserManager<MundialitoUser> userManager, IHttpContextAccessor httpContextAccessor, ILogger<CurrentUser> logger)
     {
         this.userManager = userManager;
         this.httpContextAccessor = httpContextAccessor;
+        this.logger = logger;
     }
 
     public async Task<MundialitoUser?> GetAsync()
@@ -33,14 +35,22 @@ public class CurrentUser : ICurrentUser
         if (resolved)
             return user;
         resolved = true;
+        user = await LookupAsync();
+        return user;
+    }
+
+    private async Task<MundialitoUser?> LookupAsync()
+    {
         // UserName, never ClaimTypes.NameIdentifier: the token carries a 'sub' claim holding a
         // constant from configuration, and the default inbound claim map turns 'sub' into
         // NameIdentifier - so the principal has two of them and FindFirstValue returns the
         // constant. See CurrentUserRoleProvider, which learned this the hard way.
         var userName = httpContextAccessor.HttpContext?.User?.Identity?.Name;
         if (string.IsNullOrEmpty(userName))
+        {
+            logger.LogWarning("Authenticated principal carries no name claim; treating the caller as unauthenticated");
             return null;
-        user = await userManager.FindByNameAsync(userName);
-        return user;
+        }
+        return await userManager.FindByNameAsync(userName);
     }
 }
