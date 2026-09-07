@@ -159,16 +159,26 @@
     .run(['$rootScope', '$log', 'security', '$route', '$location', 'PluginsProvider', 'FootballDataGamePlugin', 'FootballDataTeamStatsPlugin', function ($rootScope, $log, security, $route, $location, PluginsProvider, FootballDataGamePlugin, FootballDataTeamStatsPlugin) {
         PluginsProvider.registerGameFactory(FootballDataGamePlugin);
         PluginsProvider.registerTeamFactory(FootballDataTeamStatsPlugin);
+        /* Without this a Sentry event identifies the reporter only by IP address. */
+        function setSentryUser(user) {
+            if (typeof Sentry === 'undefined' || !Sentry.setUser) {
+                return;
+            }
+            Sentry.setUser(user ? { username: user.Username, email: user.Email } : null);
+        }
         security.events.login = function (security, user) {
             $log.log('Current user details: ' + angular.toJson(user));
+            setSentryUser(security.user);
             $rootScope.mundialitoApp.authenticating = false;
         };
         security.events.reloadUser = function (security, user) {
             $log.log('User reloaded' + angular.toJson(user));
+            setSentryUser(security.user);
             $rootScope.mundialitoApp.authenticating = false;
         };
         security.events.logout = function (security) {
             $log.log('User logged out');
+            setSentryUser(null);
             security.authenticate();
         };
         $rootScope.mundialitoApp = {
