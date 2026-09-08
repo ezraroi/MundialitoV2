@@ -245,7 +245,15 @@ app.MapControllers();
    knowing: a wrong method on a real route answers 404 rather than 405, and any future
    non-controller endpoint under api/ (MapIdentityApi and friends) must be mapped before
    this line or it will be shadowed. */
-app.Map("/api/{**path}", (string path) => Results.NotFound(new ErrorMessage { Message = $"No API endpoint at 'api/{path}'" }));
+/* ProblemDetails rather than ErrorMessage, deliberately. The client treats a 4xx carrying a
+   Message as a rule the API meant to enforce and does not report it - see isDeliberateRefusal
+   in Client/src/General/ErrorHandler.js. A request for an endpoint that does not exist is the
+   opposite of a deliberate refusal: it is a defect, and the whole reason this route is here,
+   so it must not wear that shape or it hides from Sentry. */
+app.Map("/api/{**path}", (string path) => Results.Problem(
+	detail: $"No API endpoint at 'api/{path}'",
+	statusCode: StatusCodes.Status404NotFound,
+	title: "Unknown endpoint"));
 app.MapControllerRoute(
 	 name: "default",
 	 pattern: "{controller=Home}/{action=Index}/{id?}");
