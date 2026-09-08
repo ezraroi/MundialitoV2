@@ -62,7 +62,7 @@ public class UsersController : ControllerBase
             return Unauthorized();
         var followee = await userManager.FindByNameAsync(username);
         if (followee == null)
-            return NotFound(new ErrorMessage { Message = string.Format("No such user {}", username) });
+            return NotFound(new ErrorMessage { Message = string.Format("No such user {0}", username) });
         if (user.Id == followee.Id)
             return BadRequest(new ErrorMessage { Message = "You can't follow youself" });
         var userFollow = new UserFollow
@@ -85,7 +85,7 @@ public class UsersController : ControllerBase
             return Unauthorized();
         var followee = await userManager.FindByNameAsync(username);
         if (followee == null)
-            return NotFound(new ErrorMessage { Message = string.Format("No such user {}", username) });
+            return NotFound(new ErrorMessage { Message = string.Format("No such user {0}", username) });
         var userFollow = await mundialitoDbContext.UserFollows
                 .FirstOrDefaultAsync(uf => uf.FollowerId == user.Id && uf.Followee.UserName == username);
         if (userFollow != null)
@@ -95,7 +95,7 @@ public class UsersController : ControllerBase
             return Ok();
         }
         else
-            return NotFound(new ErrorMessage { Message = string.Format("You do not follow {}", followee.UserName) });
+            return NotFound(new ErrorMessage { Message = string.Format("You do not follow {0}", followee.UserName) });
     }
 
     [HttpGet("me/followees")]
