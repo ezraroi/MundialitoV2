@@ -370,6 +370,18 @@ print(next((u.get('Points') for u in t if u.get('Username') == '$u'), '-'))")
   check "follow another user" 200 "$(api_code POST "/api/users/follow/$ACTIVE_USER" "$t")"
   check "unfollow them again" 200 "$(api_code DELETE "/api/users/follow/$ACTIVE_USER" "$t")"
 
+  bold "An unmatched api/ route is a reportable 404, not a refusal"
+
+  # The catch-all in Program.cs exists so a missing endpoint stops answering 200 with
+  # index.html. It has to answer in a shape the client will report: ErrorHandler.js treats
+  # any 4xx carrying a Message as a rule the API meant to enforce and keeps it out of
+  # Sentry, which would have hidden exactly the calls this route is here to catch.
+  # Not /api/account/logout on purpose - if a real logout endpoint is ever added, a check
+  # pinned to that path would fail and read as "the catch-all broke".
+  check "an unknown api route is a 404" 404 "$(api_code POST /api/definitely-not-an-endpoint "$t")"
+  check "an unknown api route is not disguised as a refusal" "" "$(body_field Message)"
+  check "an unknown api route still says what was missing" "No API endpoint at 'api/definitely-not-an-endpoint'" "$(body_field detail)"
+
   echo
   [ "$fails" = "0" ] && bold "all checks passed" || { bold "checks FAILED"; return 1; }
 }

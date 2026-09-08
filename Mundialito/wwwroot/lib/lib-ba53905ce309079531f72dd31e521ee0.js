@@ -81160,7 +81160,6 @@ angular.module('security', [])
 		join: '/api/account/register',
 		login: '/api/account/login',
 		googleLogin: '/api/account/signin-google',
-		logout: '/api/account/logout',
 		forgotPassword: '/api/account/forgot',
 		resetPassword: '/api/account/reset',
 		confirmEmail: '/api/account/confirmEmail',
@@ -81211,7 +81210,6 @@ angular.module('security', [])
 			getUserInfo: (accessToken) => $http({ url: Urls.userInfo, method: 'GET', headers: { 'Authorization': 'Bearer ' + accessToken } }),
 			login: (data) => $http({ method: 'POST', url: Urls.login, data: data }),
 			googleLogin: (data) => $http({ method: 'POST', url: Urls.googleLogin, data: data }),
-			logout: () => $http({ method: 'POST', url: Urls.logout }),
 			register: (data) => $http({ method: 'POST', url: Urls.join, data: data }),
 			forgotPassword: (data) => $http({ method: 'POST', url: Urls.forgotPassword, data: data }),
 			resetPassword: (data) => $http({ method: 'POST', url: Urls.resetPassword, data: data }),
@@ -81348,21 +81346,23 @@ angular.module('security', [])
 			};
 
 			Security.logout = () => {
-				var deferred = $q.defer();
+				/* No round trip. Auth is a stateless bearer token, so there is no server
+				   session to end, and api/account/logout has never existed. Until the api/
+				   catch-all started answering 404, the SPA fallback answered 200 with
+				   index.html and this looked like it worked - the cleanup below only ever
+				   ran because a wrong response happened to resolve. On the 404 it moved to
+				   the catch, which cleared the token but left Security.user set, fired no
+				   logout event and never redirected, so the user stayed looking signed in.
 
-				Api.logout().then(() => {
-					Security.user = null;
-					accessToken('clear');
-					redirectTarget('clear');
-					if (securityProvider.events.logout) securityProvider.events.logout(Security); // Your Logout events
-					$location.path(securityProvider.urls.postLogout);
-					deferred.resolve();
-				}).catch((errorData) => {
-					accessToken('clear');
-					deferred.reject(errorData);
-				});
-
-				return deferred.promise;
+				   accessToken('clear') has to come before the logout event: that handler
+				   calls Security.authenticate, which returns early while a token is still
+				   readable. */
+				Security.user = null;
+				accessToken('clear');
+				redirectTarget('clear');
+				if (securityProvider.events.logout) securityProvider.events.logout(Security); // Your Logout events
+				$location.path(securityProvider.urls.postLogout);
+				return $q.when();
 			};
 
 			Security.register = function (data) {
