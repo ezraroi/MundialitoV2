@@ -852,10 +852,11 @@ def still_reported(t):
 
 @scenario('S16', "Angular's own errors reach Sentry in Angular's shape, and Angular still logs them")
 def angular_error_shape(t):
-    # What the SDK's AngularJS integration (ngSentry) does, and whatever replaces it must keep
-    # doing: '[$module:code] message\n<docs url>' becomes type '$module:code' and value
-    # 'message' with the url in extra.angularDocs; the element whose directive threw arrives
-    # as extra.cause; and Angular's own handler still runs, so the error is logged too.
+    # What the SDK's AngularJS integration (ngSentry, gone since SDK v7) did, and what
+    # SentryExceptionHandler.js must keep doing: '[$module:code] message\n<docs url>' becomes
+    # type '$module:code' and value 'message' with the url in extra.angularDocs; the element
+    # whose directive threw arrives as extra.cause; and Angular's own handler still runs, so
+    # the error is logged too.
     t.seed(PLAYER)
     t.goto('/')
     n = uuid.uuid4().hex[:8]
