@@ -1057,7 +1057,26 @@ def slow_user_load(t):
         mark = t.mark()
         settled = t.goto(path)
         problems += t.page_problems(mark, '%s with a slow user load' % path, route, settled)
+        if path == '/':
+            problems += dashboard_stats_problems(t, '/ with a slow user load')
     check(not problems, '\n'.join(problems))
+
+
+def dashboard_stats_problems(t, what):
+    """The dashboard fails silently without a user: its Followees read throws inside the
+    games promise, which cg-busy holds with an error handler, so nothing is reported - the
+    pending game's bet stats just never appear."""
+    keys = t.b.eval(r"""(function () {
+      var els = document.querySelectorAll('[ng-view] *');
+      for (var i = 0; i < els.length; i++) {
+        var s = angular.element(els[i]).scope();
+        if (s && s.resultsDic) return Object.keys(s.resultsDic);
+      }
+      return null;
+    })()""")
+    if str(t.f.pending_game) in (keys or []):
+        return []
+    return ['%s: the pending game %s never got its bet stats (dashboard resultsDic keys %s)' % (what, t.f.pending_game, keys)]
 
 
 def failed_user_load(t):
