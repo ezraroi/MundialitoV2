@@ -45,9 +45,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="game in games"
+                                <!-- The row is the form. An <ng-form> element between <tr> and <td> is moved
+                                     out of the table by the HTML parser, so Save validated nothing. -->
+                                <tr ng-repeat="game in games" ng-form="betFromIn"
                                     ng-class="{'warning': !bets[game.GameId].HasBet, 'text-muted': closedGames[game.GameId]}">
-                                    <ng-form name="betFromIn">
                                         <td class="text-center mu-bets-center-table__game">
                                             <a href="{{game.getUrl()}}">
                                                 <team-flag team="game.HomeTeam"></team-flag>
@@ -59,13 +60,13 @@
                                         <td>
                                             <input class="form-control" name="homeScore" type="number"
                                                 ng-model="bets[game.GameId].HomeScore"
-                                                placeholder="{{game.HomeTeam.Name}}" required min="0"
+                                                placeholder="{{game.HomeTeam.Name}}" required min="0" max="10" step="1"
                                                 inputmode="numeric">
                                         </td>
                                         <td>
                                             <input class="form-control" name="awayScore" type="number"
                                                 ng-model="bets[game.GameId].AwayScore"
-                                                placeholder="{{game.AwayTeam.Name}}" required min="0"
+                                                placeholder="{{game.AwayTeam.Name}}" required min="0" max="10" step="1"
                                                 inputmode="numeric">
                                         </td>
                                         <td>
@@ -100,7 +101,6 @@
                                                 <i class="fa fa-save"></i>
                                             </button>
                                         </td>
-                                    </ng-form>
                                 </tr>
                             </tbody>
                         </table>
@@ -132,14 +132,14 @@
                                         <label class="sr-only">{{game.HomeTeam.Name}} score</label>
                                         <input class="form-control" name="homeScoreMobile" type="number"
                                             ng-model="bets[game.GameId].HomeScore"
-                                            placeholder="{{game.HomeTeam.ShortName}}" required min="0"
+                                            placeholder="{{game.HomeTeam.ShortName}}" required min="0" max="10" step="1"
                                             inputmode="numeric">
                                     </div>
                                     <div class="form-group">
                                         <label class="sr-only">{{game.AwayTeam.Name}} score</label>
                                         <input class="form-control" name="awayScoreMobile" type="number"
                                             ng-model="bets[game.GameId].AwayScore"
-                                            placeholder="{{game.AwayTeam.ShortName}}" required min="0"
+                                            placeholder="{{game.AwayTeam.ShortName}}" required min="0" max="10" step="1"
                                             inputmode="numeric">
                                     </div>
                                 </div>

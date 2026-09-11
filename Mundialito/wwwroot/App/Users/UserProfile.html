@@ -2,7 +2,7 @@
     <div class="col-md-10">
         <h4>
             <i class="fa fa-user" ng-if="profileUser.ProfilePicture == null"></i><img referrerpolicy="no-referrer"
-                ng-if="profileUser.ProfilePicture != null" src="{{profileUser.ProfilePicture}}" class="img-circle">
+                ng-if="profileUser.ProfilePicture != null" ng-src="{{profileUser.ProfilePicture}}" class="img-circle">
             {{profileUser.Name}} <span style="margin-left: 5px;" class="label label-as-badge" ng-class="{'label-success': profileUser.Roles === 'Admin', 'label-default': profileUser.Roles === 'Active', 'label-danger':profileUser.Roles === 'Disabled'}">{{::profileUser.Roles}}</span> 
         </h4>
     </div>
