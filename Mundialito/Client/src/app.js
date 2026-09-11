@@ -8,11 +8,16 @@
         securityProvider.urls.login = Constants.LOGIN_PATH;
         securityProvider.usePopups = false;
 
+        /* Signed-in pages wait for the current user as well as for their own data, so no
+           controller runs with security.user still null - see Security.requireUser. */
+        var currentUser = ['security', (security) => security.requireUser()];
+
         $routeProvider.
             when('/', {
                 templateUrl: 'App/Dashboard/Dashboard.html',
                 controller: 'DashboardCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
                     players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()]
                 }
@@ -21,6 +26,7 @@
                 templateUrl: 'App/Bets/BetsCenter.html',
                 controller: 'BetsCenterCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     games: ['GamesManager', (GamesManager) => GamesManager.loadOpenGames()]
                 }
             }).
@@ -28,6 +34,7 @@
                 templateUrl: 'App/Users/UserProfile.html',
                 controller: 'UserProfileCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     profileUser: ['$route', 'UsersManager', ($route, UsersManager) => {
                         var username = $route.current.params.username;
                         return UsersManager.getUser(username, true);
@@ -78,6 +85,7 @@
                 templateUrl: 'App/Teams/Teams.html',
                 controller: 'TeamsCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()]
                 }
             }).
@@ -85,6 +93,7 @@
                 templateUrl: 'App/Teams/Team.html',
                 controller: 'TeamCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     team: ['$route', 'TeamsManager', ($route, TeamsManager) => {
                             var teamId = $route.current.params.teamId;
                             return TeamsManager.getTeam(teamId);
@@ -99,6 +108,7 @@
                 templateUrl: 'App/Games/Game.html',
                 controller: 'GameCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()],
                     players: ['PlayersManager', (PlayersManager) => PlayersManager.loadAllPlayers()],
                     game: ['$route', 'GamesManager', ($route, GamesManager) => {
@@ -115,6 +125,7 @@
                 templateUrl: 'App/Games/Games.html',
                 controller: 'GamesCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     games: ['GamesManager', (GamesManager) => GamesManager.loadAllGames()],
                     teams: ['TeamsManager', (TeamsManager) => TeamsManager.loadAllTeams()]
                 }
@@ -123,6 +134,7 @@
                 templateUrl: 'App/Stadiums/Stadium.html',
                 controller: 'StadiumCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     stadium: ['$q', '$route', 'StadiumsManager', (_$q, $route, StadiumsManager) => {
                             var stadiumId = $route.current.params.stadiumId;
                             return StadiumsManager.getStadium(stadiumId, true);
@@ -133,6 +145,7 @@
                 templateUrl: 'App/Stadiums/Stadiums.html',
                 controller: 'StadiumsCtrl',
                 resolve: {
+                    currentUser: currentUser,
                     stadiums: ['StadiumsManager', (StadiumsManager) => StadiumsManager.loadAllStadiums()]
                 }
             }).
@@ -151,7 +164,10 @@
                 templateUrl: 'App/Accounts/Register.html'
             }).
             when('/manage', {
-                templateUrl: 'App/Accounts/Manage.html'
+                templateUrl: 'App/Accounts/Manage.html',
+                resolve: {
+                    currentUser: currentUser
+                }
             }).
             otherwise({
                 redirectTo: '/'
