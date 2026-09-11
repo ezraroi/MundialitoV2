@@ -1033,6 +1033,87 @@ def unbound_urls(t):
     check(not bad, '\n'.join(sorted(bad)))
 
 
+USER_INFO = '*/api/account/userInfo*'
+
+
+def sign_in_on_page(t, user):
+    """Sign in through the login page's own controller. Two digests on purpose: login()
+    checks loginForm.$valid, which only sees the credentials once a digest has run."""
+    t.b.eval(on_scope('login', 's.user.username = %s; s.user.password = %s;' % (json.dumps(user), json.dumps(PASSWORD))))
+    t.b.eval(on_scope('login', 's.login();'))
+    time.sleep(0.5)
+    return t.wait_stable()
+
+
+@scenario('S2', 'a page whose data beats the user load does not run without a user',
+          fixed_by='user-guard', reproduces=r'Followees')
+def slow_user_load(t):
+    # The user arrives with one request at startup; hold it back and every signed-in page
+    # below resolves its own data first. GameCtrl reads Followees only for a closed game.
+    problems = []
+    for path, route in (('/', '/'), ('/users/' + ADMIN, '/users/:username'), ('/games/%s' % t.f.pending_game, '/games/:gameId')):
+        t.seed(PLAYER)
+        t.b.set_rules([{'pattern': USER_INFO, 'action': 'hold', 'seconds': 2.0, 'times': 1}])
+        mark = t.mark()
+        settled = t.goto(path)
+        problems += t.page_problems(mark, '%s with a slow user load' % path, route, settled)
+    check(not problems, '\n'.join(problems))
+
+
+def failed_user_load(t):
+    """A hard load whose first user request dies without an answer, as on a phone that
+    just woke. Returns the page problems, less the network failure that is expected."""
+    t.seed(PLAYER)
+    t.b.set_rules([{'pattern': USER_INFO, 'action': 'fail', 'times': 1}])
+    mark = t.mark()
+    settled = t.goto('/users/' + ADMIN)
+    time.sleep(0.5)
+    problems = t.page_problems(mark, 'profile after a failed user load', '/users/:username', settled)
+    expected = 'fingerprint=%s' % list(('http', 'network-failure'))
+    return [p for p in problems if not (('Sentry event' in p and expected in p) or 'userInfo' in p)]
+
+
+@scenario('S3a', 'a failed user load does not run the page without a user',
+          fixed_by='user-guard', reproduces=r'Followees')
+def failed_user_load_no_crash(t):
+    problems = [p for p in failed_user_load(t) if 'Sentry event' in p or 'uncaught' in p]
+    check(not problems, '\n'.join(problems))
+
+
+@scenario('S3b', 'a failed user load is retried, so the page still loads without a reload',
+          fixed_by='user-guard', reproduces=r'hidden behind the loading overlay')
+def failed_user_load_recovers(t):
+    problems = [p for p in failed_user_load(t) if 'Sentry event' not in p]
+    check(not problems, '\n'.join(problems))
+
+
+@scenario('S4', 'a signed-out deep link goes to the login page, then back to the link')
+def signed_out_deep_link(t):
+    t.seed(None)
+    target = '/users/' + ADMIN
+    t.goto(target)
+    check((t.state() or {}).get('path') == '/login', 'a signed-out visit to %s did not go to the login page' % target)
+    mark = t.mark()
+    settled = sign_in_on_page(t, PLAYER)
+    problems = t.page_problems(mark, 'after signing in', '/users/:username', settled)
+    check(t.state().get('path') == target, 'signing in landed on %s, expected %s' % (t.state().get('path'), target))
+    check(not problems, '\n'.join(problems))
+
+
+@scenario('S5', 'a 401 on the user load does not trap sign-in on the login page')
+def expired_session(t):
+    t.seed(PLAYER)
+    t.b.set_rules([{'pattern': USER_INFO, 'action': 'fulfill', 'status': 401, 'body': '{}', 'times': 1}])
+    t.goto('/games')
+    check((t.state() or {}).get('path') == '/login', 'a 401 on the user load did not go to the login page')
+    mark = t.mark()
+    settled = sign_in_on_page(t, PLAYER)
+    landed = t.state().get('path')
+    check(landed != '/login', 'signing in after a 401 stayed on the login page')
+    problems = t.page_problems(mark, 'after signing in', '/', settled)
+    check(not problems, '\n'.join(problems))
+
+
 # ==================================================================== runner
 
 def expected_to_fail(sc, baseline):
