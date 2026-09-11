@@ -145,29 +145,39 @@
         else {
             <script src="lib/lib-5c47386121941e58d72dfaa44f8954fb.js"></script>
         }
-        <script src="sentry/bundle.min.js" crossorigin="anonymous"></script>
-        <script src="sentry/angular.min.js" crossorigin="anonymous"></script>
+        @* Sentry's own browser bundle, byte for byte https://browser.sentry-cdn.com/10.74.0/bundle.min.js
+           (errors only). The integrity hash is the one Sentry publishes on
+           docs.sentry.io/platforms/javascript/install/loader/. To upgrade, download the new
+           version, check its sha384 against that page, and change the file name and the hash here
+           together. The version is in the file name, so a cached older copy is never run against
+           this page. Errors AngularJS catches are reported by Client/src/General/SentryExceptionHandler.js. *@
+        <script src="sentry/bundle-10.74.0.min.js" integrity="sha384-ekhFYbUiD5vrs1pT5Kty50wAgPsq9eoEDo+hUVl7VahsXkikMcPAq0W0HCoTjGTY" crossorigin="anonymous"></script>
         <script>
-          Sentry.init({
-            dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
-            environment: "@env.EnvironmentName",
-            integrations: [new Sentry.Integrations.Angular()],
-            /* Duplicates of what the $http interceptor in ErrorHandler.js already reports (or
-               deliberately skips): an unhandled rejection whose value is the raw $http
-               response, and the template error Angular raises on top of a template request
-               that never got an answer. A template that 404s - a broken deploy - still reports. */
-            ignoreErrors: [
-              /^Possibly unhandled rejection: \{"data":/,
-              /Failed to load template: \S+ \(HTTP status: (-1|0) \)/
-            ],
-          });
+          /* The app runs without Sentry if its script fails to load; it just reports nothing. */
+          if (window.Sentry) {
+            Sentry.init({
+              dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
+              environment: "@env.EnvironmentName",
+              /* sendDefaultPii is left off on purpose: Sentry does not record visitors' IP
+                 addresses. Signed-in users are identified by the username and email that
+                 app.js sets; errors from signed-out visitors count no affected users. */
+              /* Duplicates of what the $http interceptor in ErrorHandler.js already reports (or
+                 deliberately skips): an unhandled rejection whose value is the raw $http
+                 response, and the template error Angular raises on top of a template request
+                 that never got an answer. A template that 404s - a broken deploy - still reports. */
+              ignoreErrors: [
+                /^Possibly unhandled rejection: \{"data":/,
+                /Failed to load template: \S+ \(HTTP status: (-1|0) \)/
+              ],
+            });
+          }
         </script>
         @if (env.IsProduction())
         {
-            <script src="js/app-min-21af5760e49be454b869557c39e2539a.js"></script>
+            <script src="js/app-min-91baa48e8b3bc1415437bb20117f51ad.js"></script>
         }
         else {
-            <script src="js/app-16fc2a5e35d678df621aa7d6e3a821e8.js"></script>
+            <script src="js/app-d727916b9e4ec5a918ca6b15e492ce6a.js"></script>
         }
     </div>
 </body>

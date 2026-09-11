@@ -122,6 +122,7 @@ AngularJS 1.x SPA served from `wwwroot/`. Source lives in `Client/`:
 - `Client/src/Constants.js` — API base URL and route constants
 - `Client/src/<Feature>/` — controllers, services, templates per feature (Bets, Games, Teams, Stadiums, Players, Users, Dashboard, GeneralBets)
 - `Client/lib/` — third-party JS (Angular, Bootstrap, ui-grid, etc.)
+- `Client/lib/sentry/` — Sentry's browser bundle, self-hosted and pinned by version and `integrity` hash in `Index.cshtml` (the upgrade steps are in the comment there). Errors AngularJS catches reach Sentry only through `Client/src/General/SentryExceptionHandler.js`
 - `Client/css/` — all CSS including two Bootstrap themes (cerulean, spacelab)
 
 The active theme is set via `App:Theme` in `appsettings.json`. Gulp builds `app-cerulean.css` and `app-space-lab.css`; the frontend loads the one matching the configured theme.

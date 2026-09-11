@@ -165,7 +165,7 @@ gulp.task('cache-bust-app-min', () => {
         .pipe(gulp.dest('Views/Home'));
 });
 
-gulp.task('clean', () => gulp.src(['wwwroot/js/*.js', 'wwwroot/lib/*.js'], { read: false })
+gulp.task('clean', () => gulp.src(['wwwroot/js/*.js', 'wwwroot/lib/*.js', 'wwwroot/sentry/*.js'], { read: false })
     .pipe(clean()));
 
 gulp.task('default', gulp.series(['clean', 'build-css-cerulean', 'build-css-space-lab', 'compress-lib', 'compress-app', 'copy-html', 'copy-templates', 'copy-sentry', 'cache-bust-lib', 'cache-bust-lib-min', 'cache-bust-app', 'cache-bust-app-min']));
