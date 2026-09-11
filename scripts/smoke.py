@@ -707,6 +707,8 @@ def readable_400(t):
     response = ev.contexts.get('response') or {}
     check('between 0 and 10' in (response.get('bodyJson') or ''),
           'no readable bodyJson in the reported context: %s' % json.dumps(response)[:300])
+    served = re.search(r'js/(app-(?:min-)?[a-f0-9]+\.js)', t.http('/')[1]).group(1)
+    check(ev.tags.get('app.bundle') == served, 'app.bundle tag is %r, expected %r' % (ev.tags.get('app.bundle'), served))
 
 
 @scenario('S11', 'a dropped connection is one network-failure issue, not a fan-out',
@@ -730,6 +732,10 @@ def network_fanout(t):
     check(events, 'nothing was reported for the dropped connection')
     wrong = [e for e in events if e.fingerprint != ('http', 'network-failure') or e.level != 'warning']
     check(not wrong, 'events outside the network-failure fingerprint:\n' + '\n'.join('  ' + e.describe() for e in wrong))
+    untagged = [e for e in events if not e.tags.get('http.url') or e.tags.get('http.xhrStatus') not in ('error', 'timeout', 'abort')
+                or 'document.visibilityState' not in e.tags]
+    check(not untagged, 'network failures missing the endpoint/xhrStatus/visibility tags:\n'
+          + '\n'.join('  %s %s' % (e.describe(), e.tags) for e in untagged))
     check(any(x.get('title') == 'Connection Problem' for x in t.toasts()), 'the user was not told the connection failed')
 
 
