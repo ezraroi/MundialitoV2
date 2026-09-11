@@ -82,9 +82,17 @@ public class GamesController : ControllerBase
     /// memory. It used to work on tracked entities and simply never call Save(), which made
     /// it correct only for as long as nothing else in the request saved - a single audit log
     /// call on this path would have written a made-up result and every recalculated point.
+    ///
+    /// It is a player facing what-if, not an admin write, so it is ActiveOrAdmin and not
+    /// AdminOnly: the client has offered the panel to every signed-in user since the
+    /// frontend-only admin guard was dropped, and gating it here made the button 403 for
+    /// everyone but the admin. Nothing here leaks either: the game must be pending a result,
+    /// which means betting has closed and GET {id}/Bets already serves every bet on it, and
+    /// the table this returns is the one GET /api/users already serves to any signed-in
+    /// player - same rows, same fields. Disabled accounts are still out, as everywhere else.
     /// </summary>
     [HttpPost("{id}/simulate")]
-    [Authorize(Policy = Policies.AdminOnly)]
+    [Authorize(Policy = Policies.ActiveOrAdmin)]
     public ActionResult<IEnumerable<UserModel>> SimulateGame(int id, SimulateGameModel simulateGameModel)
     {
         var item = gamesRepository.GetGameNoTracking(id);
