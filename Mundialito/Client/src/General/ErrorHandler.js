@@ -85,9 +85,54 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
 }])
     .factory('myHttpInterceptor', ['ErrorHandler', '$q', '$log', function (ErrorHandler, $q, $log) {
 
+        /* Usernames and account GUIDs are ids too: without these, every player who hit the
+           same failure on api/users/{name} opened an issue of their own (JAVASCRIPT-5F, 5H).
+           One placeholder covers both, since the admin endpoints key accounts by GUID. `me`
+           is a route of its own, never a user. Anchored on the relative api/ paths the
+           managers call; the /api/account/* calls carry no user and keep their fingerprints. */
+        var USER_KEYED_ROUTES = [
+            [/^(api\/users\/compare)\/[^/]+\/[^/]+$/, '$1/:user/:user'],
+            [/^(api\/users\/(?:follow|makeadmin))\/[^/]+$/, '$1/:user'],
+            [/^(api\/users)\/(?!me(?:\/|$))[^/]+(\/(?:followees|followers|activate))?$/, '$1/:user$2'],
+            [/^(api\/(?:bets\/user|generalbets\/has-bet|generalbets\/user))\/[^/]+$/, '$1/:user'],
+            [/^(api\/stats)\/(?!me$)[^/]+$/, '$1/:user']
+        ];
+
         /* Strip ids out of the path so api/bets/12 and api/bets/34 group as one issue. */
         function fingerprintUrl(url) {
-            return (url || 'unknown').split('?')[0].replace(/\/\d+(?=\/|$)/g, '/:id');
+            var path = (url || 'unknown').split('?')[0].replace(/\/\d+(?=\/|$)/g, '/:id');
+            for (var i = 0; i < USER_KEYED_ROUTES.length; i++) {
+                if (USER_KEYED_ROUTES[i][0].test(path)) {
+                    return path.replace(USER_KEYED_ROUTES[i][0], USER_KEYED_ROUTES[i][1]);
+                }
+            }
+            return path;
+        }
+
+        /* Status 0 or -1: the browser gave up before the server said anything - a phone that
+           slept with the request open, a network switch, an abort. In production every such
+           burst was one user at one instant, never two users in the same minute, so there is
+           no server-side defect to group by URL - yet one dropped connection opened an issue
+           per request in flight. They share one warning-level issue now: quiet day to day, and
+           a real outage still shows up as a spike in it. */
+        function isNetworkFailure(response) {
+            return response.status <= 0;
+        }
+
+        /* The body as a string, so Sentry's normalizeDepth of 3 cannot flatten it: it turned
+           the errors of a ProblemDetails 400 into "[Object]", which is exactly the part that
+           says what was rejected (JAVASCRIPT-57). Cut short so an HTML error page cannot
+           swell the event. */
+        function bodyJson(data) {
+            if (data === undefined || data === null || data === '') {
+                return undefined;
+            }
+            try {
+                var text = typeof data === 'string' ? data : angular.toJson(data);
+                return text.length > 2000 ? text.slice(0, 2000) + '...' : text;
+            } catch (e) {
+                return String(data);
+            }
         }
 
         /* A 4xx whose body carries a Message is a rule the API meant to enforce - "this
@@ -127,20 +172,37 @@ angular.module('mundialitoApp').factory('ErrorHandler', ['$log', 'Alert', '$loca
             }
             var method = (config.method || 'GET').toUpperCase();
             var url = config.url || 'unknown';
+            var route = fingerprintUrl(url);
+            var networkFailure = isNetworkFailure(response);
             /* A real Error, not response.data - an empty body used to be captured as ""
                and every such failure collapsed into one untitled, stackless issue. */
-            var error = new Error('HTTP ' + response.status + ' ' + method + ' ' + url);
-            error.name = 'HttpError';
+            var error = new Error(networkFailure
+                ? 'No response from server (HTTP ' + response.status + ')'
+                : 'HTTP ' + response.status + ' ' + method + ' ' + url);
+            error.name = networkFailure ? 'HttpNetworkError' : 'HttpError';
             Sentry.withScope(function (scope) {
                 scope.setTag('http.status', String(response.status));
                 scope.setTag('http.method', method);
+                scope.setTag('http.route', route);
                 scope.setContext('response', {
                     status: response.status,
                     method: method,
                     url: url,
-                    body: response.data
+                    body: response.data,
+                    bodyJson: bodyJson(response.data)
                 });
-                scope.setFingerprint(['http', String(response.status), method, fingerprintUrl(url)]);
+                if (networkFailure) {
+                    /* What the shared fingerprint drops, kept as tags: which endpoint died, and
+                       whether the page was even in front of the user when it did. */
+                    scope.setLevel('warning');
+                    scope.setTag('http.url', url);
+                    scope.setTag('http.xhrStatus', String(response.xhrStatus));
+                    scope.setTag('navigator.onLine', String(navigator.onLine));
+                    scope.setTag('document.visibilityState', String(document.visibilityState));
+                    scope.setFingerprint(['http', 'network-failure']);
+                } else {
+                    scope.setFingerprint(['http', String(response.status), method, route]);
+                }
                 Sentry.captureException(error);
             });
         }

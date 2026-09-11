@@ -167,6 +167,13 @@
             }
             Sentry.setUser(user ? { username: user.Username, email: user.Email } : null);
         }
+        /* Which build a report came from. Tabs opened before a deploy keep running the old
+           bundle for hours afterwards, and their events are not regressions of the new one. */
+        if (typeof Sentry !== 'undefined' && Sentry.setTag) {
+            var appScript = document.querySelector('script[src*="js/app-"]');
+            var bundle = appScript && /js\/(app-[^/?]+\.js)/.exec(appScript.getAttribute('src'));
+            Sentry.setTag('app.bundle', bundle ? bundle[1] : 'unknown');
+        }
         security.events.login = function (security, user) {
             $log.log('Current user details: ' + angular.toJson(user));
             setSentryUser(security.user);

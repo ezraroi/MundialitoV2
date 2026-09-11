@@ -11,12 +11,27 @@ Mundialito is a football tournament betting web app. It runs as a single ASP.NET
 ### Local environment (run from the repo root)
 ```bash
 ./scripts/dev.sh up       # Postgres container + app + seeded test users, prints credentials
-./scripts/dev.sh verify   # asserts a role change applies to an already-issued token
+./scripts/dev.sh verify   # API regression checks (roles on issued tokens, bet write path, admin writes)
+./scripts/dev.sh smoke    # browser smoke suite (scripts/smoke.py) against the running app
+./scripts/dev.sh client   # gulp build + touch Index.cshtml, then `restart` to serve it
+./scripts/dev.sh restart  # restart the app only - `down` wipes the volume-less database
 ./scripts/dev.sh reset    # wipe the DB and re-seed (see below for when you need this)
 ./scripts/dev.sh down     # stop both
 ```
 It seeds admin `roez`/`123456`, plus `dev_active` and `dev_disabled` (both `123456`) so the
 Active and Disabled paths can be exercised without clicking through the admin UI.
+
+**Before merging a client change**, run the smoke suite against both bundles. Production serves
+the minified `-min` bundles, which a Development run never executes:
+```bash
+./scripts/dev.sh client && ./scripts/dev.sh restart && ./scripts/dev.sh smoke
+./scripts/dev.sh restart --prod-bundle && ./scripts/dev.sh smoke    # same, minified
+```
+`smoke.py` answers every sentry.io request itself (nothing is sent) and asserts on the events
+the page would have reported. `--prod-bundle` runs as Production, and the browser DSN in
+`Index.cshtml` is the real one — so open that instance only through `smoke`, never a normal
+browser. A bug scenario is written first and proven with `--baseline <change>`, which expects
+it to fail with the production symptom on the unfixed code.
 
 The database is containerised (`compose.yml`); **the app deliberately is not** — it deploys to
 Azure App Service from a `dotnet publish` artifact, so a Dockerfile here would be a second

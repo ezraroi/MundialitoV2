@@ -2,13 +2,18 @@
 #
 # Local development environment for Mundialito.
 #
-#   ./scripts/dev.sh up      start database + app, seed test users, print a summary
-#   ./scripts/dev.sh down    stop the app and the database
-#   ./scripts/dev.sh reset   wipe the database and start again from a fresh seed
-#   ./scripts/dev.sh status  what is running
-#   ./scripts/dev.sh logs    follow the app log
-#   ./scripts/dev.sh verify  check that a role change takes effect without re-login
-#   ./scripts/dev.sh client  rebuild the AngularJS bundles with gulp
+#   ./scripts/dev.sh up       start database + app, seed test users, print a summary
+#   ./scripts/dev.sh down     stop the app and the database
+#   ./scripts/dev.sh restart  restart the app only, keeping the database
+#   ./scripts/dev.sh reset    wipe the database and start again from a fresh seed
+#   ./scripts/dev.sh status   what is running
+#   ./scripts/dev.sh logs     follow the app log
+#   ./scripts/dev.sh verify   API regression checks (roles, bet write path, admin writes)
+#   ./scripts/dev.sh client   rebuild the AngularJS bundles with gulp
+#   ./scripts/dev.sh smoke    browser smoke suite against the running app (scripts/smoke.py)
+#
+#   up and restart take --prod-bundle: run as Production so the page serves the minified
+#   bundles users actually get. Open that instance only through `smoke` - see app_env.
 #
 set -euo pipefail
 
@@ -33,9 +38,48 @@ die()  { printf '\033[31merror:\033[0m %s\n' "$1" >&2; exit 1; }
 
 need() { command -v "$1" >/dev/null 2>&1 || die "$1 is required but not installed"; }
 
+# Index.cshtml serves the minified -min bundles only when the environment is Production, so a
+# Development run never executes the code production users get - a minifier or DI-annotation
+# break is invisible here. --prod-bundle closes that gap.
+PROD_BUNDLE=0
+parse_mode() { # parse_mode "$@" - the only option up and restart take
+  for arg in "$@"; do
+    case "$arg" in
+      --prod-bundle) PROD_BUNDLE=1 ;;
+      *) die "unknown option $arg" ;;
+    esac
+  done
+}
+
+dev_settings_env() { # appsettings.Development.json flattened to NUL-separated KEY__SUB=value
+  python3 - "$APP_DIR/appsettings.Development.json" <<'PY'
+import json, re, sys
+def walk(path, node):
+    if isinstance(node, dict):
+        for k, v in node.items():
+            yield from walk(path + [k], v)
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            yield from walk(path + [str(i)], v)
+    else:
+        yield '__'.join(path), '' if node is None else str(node).lower() if isinstance(node, bool) else str(node)
+with open(sys.argv[1], encoding='utf-8-sig') as f:
+    for key, value in walk([], json.load(f)):
+        # Keys like Logging:LogLevel:Microsoft.AspNetCore are not valid shell names; none matter here.
+        if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key):
+            sys.stdout.write(key + '=' + value + '\0')
+PY
+}
+
 # The tournament window drives registration and the general-bet deadline. Relative to now so
 # it never goes stale, unlike the dates committed in appsettings.Development.json.
 app_env() {
+  if [ "$PROD_BUNDLE" = 1 ]; then
+    # appsettings.Development.json is not loaded outside Development, so hand its values -
+    # the connection string above all - over as environment variables. First, so the
+    # explicit settings below still win.
+    while IFS= read -r -d '' kv; do export "${kv?}"; done < <(dev_settings_env)
+  fi
   ASPNETCORE_ENVIRONMENT=Development
   App__TournamentDBCreatorName=LocalDev
   App__TournamentStartDate="$(date -u -v+1d '+%d/%m/%Y %H:%M' 2>/dev/null || date -u -d '+1 day' '+%d/%m/%Y %H:%M')"
@@ -45,6 +89,22 @@ app_env() {
   JwtTokenSettings__SymmetricSecurityKey="${JwtTokenSettings__SymmetricSecurityKey:-local-development-only-do-not-use-anywhere-real}"
   export ASPNETCORE_ENVIRONMENT App__TournamentDBCreatorName App__TournamentStartDate App__TournamentEndDate
   export JwtTokenSettings__SymmetricSecurityKey
+  if [ "$PROD_BUNDLE" = 1 ]; then
+    export ASPNETCORE_ENVIRONMENT=Production
+    export ASPNETCORE_URLS="$BASE"
+    # Program.cs wires Application Insights outside Development and rejects an empty
+    # connection string. This one is well formed and points at a closed local port.
+    export APPLICATIONINSIGHTS_CONNECTION_STRING='InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=http://127.0.0.1:9/'
+    # appsettings.json carries the real backend DSN, and a local run tagged Production would
+    # land in the very Sentry window a deploy is judged by. An empty DSN disables the SDK;
+    # Debug makes it say so, which check_prod_bundle insists on before trusting the instance.
+    # The browser DSN is hard-coded in Index.cshtml and cannot be switched off from here -
+    # which is why a --prod-bundle instance is only ever opened through smoke.py, whose
+    # browser answers every sentry.io request itself.
+    export Sentry__Dsn=
+    export Sentry__Debug=true
+    export Sentry__DiagnosticLevel=Debug
+  fi
 }
 
 app_running() { [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; }
@@ -114,11 +174,15 @@ start_app() {
   fi
   app_env
   : > "$LOG"
+  # The http launch profile pins ASPNETCORE_ENVIRONMENT=Development over the shell's value.
+  local profile=(--launch-profile http) mode=dev
+  if [ "$PROD_BUNDLE" = 1 ]; then profile=(--no-launch-profile); mode=prod-bundle; fi
   # `( A && B & echo $! )` would parse as `{ A && B } &`, recording a forked bash rather
   # than the app - and that fork keeps this script's stdout open, hanging any pipeline.
   # exec replaces the subshell with dotnet, so $! really is the app.
-  ( cd "$APP_DIR" && exec nohup dotnet run --launch-profile http >>"$LOG" 2>&1 ) &
+  ( cd "$APP_DIR" && exec nohup dotnet run "${profile[@]}" >>"$LOG" 2>&1 ) &
   echo $! > "$PIDFILE"
+  echo "$mode" > "$RUN_DIR/mode"
   printf '  building and seeding'
   for _ in $(seq 1 180); do
     if grep -q "Database Seeding Done" "$LOG" 2>/dev/null; then printf ' done\n'; return; fi
@@ -149,6 +213,7 @@ print(", ".join(str(x["GameId"]) for x in o) or "(none)")')
   echo
   bold "Mundialito is running"
   info "url            $BASE"
+  info "mode           $(cat "$RUN_DIR/mode" 2>/dev/null || echo dev)"
   info "swagger        $BASE/swagger"
   info "admin          $ADMIN_USER / $ADMIN_PASS"
   info "active user    $ACTIVE_USER / $TEST_PASS"
@@ -158,20 +223,70 @@ print(", ".join(str(x["GameId"]) for x in o) or "(none)")')
   echo
 }
 
-cmd_up()    { need docker; need dotnet; need python3; mkdir -p "$RUN_DIR"; start_db; start_app; seed_users; summary; }
-cmd_logs()  { tail -f "$LOG"; }
-cmd_client(){ ( cd "$APP_DIR" && npx gulp ); echo; info "remember to commit wwwroot/ and Views/Home/Index.cshtml together"; }
+# A --prod-bundle instance is only trusted once it has shown two things: the backend Sentry SDK
+# is off, and the page really serves the minified bundles. Either failing stops the app.
+check_prod_bundle() {
+  if grep -q "Initializing Hub for Dsn" "$LOG" || ! grep -q "Sentry SDK will be disabled" "$LOG"; then
+    stop_app
+    die "the backend Sentry SDK did not report itself disabled - refusing to run a Production-tagged instance (see $LOG)"
+  fi
+  local page lib app f
+  page=$(curl -s "$BASE/")
+  lib=$(printf '%s' "$page" | grep -o 'lib/lib-min-[a-f0-9]*\.js' | head -1 || true)
+  app=$(printf '%s' "$page" | grep -o 'js/app-min-[a-f0-9]*\.js' | head -1 || true)
+  if [ -z "$lib" ] || [ -z "$app" ]; then stop_app; die "the page does not reference the minified bundles"; fi
+  for f in "$lib" "$app"; do
+    if [ "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/$f")" != 200 ]; then stop_app; die "$f does not load"; fi
+  done
+  info "serving $lib and $app, backend Sentry disabled"
+}
 
-cmd_down() {
+cmd_up() {
+  need docker; need dotnet; need python3; mkdir -p "$RUN_DIR"
+  start_db; start_app
+  [ "$PROD_BUNDLE" = 1 ] && check_prod_bundle
+  seed_users; summary
+}
+cmd_logs()  { tail -f "$LOG"; }
+
+cmd_client() {
+  ( cd "$APP_DIR" && npx gulp )
+  # gulp.dest restores the source mtime on the rewritten Index.cshtml, so MSBuild would keep
+  # the old precompiled view and the app would request a bundle gulp has just deleted.
+  touch "$APP_DIR/Views/Home/Index.cshtml"
+  echo; info "remember to commit wwwroot/ and Views/Home/Index.cshtml together"
+}
+
+stop_app() {
   if app_running; then kill "$(cat "$PIDFILE")" 2>/dev/null || true; fi
-  rm -f "$PIDFILE"
+  rm -f "$PIDFILE" "$RUN_DIR/mode"
   # `dotnet run` does not always take its child app down with it, so make sure the port is
   # actually free. Only ever touches the port this script started the app on.
   for _ in $(seq 1 10); do lsof -ti ":$PORT" >/dev/null 2>&1 || break; sleep 1; done
   if lsof -ti ":$PORT" >/dev/null 2>&1; then lsof -ti ":$PORT" | xargs kill -9 2>/dev/null || true; fi
   info "app stopped"
+}
+
+cmd_down() {
+  stop_app
   docker compose -f "$ROOT/compose.yml" down >/dev/null 2>&1 || true
   info "database stopped"
+}
+
+# The database container has no volume, so `down` wipes it. restart swaps the app - between
+# dev and --prod-bundle, or onto a fresh gulp build - and keeps the data it is testing against.
+cmd_restart() {
+  need dotnet; need python3; mkdir -p "$RUN_DIR"
+  db_running || die "database is not running - try '$0 up'"
+  stop_app; start_app
+  [ "$PROD_BUNDLE" = 1 ] && check_prod_bundle
+  summary
+}
+
+cmd_smoke() {
+  need python3
+  app_running || die "app is not running - try '$0 up'"
+  python3 "$ROOT/scripts/smoke.py" --base "$BASE" "$@"
 }
 
 cmd_reset() {
@@ -183,7 +298,11 @@ cmd_reset() {
 
 cmd_status() {
   db_running  && info "database  running" || info "database  stopped"
-  if app_running; then info "app       running (pid $(cat "$PIDFILE")) $BASE"; else info "app       stopped"; fi
+  if app_running; then
+    info "app       running (pid $(cat "$PIDFILE")) $BASE, $(cat "$RUN_DIR/mode" 2>/dev/null || echo dev) bundles"
+  else
+    info "app       stopped"
+  fi
 }
 
 # Regression checks for the stale-role bug (a role change must take effect on the token the
@@ -393,13 +512,17 @@ print(next((u.get('Points') for u in t if u.get('Username') == '$u'), '-'))")
   [ "$fails" = "0" ] && bold "all checks passed" || { bold "checks FAILED"; return 1; }
 }
 
-case "${1:-up}" in
-  up)     cmd_up ;;
-  down)   cmd_down ;;
-  reset)  cmd_reset ;;
-  status) cmd_status ;;
-  logs)   cmd_logs ;;
-  verify) cmd_verify ;;
-  client) cmd_client ;;
-  *)      sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 1 ;;
+cmd="${1:-up}"
+[ $# -gt 0 ] && shift
+case "$cmd" in
+  up)      parse_mode "$@"; cmd_up ;;
+  restart) parse_mode "$@"; cmd_restart ;;
+  down)    cmd_down ;;
+  reset)   cmd_reset ;;
+  status)  cmd_status ;;
+  logs)    cmd_logs ;;
+  verify)  cmd_verify ;;
+  client)  cmd_client ;;
+  smoke)   cmd_smoke "$@" ;;
+  *)       sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac
