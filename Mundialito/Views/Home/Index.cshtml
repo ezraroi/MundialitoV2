@@ -152,6 +152,14 @@
             dsn: "https://31394e9c4dd78c0bfb7d7f5324d68664@o4507974958448640.ingest.de.sentry.io/4507975304413264",
             environment: "@env.EnvironmentName",
             integrations: [new Sentry.Integrations.Angular()],
+            /* Duplicates of what the $http interceptor in ErrorHandler.js already reports (or
+               deliberately skips): an unhandled rejection whose value is the raw $http
+               response, and the template error Angular raises on top of a template request
+               that never got an answer. A template that 404s - a broken deploy - still reports. */
+            ignoreErrors: [
+              /^Possibly unhandled rejection: \{"data":/,
+              /Failed to load template: \S+ \(HTTP status: (-1|0) \)/
+            ],
           });
         </script>
         @if (env.IsProduction())
