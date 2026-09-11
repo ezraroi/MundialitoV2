@@ -1114,6 +1114,24 @@ def expired_session(t):
     check(not problems, '\n'.join(problems))
 
 
+@scenario('S15', 'signing out and back in returns to the page, with the user loaded')
+def sign_out_and_in(t):
+    # The logout handler (app.js) calls authenticate(), which records the page signed out
+    # from - so signing back in returns there, not to the dashboard.
+    t.seed(PLAYER)
+    t.goto('/games')
+    t.b.eval("(function () { var i = %s; i.get('$rootScope').$apply(function () { i.get('security').logout(); }); return true; })()" % INJ)
+    t.wait_stable()
+    st = t.state() or {}
+    check(st.get('path') == '/login' and st.get('user') is None, 'signing out left %s' % st)
+    check(not t.b.eval('localStorage.accessToken || sessionStorage.accessToken || null'), 'signing out kept the token')
+    mark = t.mark()
+    settled = sign_in_on_page(t, PLAYER)
+    problems = t.page_problems(mark, 'after signing back in', '/games', settled)
+    check(t.state().get('user') == PLAYER, 'signed back in, but security.user is %r' % t.state().get('user'))
+    check(not problems, '\n'.join(problems))
+
+
 # ==================================================================== runner
 
 def expected_to_fail(sc, baseline):
