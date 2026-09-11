@@ -116,14 +116,14 @@
                                 <team-flag team="game.HomeTeam"></team-flag> {{game.HomeTeam.Name}}
                             </label>
                             <input name="{{game.HomeTeam.TeamId}}" id="{{game.HomeTeam.TeamId}}" type="number"
-                                ng-model="userBet.HomeScore" class="form-control" inputmode="numeric" required min="0">
+                                ng-model="userBet.HomeScore" class="form-control" inputmode="numeric" required min="0" max="10" step="1">
                         </div>
                         <div class="form-group">
                             <label for="{{game.AwayTeam.TeamId}}">
                                 <team-flag team="game.AwayTeam"></team-flag> {{game.AwayTeam.Name}}
                             </label>
                             <input name="{{game.AwayTeam.TeamId}}" id="{{game.AwayTeam.TeamId}}" type="number"
-                                ng-model="userBet.AwayScore" class="form-control" inputmode="numeric" required min="0">
+                                ng-model="userBet.AwayScore" class="form-control" inputmode="numeric" required min="0" max="10" step="1">
                         </div>
                     </div>
                     <div class="mu-bet-form__marks">
