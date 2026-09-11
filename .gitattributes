@@ -1,0 +1,6 @@
+# Scripts pinned by an integrity= hash in Mundialito/Views/Home/Index.cshtml must be deployed
+# byte for byte. CI checks out on Windows, where git would otherwise convert their line endings
+# to CRLF - which changes their hash, and browsers then refuse to run them.
+# Tests/PinnedScriptIntegrityTests.cs fails the build if one is missed.
+Mundialito/Client/lib/sentry/*.js -text
+Mundialito/wwwroot/sentry/*.js -text
