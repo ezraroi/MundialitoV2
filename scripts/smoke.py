@@ -63,15 +63,6 @@ FIXES = ['reporting', 'bet-forms', 'user-guard']
 
 INJ = 'angular.element(document.documentElement).injector()'
 
-# Pre-existing defects page_problems knows about, each with where it gets fixed. Keep this
-# short: an entry here is a bug the suite has agreed to look past.
-TOLERATED = [
-    # UserProfile.html:5 binds the avatar with src="{{…}}" instead of ng-src, so the browser
-    # requests the literal expression before Angular compiles it. Harmless - but it is a
-    # 404 on every profile page. Fixed with the bet-forms change.
-    (re.compile(r'GET /%7B%7BprofileUser\.ProfilePicture%7D%7D -> 404$'), 'profile avatar src= binding'),
-]
-
 # Toasts time out after 2.5s (Index.cshtml), so record them as they appear rather than look
 # for them afterwards. Installed before any page script runs, on every navigation.
 TOAST_RECORDER = r"""
@@ -430,6 +421,10 @@ class Browser:
         for kind in ('mouseMoved', 'mousePressed', 'mouseReleased'):
             self.send('Input.dispatchMouseEvent', {'type': kind, 'x': x, 'y': y, 'button': 'left', 'clickCount': 1})
 
+    def tap_at(self, x, y):
+        self.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y}]})
+        self.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+
     def screenshot(self, path):
         data = self.send('Page.captureScreenshot', {'format': 'png'}).get('data')
         if data:
@@ -591,9 +586,10 @@ class Suite:
         for text in self.exceptions_since(mark):
             problems.append('%s: uncaught %s' % (label, (text or '')[:200]))
         for method, url, status in self.responses_since(mark):
-            if url.startswith(self.base) and status >= 400:
+            # A request for a literal {{expression}} is S14's to report, on every route.
+            if url.startswith(self.base) and status >= 400 and '%7B%7B' not in url:
                 problems.append('%s: %s %s -> %s' % (label, method, url[len(self.base):], status))
-        return [p for p in problems if not any(pattern.search(p) for pattern, _ in TOLERATED)]
+        return problems
 
 
 # ==================================================================== scenarios
@@ -835,6 +831,206 @@ def still_reported(t):
     t.b.set_rules([])
     missing = [what for what, found in expected.items() if not any(found(e) for e in events)]
     check(not missing, 'not reported: %s\nreported: %s' % ('; '.join(missing), '\n  '.join(e.describe() for e in events)))
+
+
+def on_scope(prop, body):
+    """Run `body` inside $apply on the view scope that owns `prop` (bound as `s`). Owned, not
+    inherited: writing through a child scope - an ng-if, a uib-tab - would shadow it."""
+    return r"""(function () {
+      var els = document.querySelectorAll('[ng-view] *'), s = null;
+      for (var i = 0; i < els.length && !s; i++) {
+        var c = angular.element(els[i]).scope();
+        while (c && !Object.prototype.hasOwnProperty.call(c, %(prop)s)) c = c.$parent;
+        s = c;
+      }
+      if (!s) throw new Error('no scope owns ' + %(prop)s);
+      s.$apply(function () { %(body)s });
+      return true;
+    })()""" % {'prop': json.dumps(prop), 'body': body}
+
+
+def centre_of(t, locate_js):
+    """Scroll the element `locate_js` evaluates to into view and return its centre."""
+    return t.b.eval(r"""(function () {
+      var el = %s;
+      if (!el) return null;
+      el.scrollIntoView({block: 'center', inline: 'center'});
+      var r = el.getBoundingClientRect();
+      return {x: r.left + r.width / 2, y: r.top + r.height / 2};
+    })()""" % locate_js)
+
+
+def grid_header(icon):
+    return (r"""(function () {
+      var cells = document.querySelectorAll('.ui-grid-header-cell');
+      for (var i = 0; i < cells.length; i++)
+        if (cells[i].querySelector(%s)) return cells[i].querySelector('.ui-grid-cell-contents');
+      return null;
+    })()""" % json.dumps(icon))
+
+
+def sort_direction(t, field):
+    return t.b.eval(r"""(function () {
+      var grids = document.querySelectorAll('.ui-grid');
+      for (var i = 0; i < grids.length; i++) {
+        var ctrl = angular.element(grids[i]).controller('uiGrid');
+        var col = ctrl && ctrl.grid.columns.filter(function (c) { return c.field === %s; })[0];
+        if (col) return (col.sort && col.sort.direction) || 'none';
+      }
+      return 'no grid';
+    })()""" % json.dumps(field))
+
+
+def sort_by_header_clicks(t, where):
+    problems = []
+    mark = t.mark()
+    for field, icon in (('YellowCards', '.fa-stop'), ('Corners', '.fa-flag')):
+        seen = []
+        for _ in range(2):
+            point = centre_of(t, grid_header(icon))
+            if not point:
+                problems.append('%s: no %s header to click' % (where, field))
+                break
+            t.b.click_at(point['x'], point['y'])
+            time.sleep(0.5)
+            seen.append(sort_direction(t, field))
+        if seen and seen != ['asc', 'desc']:
+            problems.append('%s: clicking %s sorted it %s, expected asc then desc' % (where, field, seen))
+    for ev in t.wait_events(mark, lambda evs: False, timeout=1.0):
+        problems.append('%s: Sentry event %s' % (where, ev.describe()))
+    return problems
+
+
+@scenario('S6', 'leaderboard headers sort without throwing',
+          fixed_by='bet-forms', reproduces=r'sort is not a function')
+def grid_sort(t):
+    t.seed(PLAYER)
+    t.goto('/')
+    t.b.eval(on_scope('tableToggleValue', 's.tableToggleValue = true;'))
+    t.wait_stable()
+    problems = sort_by_header_clicks(t, 'dashboard leaderboard')
+    # The simulated ranking of a game awaiting its result uses the same column templates.
+    t.goto('/games/%s' % t.f.pending_game)
+    t.b.eval(on_scope('simulatedGame', "s.gameActiveTab = 1; s.simulatedGame.HomeScore = 2; s.simulatedGame.AwayScore = 1;"
+                                       " s.simulatedGame.CardsMark = '1'; s.simulatedGame.CornersMark = '2'; s.simulateGame();"))
+    t.wait_stable()
+    problems += sort_by_header_clicks(t, 'simulated ranking')
+    check(not problems, '\n'.join(problems))
+
+
+def check_bet_form(t, where, form_js, fill, press):
+    """Drive one bet form: what Save allows for bad home scores, then a real save.
+
+    form_js evaluates to {home, save} elements; fill() makes every field valid; press(point)
+    is a real click or tap. Each bad value is checked on its own, from a valid form."""
+    problems = []
+    setup = r"""(function () { var f = %s; if (!f || !f.home || !f.save) return false;
+      window.__smokeForm = f; return true; })()""" % form_js
+    check(t.b.eval(setup), '%s: bet form not found' % where)
+    set_home = r"""(function (v) { var f = window.__smokeForm; f.home.value = v;
+      f.home.dispatchEvent(new Event('input', {bubbles: true})); return f.save.disabled; })(%s)"""
+    fill()
+    check(not t.b.eval('window.__smokeForm.save.disabled'), '%s: Save is disabled on a complete bet' % where)
+    for bad in ('', '11', '1.5'):
+        if not t.b.eval(set_home % json.dumps(bad)):
+            problems.append('%s: Save stays enabled with HomeScore=%r' % (where, bad))
+    if t.b.eval(set_home % json.dumps('3')):
+        problems.append('%s: Save is disabled with HomeScore=3' % where)
+    mark = t.mark()
+    point = centre_of(t, 'window.__smokeForm.save')
+    press(point['x'], point['y'])
+    end = time.time() + 6
+    saved = None
+    while time.time() < end and saved is None:
+        saved = next((s for m, u, s in t.responses_since(mark) if m == 'PUT' and u.endswith('/mybet')), None)
+        time.sleep(0.1)
+    if saved not in (200, 201):
+        problems.append('%s: saving HomeScore=3 answered %s' % (where, saved))
+    else:
+        time.sleep(0.3)
+        if not any(x.get('body') == 'Bet was saved successfully' for x in t.toasts()):
+            problems.append('%s: saved, but the user was not told' % where)
+    for ev in t.events_since(mark):
+        problems.append('%s: Sentry event %s' % (where, ev.describe()))
+    return problems
+
+
+BETS_CENTER_ROW = r"""(function () {
+  var rows = document.querySelectorAll('table.mu-bets-center-table__grid tbody tr');
+  for (var i = 0; i < rows.length; i++) {
+    var s = angular.element(rows[i]).scope();
+    if (s && s.game && s.game.GameId === %(game)d)
+      return {home: rows[i].querySelector('input[name=homeScore]'), save: rows[i].querySelector('button[title=Save]'),
+              shuffle: rows[i].querySelector('button[title=Shuffle]')};
+  }
+  return null;
+})()"""
+
+BETS_CENTER_CARD = r"""(function () {
+  var cards = document.querySelectorAll('.mu-bets-center-card');
+  for (var i = 0; i < cards.length; i++) {
+    var s = angular.element(cards[i]).scope();
+    if (s && s.game && s.game.GameId === %(game)d)
+      return {home: cards[i].querySelector('input[name=homeScoreMobile]'),
+              save: cards[i].querySelector('.mu-bets-center-card__actions .btn-success'),
+              shuffle: cards[i].querySelector('.mu-bets-center-card__actions .btn-info')};
+  }
+  return null;
+})()"""
+
+
+@scenario('S7', 'Bets Center (desktop): Save refuses an empty or out-of-range score',
+          fixed_by='bet-forms', reproduces=r'Save stays enabled')
+def bet_bounds_desktop(t):
+    t.seed(PLAYER)
+    t.goto('/bets_center')
+    problems = check_bet_form(t, 'bets center row', BETS_CENTER_ROW % {'game': t.f.open_game},
+                              fill=lambda: t.b.eval('window.__smokeForm.shuffle.click(); true'),
+                              press=t.b.click_at)
+    check(not problems, '\n'.join(problems))
+
+
+@scenario('S8', 'Bets Center (phone): Save refuses an out-of-range score',
+          fixed_by='bet-forms', reproduces=r'Save stays enabled')
+def bet_bounds_mobile(t):
+    t.seed(PLAYER)
+    t.b.mobile()
+    t.goto('/bets_center')
+    problems = check_bet_form(t, 'bets center card', BETS_CENTER_CARD % {'game': t.f.open_game},
+                              fill=lambda: t.b.eval('window.__smokeForm.shuffle.click(); true'),
+                              press=t.b.tap_at)
+    t.b.desktop()
+    check(not problems, '\n'.join(problems))
+
+
+@scenario('S9', 'game page: Save refuses an out-of-range score',
+          fixed_by='bet-forms', reproduces=r'Save stays enabled')
+def bet_bounds_game(t):
+    t.seed(PLAYER)
+    t.goto('/games/%s' % t.f.open_game)
+    form = r"""(function () { var f = document.querySelector('form[name=userBetFrom]');
+      return f && {home: f.querySelector('input[ng-model="userBet.HomeScore"]'), save: f.querySelector('button.btn-primary')}; })()"""
+
+    def fill():
+        t.b.eval(on_scope('userBet', "s.userBet.HomeScore = 2; s.userBet.AwayScore = 1;"
+                                     " s.userBet.CardsMark = '1'; s.userBet.CornersMark = '2';"))
+    problems = check_bet_form(t, 'game page', form, fill=fill, press=t.b.click_at)
+    check(not problems, '\n'.join(problems))
+
+
+@scenario('S14', 'no page requests an unbound {{expression}} as a URL',
+          fixed_by='bet-forms', reproduces=r'profileUser\.ProfilePicture')
+def unbound_urls(t):
+    t.seed(PLAYER)
+    bad = set()
+    for path, _ in signed_in_routes(t, PLAYER):
+        mark = t.mark()
+        t.goto(path)
+        time.sleep(0.3)
+        for method, url, status in t.responses_since(mark):
+            if '%7B%7B' in url:
+                bad.add('%s requested %s (%s)' % (path, urllib.parse.unquote(url[len(t.base):]), status))
+    check(not bad, '\n'.join(sorted(bad)))
 
 
 # ==================================================================== runner
