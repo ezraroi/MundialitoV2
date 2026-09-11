@@ -26,6 +26,7 @@ import argparse
 import base64
 import datetime as dt
 import fnmatch
+import hashlib
 import json
 import os
 import pathlib
@@ -59,7 +60,7 @@ PASSWORD = '123456'
 # The changes whose bugs this suite reproduces, in the order they land. `--baseline <change>`
 # means "the code before <change>": its bug scenarios, and those of every later change, are
 # expected to fail.
-FIXES = ['reporting', 'bet-forms', 'user-guard']
+FIXES = ['reporting', 'bet-forms', 'user-guard', 'sdk-v10']
 
 INJ = 'angular.element(document.documentElement).injector()'
 
@@ -632,6 +633,22 @@ def served_bundles(t):
     kind = 'min' if all('-min-' in n for n in served) else 'dev' if not any('-min-' in n for n in served) else 'mixed'
     check(kind == t.expect_bundle, 'serving %s bundles, expected %s' % (kind, t.expect_bundle))
 
+    # Every script the page loads from us - the Sentry bundle too - is there, and one pinned
+    # with integrity= is byte for byte that file: the browser refuses to run it otherwise.
+    for attrs in re.findall(r'<script\b([^>]*)>', page):
+        src = re.search(r'\bsrc="([^"]+)"', attrs)
+        if not src or re.match(r'(https?:)?//', src.group(1)):
+            continue
+        try:
+            with urllib.request.urlopen(t.base + '/' + src.group(1).lstrip('/'), timeout=20) as r:
+                body = r.read()
+        except urllib.error.HTTPError as e:
+            check(False, '%s does not load (%s)' % (src.group(1), e.code))
+        pinned = re.search(r'\bintegrity="sha384-([^"]+)"', attrs)
+        if pinned:
+            check(base64.b64encode(hashlib.sha384(body).digest()).decode() == pinned.group(1),
+                  '%s does not match its integrity attribute, so the browser will not run it' % src.group(1))
+
     for folder, stem in (('js', 'app'), ('lib', 'lib')):
         names = sorted(p.name for p in (APP_DIR / 'wwwroot' / folder).glob(stem + '-*.js'))
         check(len(names) == 2 and all(n in cshtml for n in names),
@@ -831,6 +848,63 @@ def still_reported(t):
     t.b.set_rules([])
     missing = [what for what, found in expected.items() if not any(found(e) for e in events)]
     check(not missing, 'not reported: %s\nreported: %s' % ('; '.join(missing), '\n  '.join(e.describe() for e in events)))
+
+
+@scenario('S16', "Angular's own errors reach Sentry in Angular's shape, and Angular still logs them")
+def angular_error_shape(t):
+    # What the SDK's AngularJS integration (ngSentry) does, and whatever replaces it must keep
+    # doing: '[$module:code] message\n<docs url>' becomes type '$module:code' and value
+    # 'message' with the url in extra.angularDocs; the element whose directive threw arrives
+    # as extra.cause; and Angular's own handler still runs, so the error is logged too.
+    t.seed(PLAYER)
+    t.goto('/')
+    n = uuid.uuid4().hex[:8]
+    mark = t.mark()
+    t.b.eval(r"""(function () {
+      var i = %(inj)s, $rootScope = i.get('$rootScope'), n = %(n)s;
+      // $apply from a task the digest is running: [$rootScope:inprog]
+      $rootScope.$evalAsync(function () { $rootScope.$apply(); });
+      // an expression that throws while its element is linked
+      var scope = $rootScope.$new();
+      scope.smokeBoom = function () { throw new Error('smoke-link-' + n); };
+      i.get('$compile')('<div ng-init="smokeBoom()"></div>')(scope);
+      return true;
+    })()""" % {'inj': INJ, 'n': json.dumps(n)})
+
+    def inprog(e):
+        return any(k == '$rootScope:inprog' and v.startswith('$digest already in progress') for k, v in e.exceptions)
+
+    def linked(e):
+        return any('smoke-link-' + n in v for _, v in e.exceptions)
+
+    events = t.wait_events(mark, lambda evs: any(inprog(e) for e in evs) and any(linked(e) for e in evs))
+    shown = '\n  '.join('%s extra=%s' % (e.describe(), json.dumps(e.extra)[:160]) for e in events) or 'nothing'
+    ev = next((e for e in events if inprog(e)), None)
+    check(ev, 'no $rootScope:inprog event with the Angular code as its type; reported:\n  ' + shown)
+    check(str(ev.extra.get('angularDocs', '')).startswith('https://errors.angularjs.org/'),
+          'the inprog event has no angularDocs link: extra=%s' % json.dumps(ev.extra)[:300])
+    ev = next((e for e in events if linked(e)), None)
+    check(ev, 'the error thrown while linking was not reported; reported:\n  ' + shown)
+    check('ng-init="smokeBoom()"' in str(ev.extra.get('cause', '')),
+          'the linking error has no cause naming its element: extra=%s' % json.dumps(ev.extra)[:300])
+    logged = t.console_since(mark)
+    for what in ('$rootScope:inprog', 'smoke-link-' + n):
+        check(any(what in line for line in logged), "Angular's handler did not log %s - console: %s" % (what, logged[:5]))
+
+
+@scenario('S17', 'the app still loads when the Sentry script does not',
+          fixed_by='sdk-v10', reproduces=r'modulerr')
+def sentry_script_blocked(t):
+    # With SDK v6 the app module depended on ngSentry, which existed only once both Sentry
+    # scripts had loaded and Sentry.init had run: if either failed to load, Angular could
+    # not boot at all. Sentry must never again be able to take the app down.
+    t.seed(PLAYER)
+    t.b.set_rules([{'pattern': '*/sentry/*', 'action': 'fail'}])
+    mark = t.mark()
+    settled = t.goto('/games')
+    problems = t.page_problems(mark, '/games with the Sentry script blocked', '/games', settled)
+    t.b.set_rules([])
+    check(not problems, '\n'.join(problems))
 
 
 def on_scope(prop, body):
