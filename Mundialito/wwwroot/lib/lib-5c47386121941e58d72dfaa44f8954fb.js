@@ -81321,6 +81321,24 @@ angular.module('security', [])
 				return $q.when();
 			};
 
+			/* One user load at a time, shared by everyone waiting for the user - startup and
+			   every route that resolves requireUser. A load that dies without an answer
+			   (status 0/-1: a phone waking up, a network switch) is retried once: until the
+			   user arrives the page stays behind the loading overlay, with no way out but a
+			   reload. */
+			var loadingUser = null;
+			var loadUser = function () {
+				if (!loadingUser) {
+					loadingUser = initialize().catch(function (response) {
+						if (!response || response.status > 0 || !accessToken()) return $q.reject(response);
+						return $timeout(angular.noop, 1500).then(initialize);
+					}).finally(function () {
+						loadingUser = null;
+					});
+				}
+				return loadingUser;
+			};
+
 			//Public Variables
 			var Security = this;
 			Security.user = null;
@@ -81536,8 +81554,28 @@ angular.module('security', [])
 
 			Security.authenticate = function () {
 				if (accessToken()) return;
-				if (!redirectTarget()) redirectTarget($location.path());
+				/* Never remember the login page itself as where to go back to: signing in
+				   would land on it again. */
+				if (!redirectTarget() && $location.path() !== securityProvider.urls.login) redirectTarget($location.path());
 				$location.path(securityProvider.urls.login);
+			};
+
+			/* Resolves with the signed-in user, for route resolves. The user arrives with one
+			   request at startup and no route waited for it, so a page whose own data came back
+			   first ran its controller with Security.user still null (Sentry JAVASCRIPT-4M, 3Q,
+			   49: "null is not an object (evaluating 'e.security.user.Followees')"). A failed
+			   load only rejects: on a 401 the http interceptor has already cleared the session
+			   and moved to the login page, and authenticate() from here would record that login
+			   page as where to return after signing in. */
+			Security.requireUser = function () {
+				if (Security.user) return $q.when(Security.user);
+				if (!accessToken()) {
+					Security.authenticate();
+					return $q.reject('not signed in');
+				}
+				return loadUser().then(function () {
+					return Security.user || $q.reject('no user');
+				});
 			};
 
 			Security.redirectAuthenticated = function (url) {
@@ -81545,8 +81583,8 @@ angular.module('security', [])
 				if (redirectTarget()) redirectTarget('clear');
 				$location.path(url);
 			};
-			// Initialize
-			initialize();
+			// Initialize. A failure is the interceptor's to report; nothing here awaits it.
+			loadUser().catch(angular.noop);
 
 			return Security;
 		}];
