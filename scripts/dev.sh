@@ -305,7 +305,7 @@ print(o[0] if o else "", o[1] if len(o) > 1 else "")')"
   fi
 
   echo
-  bold "Admin writes: a bad id is a 404, and a simulation stays in memory"
+  bold "Admin writes: a bad id is a 404, and a simulation any player can run stays in memory"
 
   code=$(api_code PUT /api/teams/999999 "$admin" '{"Name":"X","ShortName":"XXX","Flag":"f.png","Logo":"l.png"}')
   check "PUT an unknown team is refused" 404 "$code"
@@ -323,8 +323,15 @@ print(p[0] if p else "")')
   elif ! db_running; then
     info "SKIP  database container not running, cannot check the simulation"
   else
+    # Simulating is a player-facing what-if, not an admin write: the client offers the panel
+    # to every signed-in user, and gating it AdminOnly 403'd that button for every player.
+    # An unapproved account is still out, the same as every other thing a player can do.
+    api DELETE "/api/users/$id/activate" "$admin" >/dev/null
     code=$(api_code POST "/api/games/$gpending/simulate" "$t" '{"HomeScore":2,"AwayScore":1,"CardsMark":"1","CornersMark":"1"}')
-    check "simulating is admin only" 403 "$code"
+    check "a disabled account cannot simulate" 403 "$code"
+    api POST "/api/users/$id/activate" "$admin" >/dev/null
+    code=$(api_code POST "/api/games/$gpending/simulate" "$t" '{"HomeScore":2,"AwayScore":1,"CardsMark":"1","CornersMark":"1"}')
+    check "an active player can simulate" 200 "$code"
 
     # Betting on it closed days ago, so seed the bet directly - it is a fixture, not a case.
     # An exact-score match, so the simulated table must show this user with points.

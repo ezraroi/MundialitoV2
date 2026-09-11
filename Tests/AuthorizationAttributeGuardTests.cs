@@ -56,14 +56,13 @@ public class AuthorizationAttributeGuardTests
             "These actions reference a policy that Program.cs does not register: " + string.Join(", ", unknown));
     }
 
-    /// <summary>SimulateGame recomputes the whole table from a made-up result. It carried only
-    /// the class level [Authorize] while its PostGame/PutGame/DeleteGame siblings were
-    /// AdminOnly, so any signed-in user could run it (#172 item 3). Named rather than left to
-    /// the count below, so a regression says which action lost its policy.</summary>
+    /// <summary>The three game writes. Named rather than left to the count below, so a
+    /// regression says which action lost its policy. SimulateGame is deliberately not one of
+    /// them - see SimulateGameIsOpenToEveryActivePlayer.</summary>
     [Test]
     public void AdminOnlyGameActionsAreAllGated()
     {
-        var adminActions = new[] { "PostGame", "PutGame", "DeleteGame", "SimulateGame" };
+        var adminActions = new[] { "PostGame", "PutGame", "DeleteGame" };
 
         var gated = typeof(GamesController)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
@@ -74,6 +73,25 @@ public class AuthorizationAttributeGuardTests
             .ToList();
 
         Assert.That(gated, Is.EquivalentTo(adminActions));
+    }
+
+    /// <summary>SimulateGame is a what-if, not a write: it reads everything detached and
+    /// cannot persist, and the client has shown its panel to every signed-in user since the
+    /// frontend-only admin guard was dropped. #172 item 3 filed it with the PostGame/PutGame/
+    /// DeleteGame writes and made it AdminOnly, which 403'd that button for every player.
+    /// Pinned so it is not swept back in with its siblings - and so it does not fall the
+    /// other way either, to the bare class level [Authorize] it carried before, which would
+    /// let accounts still waiting for approval run a full table recompute.</summary>
+    [Test]
+    public void SimulateGameIsOpenToEveryActivePlayer()
+    {
+        var policies = typeof(GamesController)
+            .GetMethod(nameof(GamesController.SimulateGame))!
+            .GetCustomAttributes<AuthorizeAttribute>(inherit: false)
+            .Select(a => a.Policy)
+            .ToList();
+
+        Assert.That(policies, Is.EqualTo(new[] { Policies.ActiveOrAdmin }));
     }
 
     /// <summary>DeletePlayer is the action that stands between an admin misclick and other
@@ -104,15 +122,15 @@ public class AuthorizationAttributeGuardTests
             .GroupBy(x => x.Attribute.Policy!)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        // 4 player-facing writes (2 bets - the mybet upsert and delete - plus 2 general
-        // bets), 17 admin actions (SimulateGame joined its PostGame/PutGame/DeleteGame
-        // siblings, which it had been missing; PostPlayer and DeletePlayer let an admin
-        // edit the golden boot player list).
+        // 5 player-facing actions (2 bets - the mybet upsert and delete - plus 2 general
+        // bets, plus SimulateGame, which is a read-only what-if and was briefly AdminOnly),
+        // 16 admin actions (PostPlayer and DeletePlayer let an admin edit the golden boot
+        // player list).
         // A silently dropped attribute would leave an endpoint open to any signed-in user.
         Assert.Multiple(() =>
         {
-            Assert.That(byPolicy.GetValueOrDefault(Policies.ActiveOrAdmin), Is.EqualTo(4));
-            Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(17));
+            Assert.That(byPolicy.GetValueOrDefault(Policies.ActiveOrAdmin), Is.EqualTo(5));
+            Assert.That(byPolicy.GetValueOrDefault(Policies.AdminOnly), Is.EqualTo(16));
         });
     }
 }
